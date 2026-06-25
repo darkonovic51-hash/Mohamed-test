@@ -11,7 +11,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
     <style>
-        /* ===== جميع الأنماط السابقة مع تعديلات بسيطة ===== */
+        /* ===== CSS Variables & Reset ===== */
         :root {
             --primary-blue: #45B3FF;
             --secondary-blue: #2196F3;
@@ -49,19 +49,10 @@
         }
 
         /* ===== SCROLLBAR ===== */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: var(--light-bg);
-        }
-        ::-webkit-scrollbar-thumb {
-            background: var(--primary-blue);
-            border-radius: 10px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: var(--secondary-blue);
-        }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--light-bg); }
+        ::-webkit-scrollbar-thumb { background: var(--primary-blue); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--secondary-blue); }
 
         /* ===== BUTTONS ===== */
         .btn-primary {
@@ -82,9 +73,7 @@
             transform: translateY(-3px);
             box-shadow: 0 10px 30px rgba(69, 179, 255, 0.4);
         }
-        .btn-primary i {
-            margin-left: 8px;
-        }
+        .btn-primary i { margin-left: 8px; }
 
         .btn-outline {
             background: transparent;
@@ -332,33 +321,16 @@
         }
 
         @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         /* ===== SECTIONS ===== */
-        section {
-            padding: 80px 0;
-        }
-        .section-dark {
-            background: var(--dark-navy);
-            color: #fff;
-        }
-        .section-dark .section-title {
-            color: #fff;
-        }
-        .section-light {
-            background: var(--light-bg);
-        }
-        .section-white {
-            background: #fff;
-        }
+        section { padding: 80px 0; }
+        .section-dark { background: var(--dark-navy); color: #fff; }
+        .section-dark .section-title { color: #fff; }
+        .section-light { background: var(--light-bg); }
+        .section-white { background: #fff; }
 
         /* ===== ABOUT ===== */
         .about-grid {
@@ -425,7 +397,7 @@
         }
 
         /* ============================================================
-           PLAYERS SECTION - بدون إطارات إضافية (مثل المدير الفني)
+           PLAYERS SECTION - بطاقات متحركة (بدون إطارات)
            ============================================================ */
         .players-grid {
             display: grid;
@@ -443,11 +415,22 @@
             transition: var(--transition);
             cursor: pointer;
             border: none;
+            animation: floatCard 4s ease-in-out infinite;
+        }
+
+        .player-card-simple:nth-child(2) {
+            animation-delay: 0.5s;
+        }
+
+        @keyframes floatCard {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
         }
 
         .player-card-simple:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.12);
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+            animation-play-state: paused;
         }
 
         .player-card-simple img {
@@ -458,7 +441,7 @@
         }
 
         .player-card-simple:hover img {
-            transform: scale(1.02);
+            transform: scale(1.03);
         }
 
         .player-card-simple .info {
@@ -486,7 +469,9 @@
             margin-top: 2px;
         }
 
-        /* ===== GALLERY ===== */
+        /* ============================================================
+           GALLERY SECTION - صور متحركة
+           ============================================================ */
         .gallery-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -500,10 +485,24 @@
             box-shadow: var(--shadow);
             transition: var(--transition);
             aspect-ratio: 4/3;
+            animation: galleryFloat 5s ease-in-out infinite;
         }
+
+        .gallery-item:nth-child(2) { animation-delay: 0.6s; }
+        .gallery-item:nth-child(3) { animation-delay: 1.2s; }
+        .gallery-item:nth-child(4) { animation-delay: 0.3s; }
+        .gallery-item:nth-child(5) { animation-delay: 0.9s; }
+        .gallery-item:nth-child(6) { animation-delay: 1.5s; }
+
+        @keyframes galleryFloat {
+            0%, 100% { transform: translateY(0px) scale(1); }
+            50% { transform: translateY(-8px) scale(1.01); }
+        }
+
         .gallery-item:hover {
             transform: scale(1.02);
             box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+            animation-play-state: paused;
         }
         .gallery-item img {
             width: 100%;
@@ -533,7 +532,9 @@
             font-size: 0.95rem;
         }
 
-        /* ===== VIDEO SECTION ===== */
+        /* ============================================================
+           VIDEO SECTION
+           ============================================================ */
         .video-wrapper {
             max-width: 900px;
             margin: 0 auto;
@@ -547,7 +548,9 @@
             display: block;
         }
 
-        /* ===== COACHES ===== */
+        /* ============================================================
+           COACHES SECTION - صورة المدير الفني متحركة
+           ============================================================ */
         .coach-hero {
             display: flex;
             flex-direction: column;
@@ -564,13 +567,8 @@
             animation: coachPulse 3s ease-in-out infinite;
         }
         @keyframes coachPulse {
-            0%,
-            100% {
-                transform: scale(1);
-            }
-            50% {
-                transform: scale(1.02);
-            }
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
         }
         .coach-hero .coach-image-wrap img {
             width: 100%;
@@ -594,7 +592,9 @@
             line-height: 1.8;
         }
 
-        /* ===== ACHIEVEMENTS ===== */
+        /* ============================================================
+           ACHIEVEMENTS SECTION
+           ============================================================ */
         .achievements-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -608,10 +608,21 @@
             padding: 30px 20px;
             text-align: center;
             transition: var(--transition);
+            animation: achievementFloat 4s ease-in-out infinite;
         }
+        .achievement-card:nth-child(2) { animation-delay: 0.5s; }
+        .achievement-card:nth-child(3) { animation-delay: 1s; }
+        .achievement-card:nth-child(4) { animation-delay: 1.5s; }
+
+        @keyframes achievementFloat {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-6px); }
+        }
+
         .achievement-card:hover {
             transform: translateY(-6px);
             border-color: var(--primary-blue);
+            animation-play-state: paused;
         }
         .achievement-card .icon {
             font-size: 2.8rem;
@@ -628,7 +639,9 @@
             font-size: 0.9rem;
         }
 
-        /* ===== REGISTRATION ===== */
+        /* ============================================================
+           REGISTRATION SECTION
+           ============================================================ */
         .registration-wrapper {
             max-width: 900px;
             margin: 0 auto;
@@ -652,12 +665,8 @@
             animation: shimmer 3s infinite linear;
         }
         @keyframes shimmer {
-            0% {
-                background-position: 0% 0%;
-            }
-            100% {
-                background-position: 300% 0%;
-            }
+            0% { background-position: 0% 0%; }
+            100% { background-position: 300% 0%; }
         }
 
         .registration-wrapper .form-header {
@@ -794,7 +803,9 @@
             transform: scale(0.98);
         }
 
-        /* ===== TESTIMONIALS ===== */
+        /* ============================================================
+           TESTIMONIALS SECTION
+           ============================================================ */
         .testimonials-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -807,10 +818,20 @@
             box-shadow: var(--shadow);
             border: 1px solid rgba(0, 0, 0, 0.04);
             transition: var(--transition);
+            animation: testimonialFloat 4.5s ease-in-out infinite;
         }
+        .testimonial-card:nth-child(2) { animation-delay: 0.6s; }
+        .testimonial-card:nth-child(3) { animation-delay: 1.2s; }
+
+        @keyframes testimonialFloat {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-8px); }
+        }
+
         .testimonial-card:hover {
             transform: translateY(-6px);
             box-shadow: 0 20px 50px rgba(0, 0, 0, 0.08);
+            animation-play-state: paused;
         }
         .testimonial-card .stars {
             color: #f39c12;
@@ -831,7 +852,9 @@
             color: #888;
         }
 
-        /* ===== CONTACT ===== */
+        /* ============================================================
+           CONTACT SECTION
+           ============================================================ */
         .contact-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -887,7 +910,9 @@
             resize: vertical;
         }
 
-        /* ===== FOOTER ===== */
+        /* ============================================================
+           FOOTER
+           ============================================================ */
         .footer {
             background: var(--dark-navy);
             color: #fff;
@@ -940,7 +965,9 @@
             color: rgba(255, 255, 255, 0.4);
         }
 
-        /* ===== POPUP ===== */
+        /* ============================================================
+           POPUP CONFIRMATION
+           ============================================================ */
         .popup-overlay {
             display: none;
             position: fixed;
@@ -969,14 +996,8 @@
             animation: popupIn 0.5s ease;
         }
         @keyframes popupIn {
-            0% {
-                transform: scale(0.85) rotate(-2deg);
-                opacity: 0;
-            }
-            100% {
-                transform: scale(1) rotate(0);
-                opacity: 1;
-            }
+            0% { transform: scale(0.85) rotate(-2deg); opacity: 0; }
+            100% { transform: scale(1) rotate(0); opacity: 1; }
         }
         .popup-box .icon {
             font-size: 3.5rem;
@@ -1027,7 +1048,7 @@
         }
 
         /* ============================================================
-           ADMIN PANEL (نفس السابق)
+           ADMIN PANEL
            ============================================================ */
         .admin-toggle {
             position: fixed;
@@ -1159,7 +1180,6 @@
             text-align: center;
         }
 
-        /* Admin Filters */
         .admin-filters {
             display: flex;
             flex-wrap: wrap;
@@ -1205,7 +1225,6 @@
             background: #c0392b;
         }
 
-        /* Admin Stats */
         .admin-stats {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
@@ -1229,7 +1248,6 @@
             color: #888;
         }
 
-        /* Admin Table */
         .admin-table-wrap {
             overflow-x: auto;
             border-radius: 16px;
@@ -1263,7 +1281,8 @@
         .admin-table-wrap tr:hover td {
             background: rgba(69, 179, 255, 0.04);
         }
-        .admin-table-wrap .btn-sm {
+
+        .btn-sm {
             padding: 4px 12px;
             border-radius: 30px;
             border: none;
@@ -1275,63 +1294,26 @@
             display: inline-block;
             white-space: nowrap;
         }
-        .admin-table-wrap .btn-sm-pdf {
-            background: #e67e22;
-            color: #fff;
-        }
-        .admin-table-wrap .btn-sm-pdf:hover {
-            background: #d35400;
-        }
-        .admin-table-wrap .btn-sm-pdf-photo {
-            background: #2980b9;
-            color: #fff;
-        }
-        .admin-table-wrap .btn-sm-pdf-photo:hover {
-            background: #1a5276;
-        }
-        .admin-table-wrap .btn-sm-pdf-parental {
-            background: #8e44ad;
-            color: #fff;
-        }
-        .admin-table-wrap .btn-sm-pdf-parental:hover {
-            background: #6c3483;
-        }
-        .admin-table-wrap .btn-sm-pdf-internal {
-            background: #27ae60;
-            color: #fff;
-        }
-        .admin-table-wrap .btn-sm-pdf-internal:hover {
-            background: #1e8449;
-        }
-        .admin-table-wrap .btn-sm-pdf-info {
-            background: #2c3e50;
-            color: #fff;
-        }
-        .admin-table-wrap .btn-sm-pdf-info:hover {
-            background: #1a252f;
-        }
-        .admin-table-wrap .btn-sm-danger {
-            background: #e74c3c;
-            color: #fff;
-        }
-        .admin-table-wrap .btn-sm-danger:hover {
-            background: #c0392b;
-        }
-        .admin-table-wrap .btn-sm-success {
-            background: #2ecc71;
-            color: #fff;
-        }
-        .admin-table-wrap .btn-sm-success:hover {
-            background: #27ae60;
-        }
+        .btn-sm-pdf-info { background: #2c3e50; color: #fff; }
+        .btn-sm-pdf-info:hover { background: #1a252f; }
+        .btn-sm-pdf-photo { background: #2980b9; color: #fff; }
+        .btn-sm-pdf-photo:hover { background: #1a5276; }
+        .btn-sm-pdf-parental { background: #8e44ad; color: #fff; }
+        .btn-sm-pdf-parental:hover { background: #6c3483; }
+        .btn-sm-pdf-internal { background: #27ae60; color: #fff; }
+        .btn-sm-pdf-internal:hover { background: #1e8449; }
+        .btn-sm-danger { background: #e74c3c; color: #fff; }
+        .btn-sm-danger:hover { background: #c0392b; }
+        .btn-sm-success { background: #2ecc71; color: #fff; }
+        .btn-sm-success:hover { background: #27ae60; }
 
-        .admin-table-wrap .docs-group {
+        .docs-group {
             display: flex;
             flex-wrap: wrap;
             gap: 4px;
             justify-content: center;
         }
-        .admin-table-wrap .docs-group .btn-sm {
+        .docs-group .btn-sm {
             font-size: 0.6rem;
             padding: 3px 8px;
         }
@@ -1340,27 +1322,15 @@
            RESPONSIVE
            ============================================================ */
         @media (max-width: 1024px) {
-            .hero-content h1 {
-                font-size: 3rem;
-            }
-            .about-grid {
-                grid-template-columns: 1fr;
-            }
-            .contact-grid {
-                grid-template-columns: 1fr;
-            }
-            .admin-panel {
-                padding: 20px 16px;
-            }
+            .hero-content h1 { font-size: 3rem; }
+            .about-grid { grid-template-columns: 1fr; }
+            .contact-grid { grid-template-columns: 1fr; }
+            .admin-panel { padding: 20px 16px; }
         }
 
         @media (max-width: 768px) {
-            .navbar {
-                padding: 10px 16px;
-            }
-            .navbar.scrolled {
-                padding: 8px 16px;
-            }
+            .navbar { padding: 10px 16px; background: rgba(4, 26, 56, 0.95); }
+            .navbar.scrolled { padding: 8px 16px; }
             .nav-links {
                 display: none;
                 flex-direction: column;
@@ -1374,97 +1344,38 @@
                 left: 0;
                 border-top: 1px solid rgba(255, 255, 255, 0.05);
             }
-            .nav-links.show {
-                display: flex;
-            }
-            .menu-btn {
-                display: block;
-            }
+            .nav-links.show { display: flex; }
+            .menu-btn { display: block; }
 
-            .hero-content h1 {
-                font-size: 2.2rem;
-            }
-            .hero-content p {
-                font-size: 1rem;
-            }
-            .hero-stats {
-                gap: 12px;
-            }
-            .hero-stat {
-                padding: 12px 18px;
-                min-width: 80px;
-            }
-            .hero-stat .number {
-                font-size: 1.6rem;
-            }
+            .hero-content h1 { font-size: 2.2rem; }
+            .hero-content p { font-size: 1rem; }
+            .hero-stats { gap: 12px; }
+            .hero-stat { padding: 12px 18px; min-width: 80px; }
+            .hero-stat .number { font-size: 1.6rem; }
 
-            .section-title {
-                font-size: 1.8rem;
-            }
-            section {
-                padding: 50px 0;
-            }
+            .section-title { font-size: 1.8rem; }
+            section { padding: 50px 0; }
 
-            .registration-wrapper {
-                padding: 24px 18px 30px;
-            }
-            .reg-form-grid {
-                grid-template-columns: 1fr;
-            }
+            .registration-wrapper { padding: 24px 18px 30px; }
+            .reg-form-grid { grid-template-columns: 1fr; }
 
-            .admin-panel {
-                padding: 16px 12px;
-            }
-            .admin-filters {
-                flex-direction: column;
-                align-items: stretch;
-            }
-            .admin-filters input,
-            .admin-filters select {
-                min-width: auto;
-            }
-            .admin-table-wrap table {
-                font-size: 0.75rem;
-                min-width: 700px;
-            }
-            .admin-table-wrap th {
-                font-size: 0.75rem;
-                padding: 8px 6px;
-            }
-            .admin-table-wrap td {
-                padding: 8px 6px;
-                font-size: 0.7rem;
-            }
-            .admin-table-wrap .btn-sm {
-                font-size: 0.55rem;
-                padding: 2px 6px;
-            }
-            .coach-hero .coach-image-wrap {
-                max-width: 100%;
-            }
-            .players-grid {
-                max-width: 100%;
-            }
+            .admin-panel { padding: 16px 12px; }
+            .admin-filters { flex-direction: column; align-items: stretch; }
+            .admin-filters input, .admin-filters select { min-width: auto; }
+            .admin-table-wrap table { font-size: 0.75rem; min-width: 700px; }
+            .admin-table-wrap th { font-size: 0.75rem; padding: 8px 6px; }
+            .admin-table-wrap td { padding: 8px 6px; font-size: 0.7rem; }
+            .admin-table-wrap .btn-sm { font-size: 0.55rem; padding: 2px 6px; }
+            .coach-hero .coach-image-wrap { max-width: 100%; }
+            .players-grid { max-width: 100%; }
         }
 
         @media (max-width: 480px) {
-            .hero-content h1 {
-                font-size: 1.8rem;
-            }
-            .btn-primary,
-            .btn-outline {
-                padding: 10px 24px;
-                font-size: 0.85rem;
-            }
-            .popup-box {
-                padding: 24px 18px;
-            }
-            .admin-panel {
-                padding: 12px 8px;
-            }
-            .admin-table-wrap table {
-                min-width: 600px;
-            }
+            .hero-content h1 { font-size: 1.8rem; }
+            .btn-primary, .btn-outline { padding: 10px 24px; font-size: 0.85rem; }
+            .popup-box { padding: 24px 18px; }
+            .admin-panel { padding: 12px 8px; }
+            .admin-table-wrap table { min-width: 600px; }
         }
     </style>
 </head>
@@ -1534,13 +1445,12 @@
         </div>
     </section>
 
-    <!-- ===== PLAYERS (بدون إطارات - مثل المدير الفني) ===== -->
+    <!-- ===== PLAYERS (بطاقات متحركة) ===== -->
     <section id="players" class="section-white">
         <div class="container">
             <h2 class="section-title">لاعبو <span>الأكاديمية</span></h2>
             <p class="section-subtitle">نخبة من المواهب الشابة التي تبشر بمستقبل كبير في عالم كرة القدم.</p>
             <div class="players-grid">
-                <!-- لاعب 1 -->
                 <div class="player-card-simple">
                     <img src="https://raw.githubusercontent.com/darkonovic51-hash/Mohamed-test/4a065c0a8a951b1d39707aa5eb90a5ce7512bec4/file_00000000410c7243b2089cf13bb0ade7.png" alt="ياسين بن عمار" />
                     <div class="info">
@@ -1549,8 +1459,6 @@
                         <div class="category">U15 | 14 سنة</div>
                     </div>
                 </div>
-
-                <!-- لاعب 2 -->
                 <div class="player-card-simple">
                     <img src="https://raw.githubusercontent.com/darkonovic51-hash/Mohamed-test/4a065c0a8a951b1d39707aa5eb90a5ce7512bec4/file_00000000bab07243ae70384a6f9bb50f.png" alt="أحمد زروقي" />
                     <div class="info">
@@ -1563,7 +1471,7 @@
         </div>
     </section>
 
-    <!-- ===== GALLERY ===== -->
+    <!-- ===== GALLERY (صور متحركة) ===== -->
     <section id="gallery" class="section-dark">
         <div class="container">
             <h2 class="section-title">معرض <span>الصور</span></h2>
@@ -1574,14 +1482,14 @@
         </div>
     </section>
 
-    <!-- ===== VIDEO SECTION ===== -->
+    <!-- ===== VIDEO SECTION (رابط محدّث) ===== -->
     <section id="video-section" class="section-light">
         <div class="container">
             <h2 class="section-title">فيديو <span>تعريفي</span></h2>
             <p class="section-subtitle">شاهد نبذة عن أكاديمية ASSARU – حيث تبدأ الأحلام الصغيرة في التحقق.</p>
             <div class="video-wrapper">
                 <video controls preload="metadata" poster="https://raw.githubusercontent.com/darkonovic51-hash/Mohamed-test/4a065c0a8a951b1d39707aa5eb90a5ce7512bec4/1782370717656.jpg">
-                    <source src="https://raw.githubusercontent.com/darkonovic51-hash/Mohamed-test/cadaf4e709c2af160c854857de75e1351170c51b/_%D9%81%D9%8A%D8%AF%D9%8A%D9%88_%D8%A7%D9%84%D9%8A%D9%88%D9%85%20%D8%A3%D9%83%D8%A7%D8%AF%D9%8A%D9%85%D9%8A%D8%A9%20%D8%A3%D8%B3%D8%A7%D8%B1%D9%88%20%D9%84%D9%83%D8%B1%D8%A9%20%D8%A7%D9%84%D9%82%D8%AF%D9%85%20%D8%A8%D8%A8%D9%84%D8%AF%D9%8A%D8%A9%20%D8%A8%D9%86%D9%8A%20%D8%B4%D8%A8%D8%A7%D9%86%D8%A9...%20%D8%AD%D9%8A%D8%AB%20%D8%AA%D8%A8%D8%AF%D8%A3%20%D8%A7%D9%84%D8%A3%D8%AD%D9%84%D8%A7%D9%85%20%D8%A7%D9%84%D8%B5%D8%BA%D9%8A%D8%B1%D8%A9%20%D9%81%D9%8A.mp4" type="video/mp4">
+                    <source src="https://raw.githubusercontent.com/darkonovic51-hash/Mohamed-test/2f5f3a3fe5c01844ff2d00c2003412206f554eec/_%D9%81%D9%8A%D8%AF%D9%8A%D9%88_%D8%A7%D9%84%D9%8A%D9%88%D9%85%20%D8%A3%D9%83%D8%A7%D8%AF%D9%8A%D9%85%D9%8A%D8%A9%20%D8%A3%D8%B3%D8%A7%D8%B1%D9%88%20%D9%84%D9%83%D8%B1%D8%A9%20%D8%A7%D9%84%D9%82%D8%AF%D9%85%20%D8%A8%D8%A8%D9%84%D8%AF%D9%8A%D8%A9%20%D8%A8%D9%86%D9%8A%20%D8%B4%D8%A8%D8%A7%D9%86%D8%A9...%20%D8%AD%D9%8A%D8%AB%20%D8%AA%D8%A8%D8%AF%D8%A3%20%D8%A7%D9%84%D8%A3%D8%AD%D9%84%D8%A7%D9%85%20%D8%A7%D9%84%D8%B5%D8%BA%D9%8A%D8%B1%D8%A9%20%D9%81%D9%8A%20~2.mp4" type="video/mp4">
                     متصفحك لا يدعم تشغيل الفيديو.
                 </video>
             </div>
@@ -1604,7 +1512,7 @@
         </div>
     </section>
 
-    <!-- ===== ACHIEVEMENTS ===== -->
+    <!-- ===== ACHIEVEMENTS (بطاقات متحركة) ===== -->
     <section id="achievements" class="section-dark">
         <div class="container">
             <h2 class="section-title">إنجازات <span>الأكاديمية</span></h2>
@@ -1730,7 +1638,7 @@
         </div>
     </section>
 
-    <!-- ===== TESTIMONIALS ===== -->
+    <!-- ===== TESTIMONIALS (بطاقات متحركة) ===== -->
     <section id="testimonials" class="section-white">
         <div class="container">
             <h2 class="section-title">آراء <span>أولياء الأمور</span></h2>
@@ -1826,7 +1734,7 @@
             </div>
             <div class="footer-col">
                 <h4>تواصل معنا</h4>
-                <p>📞 07.71.88.47.45</p>
+                <p>📞 0797261134</p>
                 <p>📧 contact@assaruacademy.dz</p>
                 <p>📍 بني شبانة، البويرة</p>
                 <div class="footer-social">
@@ -2009,10 +1917,21 @@
         setupUpload('regInternal', 'internalFileName', 'uploadInternal');
 
         // ================================================================
-        // 7. REGISTRATION FORM (تم إلغاء منع الأجهزة)
+        // 7. REGISTRATION FORM (تم تفعيل منع الأجهزة)
         // ================================================================
+        const deviceIdKey = 'assaru_device_id';
+        if (!localStorage.getItem(deviceIdKey)) {
+            localStorage.setItem(deviceIdKey, Date.now().toString());
+        }
+
         document.getElementById('registrationForm').addEventListener('submit', async function(e) {
             e.preventDefault();
+
+            // منع إعادة التسجيل من نفس الجهاز
+            if (localStorage.getItem('assaru_registered') === 'true') {
+                alert('⚠️ عذراً، هذا الجهاز مسجل مسبقاً. لا يمكن إعادة التسجيل.');
+                return;
+            }
 
             const firstName = document.getElementById('regFirstName').value.trim();
             const lastName = document.getElementById('regLastName').value.trim();
@@ -2025,8 +1944,7 @@
             const guardianName = document.getElementById('regGuardianName').value.trim();
             const guardianPhone = document.getElementById('regGuardianPhone').value.trim();
 
-            if (!firstName || !lastName || !category || !birthDate || !birthPlace || !studyLevel || !guardianName || !
-                guardianPhone) {
+            if (!firstName || !lastName || !category || !birthDate || !birthPlace || !studyLevel || !guardianName || !guardianPhone) {
                 alert('❌ الرجاء ملء جميع الحقول الإجبارية');
                 return;
             }
@@ -2076,6 +1994,9 @@
                     <p><strong>هاتف الولي:</strong> ${guardianPhone}</p>
                 `;
                 document.getElementById('confirmPopup').classList.add('active');
+
+                // تسجيل الجهاز لمنع إعادة التسجيل
+                localStorage.setItem('assaru_registered', 'true');
 
                 this.reset();
                 document.querySelectorAll('.upload-area').forEach(el => el.classList.remove('has-file'));
