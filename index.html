@@ -11,9 +11,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
     <style>
-        /* ============================================================
-           CSS VARIABLES
-           ============================================================ */
+        /* ===== جميع الأنماط السابقة ===== */
         :root {
             --primary-blue: #45B3FF;
             --secondary-blue: #2196F3;
@@ -50,9 +48,7 @@
             padding: 0 20px;
         }
 
-        /* ============================================================
-           SCROLLBAR
-           ============================================================ */
+        /* ===== SCROLLBAR ===== */
         ::-webkit-scrollbar {
             width: 8px;
         }
@@ -67,9 +63,7 @@
             background: var(--secondary-blue);
         }
 
-        /* ============================================================
-           BUTTONS
-           ============================================================ */
+        /* ===== BUTTONS ===== */
         .btn-primary {
             background: linear-gradient(135deg, var(--primary-blue), var(--secondary-blue));
             border: none;
@@ -128,9 +122,7 @@
             box-shadow: 0 10px 30px rgba(212, 160, 23, 0.3);
         }
 
-        /* ============================================================
-           SECTION TITLES
-           ============================================================ */
+        /* ===== SECTION TITLES ===== */
         .section-title {
             font-size: 2.6rem;
             font-weight: 800;
@@ -160,9 +152,7 @@
             line-height: 1.8;
         }
 
-        /* ============================================================
-           NAVBAR
-           ============================================================ */
+        /* ===== NAVBAR ===== */
         .navbar {
             position: fixed;
             top: 0;
@@ -230,9 +220,7 @@
             border: none;
         }
 
-        /* ============================================================
-           HERO SECTION
-           ============================================================ */
+        /* ===== HERO ===== */
         .hero {
             min-height: 100vh;
             position: relative;
@@ -253,7 +241,6 @@
             background: url('https://raw.githubusercontent.com/darkonovic51-hash/Mohamed-test/4a065c0a8a951b1d39707aa5eb90a5ce7512bec4/file_00000000f604724381e69917b7f6b263.png') no-repeat center center/cover;
             z-index: 0;
             opacity: 0.5;
-            /* زيادة السطوع من 0.3 إلى 0.5 */
         }
         .hero-overlay {
             position: absolute;
@@ -355,9 +342,7 @@
             }
         }
 
-        /* ============================================================
-           SECTIONS
-           ============================================================ */
+        /* ===== SECTIONS ===== */
         section {
             padding: 80px 0;
         }
@@ -375,9 +360,7 @@
             background: #fff;
         }
 
-        /* ============================================================
-           ABOUT SECTION
-           ============================================================ */
+        /* ===== ABOUT ===== */
         .about-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -441,9 +424,7 @@
             transform: scale(1.03);
         }
 
-        /* ============================================================
-           PLAYERS SECTION (FIFA Style - بطاقتان فقط)
-           ============================================================ */
+        /* ===== PLAYERS ===== */
         .players-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -505,9 +486,7 @@
             border-radius: 30px;
         }
 
-        /* ============================================================
-           GALLERY SECTION
-           ============================================================ */
+        /* ===== GALLERY ===== */
         .gallery-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -554,9 +533,7 @@
             font-size: 0.95rem;
         }
 
-        /* ============================================================
-           COACHES SECTION - صورة كبيرة متحركة
-           ============================================================ */
+        /* ===== COACHES ===== */
         .coach-hero {
             display: flex;
             flex-direction: column;
@@ -603,9 +580,7 @@
             line-height: 1.8;
         }
 
-        /* ============================================================
-           ACHIEVEMENTS SECTION
-           ============================================================ */
+        /* ===== ACHIEVEMENTS ===== */
         .achievements-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -639,9 +614,7 @@
             font-size: 0.9rem;
         }
 
-        /* ============================================================
-           REGISTRATION SECTION
-           ============================================================ */
+        /* ===== REGISTRATION ===== */
         .registration-wrapper {
             max-width: 900px;
             margin: 0 auto;
@@ -807,9 +780,7 @@
             transform: scale(0.98);
         }
 
-        /* ============================================================
-           TESTIMONIALS - بدون صور
-           ============================================================ */
+        /* ===== TESTIMONIALS ===== */
         .testimonials-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -837,9 +808,6 @@
             font-size: 0.95rem;
             line-height: 1.8;
         }
-        .testimonial-card .author {
-            margin-top: 14px;
-        }
         .testimonial-card .author .name {
             font-weight: 700;
             color: var(--dark-navy);
@@ -849,9 +817,7 @@
             color: #888;
         }
 
-        /* ============================================================
-           CONTACT
-           ============================================================ */
+        /* ===== CONTACT ===== */
         .contact-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -907,9 +873,7 @@
             resize: vertical;
         }
 
-        /* ============================================================
-           FOOTER
-           ============================================================ */
+        /* ===== FOOTER ===== */
         .footer {
             background: var(--dark-navy);
             color: #fff;
@@ -962,9 +926,7 @@
             color: rgba(255, 255, 255, 0.4);
         }
 
-        /* ============================================================
-           POPUP CONFIRMATION
-           ============================================================ */
+        /* ===== POPUP ===== */
         .popup-overlay {
             display: none;
             position: fixed;
@@ -1051,7 +1013,7 @@
         }
 
         /* ============================================================
-           ADMIN PANEL - صفحة كبيرة جداً
+           ADMIN PANEL - صفحة كبيرة
            ============================================================ */
         .admin-toggle {
             position: fixed;
@@ -1253,7 +1215,7 @@
             color: #888;
         }
 
-        /* Admin Table - أكبر بكثير */
+        /* Admin Table - أكبر وجدول خفيف */
         .admin-table-wrap {
             overflow-x: auto;
             border-radius: 16px;
@@ -1263,7 +1225,7 @@
             width: 100%;
             border-collapse: collapse;
             font-size: 0.9rem;
-            min-width: 1400px;
+            min-width: 800px;
         }
         .admin-table-wrap th {
             background: var(--dark-navy);
@@ -1326,6 +1288,13 @@
         }
         .admin-table-wrap .btn-sm-pdf-internal:hover {
             background: #1e8449;
+        }
+        .admin-table-wrap .btn-sm-pdf-info {
+            background: #2c3e50;
+            color: #fff;
+        }
+        .admin-table-wrap .btn-sm-pdf-info:hover {
+            background: #1a252f;
         }
         .admin-table-wrap .btn-sm-danger {
             background: #e74c3c;
@@ -1442,7 +1411,7 @@
             }
             .admin-table-wrap table {
                 font-size: 0.75rem;
-                min-width: 1000px;
+                min-width: 700px;
             }
             .admin-table-wrap th {
                 font-size: 0.75rem;
@@ -1477,7 +1446,7 @@
                 padding: 12px 8px;
             }
             .admin-table-wrap table {
-                min-width: 800px;
+                min-width: 600px;
             }
         }
     </style>
@@ -1485,9 +1454,7 @@
 
 <body>
 
-    <!-- ============================================================
-    NAVBAR
-    ============================================================ -->
+    <!-- ===== NAVBAR ===== -->
     <nav class="navbar" id="navbar">
         <div class="logo">
             <img src="https://raw.githubusercontent.com/darkonovic51-hash/Mohamed-test/4a065c0a8a951b1d39707aa5eb90a5ce7512bec4/1000015625-removebg-preview.png" alt="شعار ASSARU Academy" />
@@ -1507,9 +1474,7 @@
         </ul>
     </nav>
 
-    <!-- ============================================================
-    HERO SECTION
-    ============================================================ -->
+    <!-- ===== HERO ===== -->
     <section id="home" class="hero">
         <div class="hero-bg"></div>
         <div class="hero-overlay"></div>
@@ -1530,9 +1495,7 @@
         </div>
     </section>
 
-    <!-- ============================================================
-    ABOUT SECTION
-    ============================================================ -->
+    <!-- ===== ABOUT ===== -->
     <section id="about" class="section-light">
         <div class="container">
             <div class="about-grid">
@@ -1553,9 +1516,7 @@
         </div>
     </section>
 
-    <!-- ============================================================
-    PLAYERS SECTION - بطاقتان فقط
-    ============================================================ -->
+    <!-- ===== PLAYERS ===== -->
     <section id="players" class="section-white">
         <div class="container">
             <h2 class="section-title">لاعبو <span>الأكاديمية</span></h2>
@@ -1583,9 +1544,7 @@
         </div>
     </section>
 
-    <!-- ============================================================
-    GALLERY SECTION
-    ============================================================ -->
+    <!-- ===== GALLERY ===== -->
     <section id="gallery" class="section-dark">
         <div class="container">
             <h2 class="section-title">معرض <span>الصور</span></h2>
@@ -1596,9 +1555,7 @@
         </div>
     </section>
 
-    <!-- ============================================================
-    COACHES SECTION - صورة كبيرة متحركة
-    ============================================================ -->
+    <!-- ===== COACHES ===== -->
     <section id="coaches" class="section-light">
         <div class="container">
             <h2 class="section-title">المدير <span>الفني</span></h2>
@@ -1614,9 +1571,7 @@
         </div>
     </section>
 
-    <!-- ============================================================
-    ACHIEVEMENTS SECTION
-    ============================================================ -->
+    <!-- ===== ACHIEVEMENTS ===== -->
     <section id="achievements" class="section-dark">
         <div class="container">
             <h2 class="section-title">إنجازات <span>الأكاديمية</span></h2>
@@ -1646,9 +1601,7 @@
         </div>
     </section>
 
-    <!-- ============================================================
-    REGISTRATION SECTION
-    ============================================================ -->
+    <!-- ===== REGISTRATION ===== -->
     <section id="registration" class="section-light">
         <div class="container">
             <div class="registration-wrapper">
@@ -1744,9 +1697,7 @@
         </div>
     </section>
 
-    <!-- ============================================================
-    TESTIMONIALS - بدون صور
-    ============================================================ -->
+    <!-- ===== TESTIMONIALS ===== -->
     <section id="testimonials" class="section-white">
         <div class="container">
             <h2 class="section-title">آراء <span>أولياء الأمور</span></h2>
@@ -1780,9 +1731,7 @@
         </div>
     </section>
 
-    <!-- ============================================================
-    CONTACT SECTION
-    ============================================================ -->
+    <!-- ===== CONTACT ===== -->
     <section id="contact" class="section-light">
         <div class="container">
             <h2 class="section-title">تواصل <span>معنا</span></h2>
@@ -1825,9 +1774,7 @@
         </div>
     </section>
 
-    <!-- ============================================================
-    FOOTER
-    ============================================================ -->
+    <!-- ===== FOOTER ===== -->
     <footer class="footer">
         <div class="footer-grid">
             <div class="footer-col">
@@ -1861,9 +1808,7 @@
         </div>
     </footer>
 
-    <!-- ============================================================
-    CONFIRM POPUP
-    ============================================================ -->
+    <!-- ===== CONFIRM POPUP ===== -->
     <div class="popup-overlay" id="confirmPopup">
         <div class="popup-box">
             <div class="icon"><i class="fas fa-check-circle"></i></div>
@@ -1874,14 +1819,10 @@
         </div>
     </div>
 
-    <!-- ============================================================
-    ADMIN TOGGLE
-    ============================================================ -->
+    <!-- ===== ADMIN TOGGLE ===== -->
     <button class="admin-toggle" id="adminToggle"><i class="fas fa-cog"></i> إدارة</button>
 
-    <!-- ============================================================
-    ADMIN PANEL - صفحة كبيرة جداً
-    ============================================================ -->
+    <!-- ===== ADMIN PANEL ===== -->
     <div class="admin-panel-overlay" id="adminPanel">
         <div class="admin-panel">
             <button class="close-admin" id="closeAdmin"><i class="fas fa-times"></i> إغلاق</button>
@@ -1918,17 +1859,12 @@
                                 <th>الاسم</th>
                                 <th>اللقب</th>
                                 <th>الفئة</th>
-                                <th>تاريخ الميلاد</th>
-                                <th>مكان الميلاد</th>
-                                <th>المستوى الدراسي</th>
-                                <th>الولي</th>
-                                <th>هاتف الولي</th>
                                 <th>الوثائق (PDF)</th>
                                 <th>إجراء</th>
                             </tr>
                         </thead>
                         <tbody id="adminTableBody">
-                            <tr><td colspan="11" style="text-align:center; padding:30px; color:#888;">📭 لا توجد طلبات تسجيل حالياً</td></tr>
+                            <tr><td colspan="6" style="text-align:center; padding:30px; color:#888;">📭 لا توجد طلبات تسجيل حالياً</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -2188,7 +2124,7 @@
                 .catch(err => {
                     console.error('❌ Failed to load data:', err);
                     document.getElementById('adminTableBody').innerHTML =
-                        '<tr><td colspan="11" style="text-align:center;color:#e74c3c;padding:20px;">❌ فشل تحميل البيانات</td></tr>';
+                        '<tr><td colspan="6" style="text-align:center;color:#e74c3c;padding:20px;">❌ فشل تحميل البيانات</td></tr>';
                 });
         }
 
@@ -2225,7 +2161,7 @@
         function renderTable(data) {
             const tbody = document.getElementById('adminTableBody');
             if (!data || data.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="11" style="text-align:center;color:#888;padding:30px;">📭 لا توجد طلبات تطابق الفلترة</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#888;padding:30px;">📭 لا توجد طلبات تطابق الفلترة</td></tr>';
                 return;
             }
 
@@ -2237,13 +2173,9 @@
                     <td>${reg.firstName || ''}</td>
                     <td>${reg.lastName || ''}</td>
                     <td><strong>${reg.category || ''}</strong></td>
-                    <td>${reg.birthDate || ''}</td>
-                    <td>${reg.birthPlace || ''}</td>
-                    <td>${reg.studyLevel || ''}</td>
-                    <td>${reg.guardianName || ''}</td>
-                    <td>${reg.guardianPhone || ''}</td>
                     <td>
                         <div class="docs-group">
+                            <button class="btn-sm btn-sm-pdf-info" onclick="downloadInfoPDF('${reg.id}')"><i class="fas fa-info-circle"></i> معلومات</button>
                             <button class="btn-sm btn-sm-pdf-photo" onclick="downloadSinglePDF('${reg.id}','photo')"><i class="fas fa-image"></i> شخصية</button>
                             <button class="btn-sm btn-sm-pdf-parental" onclick="downloadSinglePDF('${reg.id}','parental')"><i class="fas fa-file-signature"></i> ترخيص</button>
                             <button class="btn-sm btn-sm-pdf-internal" onclick="downloadSinglePDF('${reg.id}','internal')"><i class="fas fa-file-contract"></i> قانون</button>
@@ -2279,8 +2211,67 @@
         };
 
         // ================================================================
-        // 9. PDF GENERATION - وثائق منفصلة
+        // 9. PDF GENERATION - معلومات شخصية + وثائق منفصلة
         // ================================================================
+
+        // معلومات شخصية PDF
+        window.downloadInfoPDF = function(id) {
+            const reg = allRegistrations.find(r => r.id === id);
+            if (!reg) {
+                alert('❌ لم يتم العثور على بيانات هذا اللاعب');
+                return;
+            }
+
+            const container = document.createElement('div');
+            container.style.cssText =
+                'background: white; color: black; font-family: Arial, sans-serif; padding: 30px; max-width: 700px; margin: auto; border-radius: 12px; direction: rtl; text-align: right;';
+
+            container.innerHTML = `
+                <div style="border-bottom: 3px solid #45B3FF; padding-bottom: 15px; margin-bottom: 20px; text-align:center;">
+                    <h1 style="color: #082D5C; font-size: 24px; margin:0;">🏆 أكاديمية ASSARU</h1>
+                    <h2 style="color: #45B3FF; font-size: 16px; margin:4px 0;">بني شبانة</h2>
+                    <p style="color: #888; font-size: 14px; margin:0;">معلومات شخصية</p>
+                </div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px 20px;">
+                    <p><strong>الاسم:</strong> ${reg.firstName || ''}</p>
+                    <p><strong>اللقب:</strong> ${reg.lastName || ''}</p>
+                    <p><strong>الفئة:</strong> ${reg.category || ''}</p>
+                    <p><strong>تاريخ الميلاد:</strong> ${reg.birthDate || ''}</p>
+                    <p><strong>مكان الميلاد:</strong> ${reg.birthPlace || ''}</p>
+                    <p><strong>المستوى الدراسي:</strong> ${reg.studyLevel || ''}</p>
+                    <p><strong>الحالة الصحية:</strong> ${reg.health || ''}</p>
+                    <p><strong>الزمرة الدموية:</strong> ${reg.bloodType || ''}</p>
+                    <p><strong>الولي:</strong> ${reg.guardianName || ''}</p>
+                    <p><strong>هاتف الولي:</strong> ${reg.guardianPhone || ''}</p>
+                    <p><strong>تاريخ التسجيل:</strong> ${reg.date || ''}</p>
+                    <p><strong>الحالة:</strong> ${reg.status === 'approved' ? '✅ معتمد' : '⏳ قيد الانتظار'}</p>
+                </div>
+                <div style="margin-top:20px; border-top:1px solid #eee; padding-top:12px; text-align:center;">
+                    <p style="font-size:11px; color:#aaa;">تم إنشاء هذا الملف من لوحة تحكم أكاديمية ASSARU</p>
+                </div>
+            `;
+
+            document.body.appendChild(container);
+
+            html2pdf()
+                .set({
+                    margin: 10,
+                    filename: `معلومات_${reg.firstName}_${reg.lastName}.pdf`,
+                    image: { type: 'jpeg', quality: 0.98 },
+                    html2canvas: { scale: 2, useCORS: true, scrollY: 0 },
+                    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                })
+                .from(container)
+                .save()
+                .then(() => document.body.removeChild(container))
+                .catch(err => {
+                    console.error('PDF error:', err);
+                    alert('❌ فشل إنشاء PDF');
+                    document.body.removeChild(container);
+                });
+        };
+
+        // وثائق منفصلة (صورة شخصية، ترخيص، قانون)
         window.downloadSinglePDF = function(id, docType) {
             const reg = allRegistrations.find(r => r.id === id);
             if (!reg) {
