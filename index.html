@@ -22,6 +22,7 @@
             --shadow: 0 15px 40px rgba(4, 26, 56, 0.15);
             --radius: 20px;
             --transition: 0.4s cubic-bezier(0.2, 0.9, 0.4, 1);
+            --gold: #D4A017;
         }
 
         * {
@@ -105,7 +106,7 @@
         }
 
         .btn-gold {
-            background: linear-gradient(135deg, #D4A017, #b8860b);
+            background: linear-gradient(135deg, var(--gold), #b8860b);
             border: none;
             padding: 14px 40px;
             border-radius: 60px;
@@ -220,7 +221,9 @@
             border: none;
         }
 
-        /* ===== HERO ===== */
+        /* ============================================================
+           HERO SECTION (مع الأيقونات والكلمات)
+           ============================================================ */
         .hero {
             min-height: 100vh;
             position: relative;
@@ -269,6 +272,9 @@
             margin-bottom: 20px;
             animation: fadeInUp 0.8s ease forwards;
         }
+        .hero-content .badge i {
+            margin-left: 6px;
+        }
         .hero-content h1 {
             font-size: 4rem;
             font-weight: 900;
@@ -279,6 +285,22 @@
         }
         .hero-content h1 .highlight {
             color: var(--primary-blue);
+        }
+        .hero-content h1 .dynamic-text {
+            display: inline-block;
+            min-width: 120px;
+            border-left: 3px solid var(--gold);
+            padding-left: 8px;
+            animation: blinkCursor 0.8s step-end infinite;
+        }
+        @keyframes blinkCursor {
+            0%,
+            100% {
+                border-color: var(--gold);
+            }
+            50% {
+                border-color: transparent;
+            }
         }
         .hero-content p {
             font-size: 1.2rem;
@@ -297,8 +319,59 @@
             animation: fadeInUp 0.8s 0.6s ease forwards;
             opacity: 0;
         }
+        .hero-stats {
+            display: flex;
+            gap: 30px;
+            justify-content: center;
+            margin-top: 50px;
+            flex-wrap: wrap;
+            animation: fadeInUp 0.8s 0.8s ease forwards;
+            opacity: 0;
+        }
+        .hero-stat {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 16px 30px;
+            text-align: center;
+            min-width: 120px;
+            transition: var(--transition);
+        }
+        .hero-stat:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary-blue);
+        }
+        .hero-stat .number {
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: var(--primary-blue);
+        }
+        .hero-stat .label {
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+        .hero-stat i {
+            font-size: 1.6rem;
+            color: var(--gold);
+            display: block;
+            margin-bottom: 4px;
+        }
 
-        /* ===== STATS SECTION (خانات بارزة) ===== */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ============================================================
+           STATS SECTION (خانات بارزة)
+           ============================================================ */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -371,7 +444,9 @@
             margin-bottom: 4px;
         }
 
-        /* ===== ABOUT ===== */
+        /* ============================================================
+           ABOUT SECTION
+           ============================================================ */
         .about-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -421,7 +496,7 @@
         }
 
         /* ============================================================
-           PLAYERS SECTION (3 صور جديدة بدون أسماء)
+           PLAYERS SECTION (صورة فقط - بدون إطار)
            ============================================================ */
         .players-grid {
             display: grid;
@@ -432,14 +507,13 @@
         }
 
         .player-card-simple {
-            background: #fff;
+            background: transparent;
             border-radius: var(--radius);
             overflow: hidden;
-            box-shadow: var(--shadow);
             transition: var(--transition);
             cursor: pointer;
-            border: none;
             animation: playerFloat 4s ease-in-out infinite;
+            text-align: center;
         }
         .player-card-simple:nth-child(2) {
             animation-delay: 0.5s;
@@ -460,7 +534,6 @@
 
         .player-card-simple:hover {
             transform: translateY(-8px) scale(1.02);
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
             animation-play-state: paused;
         }
 
@@ -469,7 +542,9 @@
             height: 320px;
             object-fit: cover;
             display: block;
+            border-radius: var(--radius);
             transition: transform 0.6s ease;
+            box-shadow: var(--shadow);
         }
 
         .player-card-simple:hover img {
@@ -477,9 +552,9 @@
         }
 
         .player-card-simple .info {
-            padding: 16px 20px 20px;
+            padding: 12px 0 0;
             text-align: center;
-            background: #fff;
+            background: transparent;
         }
 
         .player-card-simple .info .role {
@@ -495,7 +570,7 @@
         }
 
         /* ============================================================
-           COACHES / STAFF SECTION (طاقم جديد)
+           STAFF / COACHES (مستطيل بدون إطار - مثل المدير)
            ============================================================ */
         .staff-director {
             display: flex;
@@ -507,11 +582,10 @@
         .staff-director .staff-image-wrap {
             width: 100%;
             max-width: 380px;
-            border-radius: 20px;
+            border-radius: var(--radius);
             overflow: hidden;
             box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
             margin-bottom: 16px;
-            border: 4px solid var(--gold);
             animation: directorPulse 3s ease-in-out infinite;
         }
         @keyframes directorPulse {
@@ -554,11 +628,10 @@
         .staff-founder .staff-image-wrap {
             width: 100%;
             max-width: 320px;
-            border-radius: 20px;
+            border-radius: var(--radius);
             overflow: hidden;
             box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
             margin-bottom: 14px;
-            border: 3px solid var(--primary-blue);
             animation: founderFloat 4s ease-in-out infinite;
         }
         @keyframes founderFloat {
@@ -586,21 +659,19 @@
             font-weight: 600;
         }
 
-        /* المدربون */
+        /* المدربون - مستطيل بدون إطار دائري */
         .coaches-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
             gap: 25px;
         }
         .coach-card {
-            background: #fff;
+            background: transparent;
             border-radius: var(--radius);
             overflow: hidden;
             text-align: center;
-            box-shadow: var(--shadow);
             transition: var(--transition);
-            padding: 20px 16px 24px;
-            border: 1px solid #f0f0f0;
+            padding: 0;
             animation: coachFloat 4.5s ease-in-out infinite;
         }
         .coach-card:nth-child(2) {
@@ -631,33 +702,32 @@
 
         .coach-card:hover {
             transform: translateY(-8px);
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.1);
             animation-play-state: paused;
         }
         .coach-card img {
-            width: 140px;
-            height: 140px;
-            border-radius: 50%;
+            width: 100%;
+            height: 280px;
             object-fit: cover;
-            border: 4px solid var(--primary-blue);
-            margin-bottom: 12px;
-            transition: var(--transition);
+            border-radius: var(--radius);
+            display: block;
+            transition: transform 0.6s ease;
+            box-shadow: var(--shadow);
         }
         .coach-card:hover img {
-            border-color: var(--secondary-blue);
             transform: scale(1.04);
         }
         .coach-card .coach-name {
             font-size: 1rem;
             font-weight: 700;
             color: var(--dark-navy);
+            margin-top: 8px;
             margin-bottom: 2px;
         }
         .coach-card .coach-desc {
             font-size: 0.8rem;
             color: #666;
             line-height: 1.6;
-            margin-top: 4px;
+            margin-top: 2px;
         }
 
         /* ============================================================
@@ -755,7 +825,7 @@
         }
 
         /* ============================================================
-           ACHIEVEMENTS SECTION
+           ACHIEVEMENTS SECTION (مع إطار مميز)
            ============================================================ */
         .achievements-grid {
             display: grid;
@@ -765,12 +835,13 @@
         .achievement-card {
             background: rgba(255, 255, 255, 0.05);
             backdrop-filter: blur(6px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 215, 0, 0.3);
             border-radius: var(--radius);
             padding: 30px 20px;
             text-align: center;
             transition: var(--transition);
             animation: achievementFloat 4s ease-in-out infinite;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
         }
         .achievement-card:nth-child(2) {
             animation-delay: 0.5s;
@@ -799,7 +870,7 @@
         }
         .achievement-card .icon {
             font-size: 2.8rem;
-            color: var(--primary-blue);
+            color: var(--gold);
             margin-bottom: 10px;
         }
         .achievement-card .num {
@@ -1672,6 +1743,9 @@
             .player-card-simple img {
                 height: 220px;
             }
+            .coach-card img {
+                height: 200px;
+            }
         }
     </style>
 </head>
@@ -1704,17 +1778,39 @@
         <div class="hero-bg"></div>
         <div class="hero-overlay"></div>
         <div class="hero-content">
-            <div class="badge">⚽ أكاديمية النخبة</div>
-            <h1>مرحباً بكم في <span class="highlight">ASSARU Academy</span><br />بني شبانة</h1>
+            <div class="badge"><i class="fas fa-futbol"></i> أكاديمية النخبة</div>
+            <h1>مرحباً بكم في <span class="highlight">ASSARU Academy</span><br /><span class="dynamic-text" id="dynamicText"></span></h1>
             <p>حيث تُصنع النجوم وتُكتب الأساطير. نعدّ الجيل القادم من أبطال كرة القدم في بيئة احترافية عالمية المستوى.</p>
             <div class="hero-buttons">
                 <a href="#registration" class="btn-primary"><i class="fas fa-pen-fancy"></i> سجل الآن</a>
                 <a href="#about" class="btn-outline" style="border-color:rgba(255,255,255,0.4); color:#fff;">اكتشف الأكاديمية</a>
             </div>
+            <div class="hero-stats">
+                <div class="hero-stat">
+                    <i class="fas fa-users"></i>
+                    <div class="number">+250</div>
+                    <div class="label">لاعب متدرب</div>
+                </div>
+                <div class="hero-stat">
+                    <i class="fas fa-futbol"></i>
+                    <div class="number">+120</div>
+                    <div class="label">مباراة</div>
+                </div>
+                <div class="hero-stat">
+                    <i class="fas fa-chalkboard-teacher"></i>
+                    <div class="number">12</div>
+                    <div class="label">مدرب محترف</div>
+                </div>
+                <div class="hero-stat">
+                    <i class="fas fa-trophy"></i>
+                    <div class="number">8</div>
+                    <div class="label">بطولة</div>
+                </div>
+            </div>
         </div>
     </section>
 
-    <!-- ===== STATS SECTION (خانات بارزة) ===== -->
+    <!-- ===== STATS SECTION ===== -->
     <section id="stats" class="section-light">
         <div class="container">
             <h2 class="section-title">أرقام <span>الأكاديمية</span></h2>
@@ -1765,7 +1861,7 @@
         </div>
     </section>
 
-    <!-- ===== PLAYERS (3 صور جديدة بدون أسماء) ===== -->
+    <!-- ===== PLAYERS (صورة فقط - بدون إطار) ===== -->
     <section id="players" class="section-light">
         <div class="container">
             <h2 class="section-title">نماذج <span>لاعبي الأكاديمية</span></h2>
@@ -1807,7 +1903,7 @@
         </div>
     </section>
 
-    <!-- ===== VIDEO SECTION ===== -->
+    <!-- ===== VIDEO ===== -->
     <section id="video-section" class="section-light">
         <div class="container">
             <h2 class="section-title">فيديو <span>تعريفي</span></h2>
@@ -1822,7 +1918,7 @@
     </section>
 
     <!-- ============================================================
-    STAFF SECTION (طاقم جديد)
+    STAFF SECTION
     ============================================================ -->
     <section id="staff" class="section-white">
         <div class="container">
@@ -1850,37 +1946,31 @@
             <!-- المدربون -->
             <h3 style="text-align:center; font-size:1.8rem; color:var(--dark-navy); margin-bottom: 20px; margin-top: 30px;">المدربون</h3>
             <div class="coaches-grid">
-                <!-- مدرب 1 (بدون وصف) -->
                 <div class="coach-card">
                     <img src="https://raw.githubusercontent.com/darkonovic51-hash/Mohamed-test/4d3dd75518d4a06c13dcaafd6df2acd56737f402/file_000000000d3071fba30ea133d602d552.png" alt="مدرب" />
                     <div class="coach-name">مدرب</div>
                     <div class="coach-desc"></div>
                 </div>
-                <!-- مدرب 2 (CAF C) -->
                 <div class="coach-card">
                     <img src="https://raw.githubusercontent.com/darkonovic51-hash/Mohamed-test/4d3dd75518d4a06c13dcaafd6df2acd56737f402/file_00000000059871fb869eb5723eabe23c.png" alt="مدرب" />
                     <div class="coach-name">مدرب</div>
                     <div class="coach-desc">مدرب في الأكاديمية منذ افتتاحها<br />ليسانس رياضة تخصص كرة القدم<br />شهادة CAF C</div>
                 </div>
-                <!-- مدرب 3 (CAF A) -->
                 <div class="coach-card">
                     <img src="https://raw.githubusercontent.com/darkonovic51-hash/Mohamed-test/4d3dd75518d4a06c13dcaafd6df2acd56737f402/file_00000000446071fbb4b652ec022c2d3e.png" alt="مدرب" />
                     <div class="coach-name">مدرب</div>
                     <div class="coach-desc">متحصل على شهادة Caf A</div>
                 </div>
-                <!-- مدرب 4 (18 سنة خبرة) -->
                 <div class="coach-card">
                     <img src="https://raw.githubusercontent.com/darkonovic51-hash/Mohamed-test/4d3dd75518d4a06c13dcaafd6df2acd56737f402/file_00000000d95871fbbfd4a735b5535479.png" alt="مدرب" />
                     <div class="coach-name">مدرب</div>
                     <div class="coach-desc">أكثر من 18 سنة خبرة في التدريب</div>
                 </div>
-                <!-- مدرب 5 (بدون وصف) -->
                 <div class="coach-card">
                     <img src="https://raw.githubusercontent.com/darkonovic51-hash/Mohamed-test/4d3dd75518d4a06c13dcaafd6df2acd56737f402/file_00000000cda871fbb65977d4da2e916a.png" alt="مدرب" />
                     <div class="coach-name">مدرب</div>
                     <div class="coach-desc"></div>
                 </div>
-                <!-- مدرب 6 (CAF B) -->
                 <div class="coach-card">
                     <img src="https://raw.githubusercontent.com/darkonovic51-hash/Mohamed-test/3f6114822b5977e63533158a75663ee44537b688/file_00000000c0ac71f482b156d3646b030f.png" alt="مدرب" />
                     <div class="coach-name">مدرب</div>
@@ -1891,7 +1981,7 @@
     </section>
 
     <!-- ============================================================
-    ACHIEVEMENTS SECTION
+    ACHIEVEMENTS (مع إطار مميز)
     ============================================================ -->
     <section id="achievements" class="section-dark">
         <div class="container">
@@ -1923,7 +2013,7 @@
     </section>
 
     <!-- ============================================================
-    REGISTRATION SECTION
+    REGISTRATION
     ============================================================ -->
     <section id="registration" class="section-light">
         <div class="container">
@@ -2021,7 +2111,7 @@
     </section>
 
     <!-- ============================================================
-    TESTIMONIALS SECTION
+    TESTIMONIALS
     ============================================================ -->
     <section id="testimonials" class="section-white">
         <div class="container">
@@ -2057,7 +2147,7 @@
     </section>
 
     <!-- ============================================================
-    CONTACT SECTION
+    CONTACT
     ============================================================ -->
     <section id="contact" class="section-light">
         <div class="container">
@@ -2101,7 +2191,9 @@
         </div>
     </section>
 
-    <!-- ===== FOOTER ===== -->
+    <!-- ============================================================
+    FOOTER
+    ============================================================ -->
     <footer class="footer">
         <div class="footer-grid">
             <div class="footer-col">
@@ -2281,7 +2373,38 @@
         });
 
         // ================================================================
-        // 6. FILE UPLOAD PREVIEW
+        // 6. DYNAMIC TEXT (Hero)
+        // ================================================================
+        const words = ['الرائد', 'النخبة', 'الأبطال', 'المستقبل'];
+        let wordIndex = 0,
+            charIndex = 0,
+            isDeleting = false;
+        const dynamicText = document.getElementById('dynamicText');
+
+        function typeEffect() {
+            const currentWord = words[wordIndex];
+            if (isDeleting) {
+                dynamicText.textContent = currentWord.substring(0, charIndex - 1);
+                charIndex--;
+            } else {
+                dynamicText.textContent = currentWord.substring(0, charIndex + 1);
+                charIndex++;
+            }
+            if (!isDeleting && charIndex === currentWord.length) {
+                isDeleting = true;
+                setTimeout(typeEffect, 2000);
+            } else if (isDeleting && charIndex === 0) {
+                isDeleting = false;
+                wordIndex = (wordIndex + 1) % words.length;
+                setTimeout(typeEffect, 300);
+            } else {
+                setTimeout(typeEffect, isDeleting ? 50 : 120);
+            }
+        }
+        typeEffect();
+
+        // ================================================================
+        // 7. FILE UPLOAD PREVIEW
         // ================================================================
         function setupUpload(inputId, nameDisplayId, containerId) {
             const input = document.getElementById(inputId);
@@ -2303,7 +2426,7 @@
         setupUpload('regInternal', 'internalFileName', 'uploadInternal');
 
         // ================================================================
-        // 7. REGISTRATION FORM (مع منع الأجهزة)
+        // 8. REGISTRATION FORM (مع منع الأجهزة)
         // ================================================================
         const deviceIdKey = 'assaru_device_id';
         if (!localStorage.getItem(deviceIdKey)) {
@@ -2410,7 +2533,7 @@
         }
 
         // ================================================================
-        // 8. ADMIN PANEL
+        // 9. ADMIN PANEL
         // ================================================================
         const ADMIN_PASSWORD = 'assarou22';
         let adminLoggedIn = false;
@@ -2538,7 +2661,7 @@
         };
 
         // ================================================================
-        // 9. PDF GENERATION
+        // 10. PDF GENERATION
         // ================================================================
 
         window.downloadInfoPDF = function(id) {
@@ -2671,7 +2794,7 @@
         };
 
         // ================================================================
-        // 10. CLOSE POPUP ON OVERLAY CLICK
+        // 11. CLOSE POPUP ON OVERLAY CLICK
         // ================================================================
         document.getElementById('confirmPopup').addEventListener('click', function(e) {
             if (e.target === this) closeConfirmPopup();
