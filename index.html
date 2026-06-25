@@ -11,7 +11,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
     <style>
-        /* ===== جميع الأنماط السابقة ===== */
+        /* ===== جميع الأنماط السابقة مع تعديلات بسيطة ===== */
         :root {
             --primary-blue: #45B3FF;
             --secondary-blue: #2196F3;
@@ -424,66 +424,158 @@
             transform: scale(1.03);
         }
 
-        /* ===== PLAYERS ===== */
+        /* ============================================================
+           PLAYERS SECTION - FIFA Ultimate Team Style
+           ============================================================ */
         .players-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 25px;
-            max-width: 600px;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            max-width: 700px;
             margin: 0 auto;
         }
-        .player-card {
-            background: linear-gradient(145deg, var(--dark-navy), var(--navy-blue));
-            border-radius: var(--radius);
-            overflow: hidden;
-            text-align: center;
-            transition: var(--transition);
-            box-shadow: var(--shadow);
-            cursor: pointer;
+
+        .player-card-fifa {
             position: relative;
+            background: linear-gradient(145deg, #1a2a3a, #0a1a2a);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+            transition: var(--transition);
+            cursor: pointer;
+            border: 2px solid rgba(255, 255, 255, 0.08);
+            min-height: 400px;
         }
-        .player-card:hover {
+
+        .player-card-fifa:hover {
             transform: translateY(-10px) scale(1.02);
-            box-shadow: 0 20px 50px rgba(8, 45, 92, 0.3);
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5);
+            border-color: var(--primary-blue);
         }
-        .player-card .player-image {
+
+        /* خلفية البطاقة بتدرج ذهبي/أزرق */
+        .player-card-fifa .card-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
             width: 100%;
-            height: 260px;
-            object-fit: cover;
-            transition: transform 0.6s ease;
+            height: 100%;
+            background: linear-gradient(160deg, #0a1a2a 0%, #1a2a3a 40%, #0d2a4a 100%);
+            z-index: 0;
         }
-        .player-card:hover .player-image {
-            transform: scale(1.05);
+
+        .player-card-fifa .card-bg::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(ellipse at 20% 20%, rgba(69, 179, 255, 0.1), transparent 70%);
+            pointer-events: none;
         }
-        .player-card .player-info {
-            padding: 16px 14px 20px;
-            color: #fff;
-        }
-        .player-card .player-info h4 {
-            font-size: 1.1rem;
-            font-weight: 700;
-            margin-bottom: 2px;
-        }
-        .player-card .player-info .position {
-            font-size: 0.85rem;
-            color: var(--primary-blue);
-            font-weight: 600;
-        }
-        .player-card .player-info .category {
-            font-size: 0.75rem;
-            color: rgba(255, 255, 255, 0.5);
-            margin-top: 4px;
-        }
-        .player-card .player-badge {
+
+        /* شارة النادي */
+        .player-card-fifa .club-badge {
             position: absolute;
             top: 12px;
             right: 12px;
-            background: var(--primary-blue);
-            color: #fff;
-            font-size: 0.65rem;
+            z-index: 2;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 215, 0, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.6rem;
             font-weight: 700;
-            padding: 2px 12px;
-            border-radius: 30px;
+            color: var(--gold);
+            text-align: center;
+            line-height: 1.2;
+            padding: 4px;
+            backdrop-filter: blur(4px);
+        }
+
+        /* شارة التصنيف (Rating) */
+        .player-card-fifa .rating-badge {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            z-index: 2;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #FFD700, #F5A623);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            font-weight: 900;
+            color: #0a1a2a;
+            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        /* صورة اللاعب */
+        .player-card-fifa .player-image-wrap {
+            position: relative;
+            z-index: 1;
+            height: 260px;
+            overflow: hidden;
+            margin: 10px 10px 0;
+            border-radius: 16px;
+        }
+
+        .player-card-fifa .player-image-wrap img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.6s ease;
+        }
+
+        .player-card-fifa:hover .player-image-wrap img {
+            transform: scale(1.05);
+        }
+
+        /* معلومات اللاعب */
+        .player-card-fifa .player-info {
+            position: relative;
+            z-index: 1;
+            padding: 14px 18px 20px;
+            color: #fff;
+            text-align: center;
+        }
+
+        .player-card-fifa .player-info .player-name {
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: #fff;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+            margin-bottom: 2px;
+        }
+
+        .player-card-fifa .player-info .player-position {
+            font-size: 0.9rem;
+            color: var(--primary-blue);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .player-card-fifa .player-info .player-category {
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.4);
+            margin-top: 2px;
+        }
+
+        /* الخط الذهبي الفاصل */
+        .player-card-fifa .gold-line {
+            width: 60px;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #FFD700, transparent);
+            margin: 6px auto;
         }
 
         /* ===== GALLERY ===== */
@@ -531,6 +623,20 @@
             color: #fff;
             font-weight: 600;
             font-size: 0.95rem;
+        }
+
+        /* ===== VIDEO SECTION ===== */
+        .video-wrapper {
+            max-width: 900px;
+            margin: 0 auto;
+            border-radius: var(--radius);
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            background: #000;
+        }
+        .video-wrapper video {
+            width: 100%;
+            display: block;
         }
 
         /* ===== COACHES ===== */
@@ -1013,7 +1119,7 @@
         }
 
         /* ============================================================
-           ADMIN PANEL - صفحة كبيرة
+           ADMIN PANEL (نفس السابق)
            ============================================================ */
         .admin-toggle {
             position: fixed;
@@ -1215,7 +1321,7 @@
             color: #888;
         }
 
-        /* Admin Table - أكبر وجدول خفيف */
+        /* Admin Table */
         .admin-table-wrap {
             overflow-x: auto;
             border-radius: 16px;
@@ -1428,6 +1534,9 @@
             .coach-hero .coach-image-wrap {
                 max-width: 100%;
             }
+            .players-grid {
+                max-width: 100%;
+            }
         }
 
         @media (max-width: 480px) {
@@ -1448,6 +1557,9 @@
             .admin-table-wrap table {
                 min-width: 600px;
             }
+            .player-card-fifa .player-image-wrap {
+                height: 180px;
+            }
         }
     </style>
 </head>
@@ -1466,6 +1578,7 @@
             <li><a href="#about">عن الأكاديمية</a></li>
             <li><a href="#players">اللاعبون</a></li>
             <li><a href="#gallery">المعرض</a></li>
+            <li><a href="#video-section">الفيديو التعريفي</a></li>
             <li><a href="#coaches">المدربون</a></li>
             <li><a href="#achievements">الإنجازات</a></li>
             <li><a href="#registration">التسجيل</a></li>
@@ -1516,28 +1629,41 @@
         </div>
     </section>
 
-    <!-- ===== PLAYERS ===== -->
+    <!-- ===== PLAYERS (FIFA Style) ===== -->
     <section id="players" class="section-white">
         <div class="container">
             <h2 class="section-title">لاعبو <span>الأكاديمية</span></h2>
             <p class="section-subtitle">نخبة من المواهب الشابة التي تبشر بمستقبل كبير في عالم كرة القدم.</p>
             <div class="players-grid">
-                <div class="player-card">
-                    <span class="player-badge">⭐ نجم</span>
-                    <img class="player-image" src="https://raw.githubusercontent.com/darkonovic51-hash/Mohamed-test/4a065c0a8a951b1d39707aa5eb90a5ce7512bec4/file_00000000410c7243b2089cf13bb0ade7.png" alt="ياسين بن عمار" />
+                <!-- بطاقة FIFA 1 -->
+                <div class="player-card-fifa">
+                    <div class="card-bg"></div>
+                    <div class="club-badge">ASSARU</div>
+                    <div class="rating-badge">92</div>
+                    <div class="player-image-wrap">
+                        <img src="https://raw.githubusercontent.com/darkonovic51-hash/Mohamed-test/4a065c0a8a951b1d39707aa5eb90a5ce7512bec4/file_00000000410c7243b2089cf13bb0ade7.png" alt="ياسين بن عمار" />
+                    </div>
                     <div class="player-info">
-                        <h4>ياسين بن عمار</h4>
-                        <div class="position">جناح أيسر</div>
-                        <div class="category">U15 | 14 سنة</div>
+                        <div class="player-name">ياسين بن عمار</div>
+                        <div class="gold-line"></div>
+                        <div class="player-position">⚡ جناح أيسر</div>
+                        <div class="player-category">U15 | 14 سنة</div>
                     </div>
                 </div>
-                <div class="player-card">
-                    <span class="player-badge">⭐ نجم</span>
-                    <img class="player-image" src="https://raw.githubusercontent.com/darkonovic51-hash/Mohamed-test/4a065c0a8a951b1d39707aa5eb90a5ce7512bec4/file_00000000bab07243ae70384a6f9bb50f.png" alt="أحمد زروقي" />
+
+                <!-- بطاقة FIFA 2 -->
+                <div class="player-card-fifa">
+                    <div class="card-bg"></div>
+                    <div class="club-badge">ASSARU</div>
+                    <div class="rating-badge">90</div>
+                    <div class="player-image-wrap">
+                        <img src="https://raw.githubusercontent.com/darkonovic51-hash/Mohamed-test/4a065c0a8a951b1d39707aa5eb90a5ce7512bec4/file_00000000bab07243ae70384a6f9bb50f.png" alt="أحمد زروقي" />
+                    </div>
                     <div class="player-info">
-                        <h4>أحمد زروقي</h4>
-                        <div class="position">وسط ميدان</div>
-                        <div class="category">U16 | 15 سنة</div>
+                        <div class="player-name">أحمد زروقي</div>
+                        <div class="gold-line"></div>
+                        <div class="player-position">🎯 وسط ميدان</div>
+                        <div class="player-category">U16 | 15 سنة</div>
                     </div>
                 </div>
             </div>
@@ -1551,6 +1677,20 @@
             <p class="section-subtitle" style="color:rgba(255,255,255,0.7);">لقطات من التدريبات والمباريات والمناسبات التي تعكس روح الأكاديمية.</p>
             <div class="gallery-grid" id="galleryGrid">
                 <!-- يتم تعبئتها بواسطة JavaScript -->
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== VIDEO SECTION ===== -->
+    <section id="video-section" class="section-light">
+        <div class="container">
+            <h2 class="section-title">فيديو <span>تعريفي</span></h2>
+            <p class="section-subtitle">شاهد نبذة عن أكاديمية ASSARU – حيث تبدأ الأحلام الصغيرة في التحقق.</p>
+            <div class="video-wrapper">
+                <video controls preload="metadata" poster="https://raw.githubusercontent.com/darkonovic51-hash/Mohamed-test/4a065c0a8a951b1d39707aa5eb90a5ce7512bec4/1782370717656.jpg">
+                    <source src="https://raw.githubusercontent.com/darkonovic51-hash/Mohamed-test/a8c360b66e5d430c296e905ab284ac59763e5703/_%D9%81%D9%8A%D8%AF%D9%8A%D9%88_%D8%A7%D9%84%D9%8A%D9%88%D9%85%20%D8%A3%D9%83%D8%A7%D8%AF%D9%8A%D9%85%D9%8A%D8%A9%20%D8%A3%D8%B3%D8%A7%D8%B1%D9%88%20%D9%84%D9%83%D8%B1%D8%A9%20%D8%A7%D9%84%D9%82%D8%AF%D9%85%20%D8%A8%D8%A8%D9%84%D8%AF%D9%8A%D8%A9%20%D8%A8%D9%86%D9%8A%20%D8%B4%D8%A8%D8%A7%D9%86%D8%A9...%20%D8%AD%D9%8A%D8%AB%20%D8%AA%D8%A8%D8%AF%D8%A3%20%D8%A7%D9%84%D8%A3%D8%AD%D9%84%D8%A7%D9%85%20%D8%A7%D9%84%D8%B5%D8%BA%D9%8A%D8%B1%D8%A9%20%D9%81%D9%8A.mp4" type="video/mp4">
+                    متصفحك لا يدعم تشغيل الفيديو.
+                </video>
             </div>
         </div>
     </section>
@@ -1976,20 +2116,10 @@
         setupUpload('regInternal', 'internalFileName', 'uploadInternal');
 
         // ================================================================
-        // 7. REGISTRATION FORM
+        // 7. REGISTRATION FORM (تم إلغاء منع الأجهزة)
         // ================================================================
-        const deviceIdKey = 'assaru_device_id';
-        if (!localStorage.getItem(deviceIdKey)) {
-            localStorage.setItem(deviceIdKey, Date.now().toString());
-        }
-
         document.getElementById('registrationForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-
-            if (localStorage.getItem('assaru_registered') === 'true') {
-                alert('⚠️ عذراً، هذا الجهاز مسجل مسبقاً. لا يمكن إعادة التسجيل.');
-                return;
-            }
 
             const firstName = document.getElementById('regFirstName').value.trim();
             const lastName = document.getElementById('regLastName').value.trim();
@@ -2053,8 +2183,6 @@
                     <p><strong>هاتف الولي:</strong> ${guardianPhone}</p>
                 `;
                 document.getElementById('confirmPopup').classList.add('active');
-
-                localStorage.setItem('assaru_registered', 'true');
 
                 this.reset();
                 document.querySelectorAll('.upload-area').forEach(el => el.classList.remove('has-file'));
@@ -2211,10 +2339,9 @@
         };
 
         // ================================================================
-        // 9. PDF GENERATION - معلومات شخصية + وثائق منفصلة
+        // 9. PDF GENERATION (معلومات + وثائق منفصلة)
         // ================================================================
 
-        // معلومات شخصية PDF
         window.downloadInfoPDF = function(id) {
             const reg = allRegistrations.find(r => r.id === id);
             if (!reg) {
@@ -2271,7 +2398,6 @@
                 });
         };
 
-        // وثائق منفصلة (صورة شخصية، ترخيص، قانون)
         window.downloadSinglePDF = function(id, docType) {
             const reg = allRegistrations.find(r => r.id === id);
             if (!reg) {
