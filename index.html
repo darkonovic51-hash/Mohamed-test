@@ -425,7 +425,7 @@
         }
 
         /* ============================================================
-           PLAYERS SECTION - FIFA Ultimate Team Style
+           PLAYERS SECTION - FIFA Ultimate Team Style بدون إطارات إضافية
            ============================================================ */
         .players-grid {
             display: grid;
@@ -453,7 +453,7 @@
             border-color: var(--primary-blue);
         }
 
-        /* خلفية البطاقة بتدرج ذهبي/أزرق */
+        /* خلفية البطاقة */
         .player-card-fifa .card-bg {
             position: absolute;
             top: 0;
@@ -491,7 +491,7 @@
             justify-content: center;
             font-size: 0.6rem;
             font-weight: 700;
-            color: var(--gold);
+            color: #FFD700;
             text-align: center;
             line-height: 1.2;
             padding: 4px;
@@ -518,7 +518,7 @@
             border: 2px solid rgba(255, 255, 255, 0.2);
         }
 
-        /* صورة اللاعب */
+        /* صورة اللاعب - بدون إطار */
         .player-card-fifa .player-image-wrap {
             position: relative;
             z-index: 1;
@@ -526,6 +526,9 @@
             overflow: hidden;
             margin: 10px 10px 0;
             border-radius: 16px;
+            /* بدون أي إطار إضافي */
+            border: none;
+            background: transparent;
         }
 
         .player-card-fifa .player-image-wrap img {
@@ -533,6 +536,7 @@
             height: 100%;
             object-fit: cover;
             transition: transform 0.6s ease;
+            display: block;
         }
 
         .player-card-fifa:hover .player-image-wrap img {
@@ -1629,7 +1633,7 @@
         </div>
     </section>
 
-    <!-- ===== PLAYERS (FIFA Style) ===== -->
+    <!-- ===== PLAYERS (FIFA Style - بدون إطارات) ===== -->
     <section id="players" class="section-white">
         <div class="container">
             <h2 class="section-title">لاعبو <span>الأكاديمية</span></h2>
@@ -2339,7 +2343,7 @@
         };
 
         // ================================================================
-        // 9. PDF GENERATION (معلومات + وثائق منفصلة)
+        // 9. PDF GENERATION
         // ================================================================
 
         window.downloadInfoPDF = function(id) {
