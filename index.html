@@ -11,7 +11,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
     <style>
-        /* ===== نفس الـ CSS السابق مع إضافات للتصميم الجديد ===== */
+        /* ===== CSS Variables & Reset ===== */
         :root {
             --primary-blue: #45B3FF;
             --secondary-blue: #2196F3;
@@ -29,115 +29,1270 @@
         body { font-family: 'Cairo', sans-serif; background: var(--white); color: #1a1a2e; overflow-x: hidden; direction: rtl; }
         .container { max-width: 1300px; margin: 0 auto; padding: 0 20px; }
 
-        /* ===== (باقي الـ CSS كما هو، مع إضافة أنماط جديدة للقالب المتطور) ===== */
-        .player-detail-card {
-            background: #fff;
-            border-radius: 24px;
-            padding: 30px;
-            box-shadow: var(--shadow);
-            margin: 10px auto;
-            max-width: 800px;
+        /* ===== SCROLLBAR ===== */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--light-bg); }
+        ::-webkit-scrollbar-thumb { background: var(--primary-blue); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--secondary-blue); }
+
+        /* ===== BUTTONS ===== */
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-blue), var(--secondary-blue));
+            border: none;
+            padding: 14px 40px;
+            border-radius: 60px;
+            font-weight: 700;
+            font-size: 1rem;
+            color: #fff;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-block;
+            text-decoration: none;
+            box-shadow: 0 4px 15px rgba(69, 179, 255, 0.3);
         }
-        .player-detail-card .header {
+        .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(69, 179, 255, 0.4); }
+        .btn-primary i { margin-left: 8px; }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid var(--primary-blue);
+            padding: 12px 36px;
+            border-radius: 60px;
+            font-weight: 700;
+            color: var(--primary-blue);
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-block;
+            text-decoration: none;
+        }
+        .btn-outline:hover { background: var(--primary-blue); color: #fff; transform: translateY(-3px); }
+
+        .btn-gold {
+            background: linear-gradient(135deg, var(--gold), #b8860b);
+            border: none;
+            padding: 14px 40px;
+            border-radius: 60px;
+            font-weight: 700;
+            font-size: 1rem;
+            color: #fff;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-block;
+            text-decoration: none;
+        }
+        .btn-gold:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(212, 160, 23, 0.3); }
+
+        /* ===== SECTION TITLES ===== */
+        .section-title {
+            font-size: 2.6rem;
+            font-weight: 800;
+            text-align: center;
+            margin-bottom: 12px;
+            color: var(--dark-navy);
+        }
+        .section-title span { color: var(--primary-blue); }
+        .section-title::after {
+            content: '';
+            display: block;
+            width: 80px;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary-blue), var(--secondary-blue));
+            margin: 12px auto 0;
+            border-radius: 5px;
+        }
+        .section-subtitle {
+            text-align: center;
+            color: #666;
+            max-width: 700px;
+            margin: 0 auto 50px;
+            font-size: 1.1rem;
+            line-height: 1.8;
+        }
+        section { padding: 70px 0; }
+        .section-light { background: var(--light-bg); }
+        .section-white { background: #fff; }
+        .section-dark { background: var(--dark-navy); }
+        .section-dark .section-title { color: #fff; }
+        .section-dark .section-title span { color: var(--primary-blue); }
+
+        /* ===== NAVBAR ===== */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1000;
+            padding: 14px 40px;
+            background: transparent;
+            transition: var(--transition);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .navbar.scrolled {
+            background: rgba(4, 26, 56, 0.95);
+            backdrop-filter: blur(16px);
+            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+            padding: 10px 40px;
+        }
+        .navbar .logo {
             display: flex;
             align-items: center;
-            gap: 24px;
-            border-bottom: 2px solid #f0f0f0;
-            padding-bottom: 20px;
-            margin-bottom: 20px;
+            gap: 12px;
         }
-        .player-detail-card .avatar {
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 4px solid var(--primary-blue);
-            flex-shrink: 0;
-            background: #f0f0f0;
+        .navbar .logo img {
+            height: 48px;
+            width: auto;
+            filter: drop-shadow(0 2px 8px rgba(0,0,0,0.2));
+        }
+        .navbar .logo .logo-text {
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: var(--white);
+        }
+        .navbar .logo .logo-text .accent { color: var(--primary-blue); }
+
+        .nav-links {
+            display: flex;
+            gap: 24px;
+            list-style: none;
+            align-items: center;
+        }
+        .nav-links a {
+            color: rgba(255,255,255,0.85);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: var(--transition);
+            padding: 4px 0;
+            border-bottom: 2px solid transparent;
+        }
+        .nav-links a:hover {
+            color: #fff;
+            border-bottom-color: var(--primary-blue);
+        }
+        .menu-btn {
+            display: none;
+            font-size: 1.6rem;
+            color: #fff;
+            cursor: pointer;
+            background: none;
+            border: none;
+        }
+
+        /* ===== HERO ===== */
+        .hero {
+            min-height: 100vh;
+            position: relative;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 2.5rem;
-            color: #aaa;
+            text-align: center;
+            padding: 120px 20px 80px;
+            overflow: hidden;
+            background: var(--dark-navy);
         }
-        .player-detail-card .avatar img {
+        .hero-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
             width: 100%;
             height: 100%;
-            border-radius: 50%;
-            object-fit: cover;
+            background: url('https://raw.githubusercontent.com/darkonovic51-hash/Mohamed-test/4a065c0a8a951b1d39707aa5eb90a5ce7512bec4/file_00000000f604724381e69917b7f6b263.png') no-repeat center center/cover;
+            z-index: 0;
+            opacity: 0.5;
         }
-        .player-detail-card .info-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px 24px;
+        .hero-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(4, 26, 56, 0.7), rgba(8, 45, 92, 0.5));
+            z-index: 1;
         }
-        .player-detail-card .info-grid .item {
-            background: var(--light-bg);
-            padding: 8px 14px;
-            border-radius: 12px;
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            max-width: 900px;
+            color: #fff;
         }
-        .player-detail-card .info-grid .item .label {
-            font-size: 0.7rem;
-            color: #888;
+        .hero-content .badge {
+            display: inline-block;
+            background: rgba(69, 179, 255, 0.2);
+            border: 1px solid var(--primary-blue);
+            padding: 6px 24px;
+            border-radius: 60px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--primary-blue);
+            margin-bottom: 20px;
+            animation: fadeInUp 0.8s ease forwards;
         }
-        .player-detail-card .info-grid .item .value {
-            font-weight: 700;
-            color: var(--dark-navy);
+        .hero-content .badge i { margin-left: 6px; }
+        .hero-content h1 {
+            font-size: 4rem;
+            font-weight: 900;
+            line-height: 1.1;
+            margin-bottom: 16px;
+            animation: fadeInUp 0.8s 0.2s ease forwards;
+            opacity: 0;
         }
-        .player-detail-card .documents {
+        .hero-content h1 .highlight { color: var(--primary-blue); }
+        .hero-content h1 .dynamic-text {
+            display: inline-block;
+            min-width: 120px;
+            border-left: 3px solid var(--gold);
+            padding-left: 8px;
+            animation: blinkCursor 0.8s step-end infinite;
+        }
+        @keyframes blinkCursor {
+            0%,100% { border-color: var(--gold); }
+            50% { border-color: transparent; }
+        }
+        .hero-content p {
+            font-size: 1.2rem;
+            color: rgba(255,255,255,0.85);
+            max-width: 650px;
+            margin: 0 auto 30px;
+            line-height: 1.8;
+            animation: fadeInUp 0.8s 0.4s ease forwards;
+            opacity: 0;
+        }
+        .hero-content .hero-buttons {
             display: flex;
             gap: 16px;
+            justify-content: center;
             flex-wrap: wrap;
-            margin-top: 16px;
-            border-top: 1px solid #eee;
-            padding-top: 16px;
+            animation: fadeInUp 0.8s 0.6s ease forwards;
+            opacity: 0;
         }
-        .player-detail-card .documents .doc-btn {
+        .hero-stats {
+            display: flex;
+            gap: 30px;
+            justify-content: center;
+            margin-top: 50px;
+            flex-wrap: wrap;
+            animation: fadeInUp 0.8s 0.8s ease forwards;
+            opacity: 0;
+        }
+        .hero-stat {
+            background: rgba(255,255,255,0.08);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 16px;
+            padding: 16px 30px;
+            text-align: center;
+            min-width: 120px;
+            transition: var(--transition);
+        }
+        .hero-stat:hover { transform: translateY(-5px); border-color: var(--primary-blue); }
+        .hero-stat .number {
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: var(--primary-blue);
+        }
+        .hero-stat .label {
+            font-size: 0.8rem;
+            color: rgba(255,255,255,0.7);
+        }
+        .hero-stat i {
+            font-size: 1.6rem;
+            color: var(--gold);
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ===== STATS SECTION ===== */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 20px;
+            margin: 30px auto 0;
+            max-width: 1100px;
+        }
+        .stat-card {
+            background: #fff;
+            border-radius: 18px;
+            padding: 22px 16px;
+            text-align: center;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.06);
+            border: 2px solid #eef2f7;
+            transition: var(--transition);
+            animation: statFloat 3s ease-in-out infinite;
+        }
+        .stat-card:nth-child(1) { border-color: #45B3FF; animation-delay: 0s; }
+        .stat-card:nth-child(2) { border-color: #2ecc71; animation-delay: 0.3s; }
+        .stat-card:nth-child(3) { border-color: #f39c12; animation-delay: 0.6s; }
+        .stat-card:nth-child(4) { border-color: #9b59b6; animation-delay: 0.9s; }
+        .stat-card:nth-child(5) { border-color: #e74c3c; animation-delay: 1.2s; }
+        @keyframes statFloat {
+            0%,100% { transform: translateY(0); }
+            50% { transform: translateY(-6px); }
+        }
+        .stat-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.08);
+            animation-play-state: paused;
+        }
+        .stat-card .num {
+            font-size: 2.4rem;
+            font-weight: 800;
+            color: var(--dark-navy);
+            line-height: 1.2;
+        }
+        .stat-card .label {
+            font-size: 0.9rem;
+            color: #888;
+            margin-top: 2px;
+            font-weight: 600;
+        }
+        .stat-card .icon {
+            font-size: 1.6rem;
+            color: var(--primary-blue);
+            margin-bottom: 4px;
+        }
+
+        /* ===== ABOUT ===== */
+        .about-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 50px;
+            align-items: center;
+        }
+        .about-content h2 {
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: var(--dark-navy);
+            margin-bottom: 16px;
+        }
+        .about-content h2 span { color: var(--primary-blue); }
+        .about-content p {
+            color: #555;
+            line-height: 1.9;
+            margin-bottom: 16px;
+            font-size: 1.05rem;
+        }
+        .about-image {
+            border-radius: var(--radius);
+            overflow: hidden;
+            box-shadow: var(--shadow);
+        }
+        .about-image img {
+            width: 100%;
+            height: auto;
+            display: block;
+            transition: transform 0.6s ease;
+            animation: imgFloat 4s ease-in-out infinite;
+        }
+        @keyframes imgFloat {
+            0%,100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+        .about-image:hover img { transform: scale(1.05); animation-play-state: paused; }
+
+        /* ===== PLAYERS ===== */
+        .players-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        .player-card-simple {
+            background: transparent;
+            border-radius: var(--radius);
+            overflow: hidden;
+            transition: var(--transition);
+            cursor: pointer;
+            animation: playerFloat 4s ease-in-out infinite;
+            text-align: center;
+        }
+        .player-card-simple:nth-child(2) { animation-delay: 0.5s; }
+        .player-card-simple:nth-child(3) { animation-delay: 1s; }
+        @keyframes playerFloat {
+            0%,100% { transform: translateY(0px); }
+            50% { transform: translateY(-12px); }
+        }
+        .player-card-simple:hover { transform: translateY(-8px) scale(1.02); animation-play-state: paused; }
+        .player-card-simple img {
+            width: 100%;
+            height: auto;
+            display: block;
+            border-radius: var(--radius);
+            transition: transform 0.6s ease;
+            box-shadow: var(--shadow);
+        }
+        .player-card-simple:hover img { transform: scale(1.04); }
+        .player-card-simple .info {
+            padding: 12px 0 0;
+            text-align: center;
+            background: transparent;
+        }
+        .player-card-simple .info .role {
+            font-size: 0.95rem;
+            color: var(--primary-blue);
+            font-weight: 600;
+        }
+        .player-card-simple .info .category {
+            font-size: 0.8rem;
+            color: #888;
+            margin-top: 2px;
+        }
+
+        /* ===== STAFF ===== */
+        .staff-director {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        .staff-director .staff-image-wrap {
+            width: 100%;
+            max-width: 380px;
+            border-radius: var(--radius);
+            overflow: hidden;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.15);
+            margin-bottom: 16px;
+            animation: directorPulse 3s ease-in-out infinite;
+        }
+        @keyframes directorPulse {
+            0%,100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+        .staff-director .staff-image-wrap img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+        .staff-director .staff-title {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: var(--dark-navy);
+        }
+        .staff-director .staff-role {
+            font-size: 1.1rem;
+            color: var(--primary-blue);
+            font-weight: 600;
+        }
+
+        .staff-founder {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            margin-bottom: 50px;
+            padding: 20px;
             background: var(--light-bg);
-            border: 1px solid #ddd;
+            border-radius: var(--radius);
+            border-right: 5px solid var(--gold);
+        }
+        .staff-founder .staff-image-wrap {
+            width: 100%;
+            max-width: 320px;
+            border-radius: var(--radius);
+            overflow: hidden;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.1);
+            margin-bottom: 14px;
+            animation: founderFloat 4s ease-in-out infinite;
+        }
+        @keyframes founderFloat {
+            0%,100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+        .staff-founder .staff-image-wrap img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+        .staff-founder .staff-title {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--dark-navy);
+        }
+        .staff-founder .staff-role {
+            font-size: 1rem;
+            color: var(--secondary-blue);
+            font-weight: 600;
+        }
+
+        .coaches-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 25px;
+        }
+        .coach-card {
+            background: transparent;
+            border-radius: var(--radius);
+            overflow: hidden;
+            text-align: center;
+            transition: var(--transition);
+            padding: 0;
+            animation: coachFloat 4.5s ease-in-out infinite;
+        }
+        .coach-card:nth-child(2) { animation-delay: 0.3s; }
+        .coach-card:nth-child(3) { animation-delay: 0.6s; }
+        .coach-card:nth-child(4) { animation-delay: 0.9s; }
+        .coach-card:nth-child(5) { animation-delay: 1.2s; }
+        .coach-card:nth-child(6) { animation-delay: 1.5s; }
+        @keyframes coachFloat {
+            0%,100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+        .coach-card:hover { transform: translateY(-8px); animation-play-state: paused; }
+        .coach-card img {
+            width: 100%;
+            height: auto;
+            display: block;
+            border-radius: var(--radius);
+            transition: transform 0.6s ease;
+            box-shadow: var(--shadow);
+        }
+        .coach-card:hover img { transform: scale(1.04); }
+        .coach-card .coach-name {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--dark-navy);
+            margin-top: 8px;
+            margin-bottom: 2px;
+        }
+        .coach-card .coach-desc {
+            font-size: 0.8rem;
+            color: #666;
+            line-height: 1.6;
+            margin-top: 2px;
+        }
+
+        /* ===== GALLERY ===== */
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 16px;
+        }
+        .gallery-item {
+            border-radius: 16px;
+            overflow: hidden;
+            position: relative;
+            cursor: pointer;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+            aspect-ratio: 4/3;
+            animation: galleryFloat 5s ease-in-out infinite;
+        }
+        .gallery-item:nth-child(2) { animation-delay: 0.6s; }
+        .gallery-item:nth-child(3) { animation-delay: 1.2s; }
+        .gallery-item:nth-child(4) { animation-delay: 0.3s; }
+        .gallery-item:nth-child(5) { animation-delay: 0.9s; }
+        .gallery-item:nth-child(6) { animation-delay: 1.5s; }
+        @keyframes galleryFloat {
+            0%,100% { transform: translateY(0px) scale(1); }
+            50% { transform: translateY(-8px) scale(1.01); }
+        }
+        .gallery-item:hover { transform: scale(1.02); box-shadow: 0 15px 40px rgba(0,0,0,0.2); animation-play-state: paused; }
+        .gallery-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.6s ease;
+        }
+        .gallery-item:hover img { transform: scale(1.08); }
+        .gallery-item .overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            padding: 20px;
+            background: linear-gradient(0deg, rgba(4,26,56,0.8), transparent);
+            opacity: 0;
+            transition: var(--transition);
+        }
+        .gallery-item:hover .overlay { opacity: 1; }
+        .gallery-item .overlay span { color: #fff; font-weight: 600; font-size: 0.95rem; }
+
+        /* ===== VIDEO ===== */
+        .video-wrapper {
+            max-width: 900px;
+            margin: 0 auto;
+            border-radius: var(--radius);
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            background: #000;
+        }
+        .video-wrapper video { width: 100%; display: block; }
+
+        /* ===== REGISTRATION ===== */
+        .registration-wrapper {
+            max-width: 900px;
+            margin: 0 auto;
+            background: #fff;
+            border-radius: var(--radius);
+            padding: 45px 50px 50px;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(0,0,0,0.05);
+            position: relative;
+            overflow: hidden;
+        }
+        .registration-wrapper::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(90deg, var(--primary-blue), var(--secondary-blue), var(--primary-blue));
+            background-size: 300% 100%;
+            animation: shimmer 3s infinite linear;
+        }
+        @keyframes shimmer {
+            0% { background-position: 0% 0%; }
+            100% { background-position: 300% 0%; }
+        }
+        .registration-wrapper .form-header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+        .registration-wrapper .form-header h2 {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--dark-navy);
+        }
+        .registration-wrapper .form-header h2 span { color: var(--primary-blue); }
+        .registration-wrapper .form-header p {
+            color: #888;
+            font-size: 0.95rem;
+        }
+        .reg-form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 18px;
+        }
+        .reg-form-grid .full-width { grid-column: 1 / -1; }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .form-group label {
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: #333;
+        }
+        .form-group label .required { color: #e74c3c; }
+        .form-group input,
+        .form-group select {
+            padding: 12px 16px;
+            border-radius: 14px;
+            border: 2px solid #e8e8e8;
+            background: #fafafa;
+            font-size: 1rem;
+            font-family: 'Cairo', sans-serif;
+            transition: var(--transition);
+            width: 100%;
+            color: #1a1a2e;
+        }
+        .form-group input:focus,
+        .form-group select:focus {
+            border-color: var(--primary-blue);
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(69,179,255,0.1);
+            background: #fff;
+        }
+
+        .upload-area {
+            position: relative;
+            overflow: hidden;
+            border: 2px dashed #ccc;
+            border-radius: 14px;
+            padding: 16px;
+            text-align: center;
+            background: #fafafa;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .upload-area:hover { border-color: var(--primary-blue); background: rgba(69,179,255,0.05); }
+        .upload-area.has-file { border-color: #2ecc71; background: rgba(46,204,113,0.05); }
+        .upload-area input[type="file"] {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+        .upload-area .icon { font-size: 1.6rem; color: #aaa; }
+        .upload-area .text { font-size: 0.85rem; color: #888; margin-top: 2px; }
+        .upload-area .file-name { font-size: 0.8rem; color: #2ecc71; margin-top: 4px; display: none; }
+        .upload-area.has-file .file-name { display: block; }
+        .upload-area.has-file .text { display: none; }
+
+        .btn-submit-reg {
+            background: linear-gradient(135deg, var(--primary-blue), var(--secondary-blue));
+            border: none;
+            padding: 16px;
+            border-radius: 60px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: #fff;
+            cursor: pointer;
+            transition: var(--transition);
+            width: 100%;
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        .btn-submit-reg:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(69,179,255,0.3); }
+        .btn-submit-reg:active { transform: scale(0.98); }
+
+        /* ===== TESTIMONIALS ===== */
+        .testimonials-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+        }
+        .testimonial-card {
+            background: #fff;
+            border-radius: var(--radius);
+            padding: 28px 24px;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(0,0,0,0.04);
+            transition: var(--transition);
+            animation: testimonialFloat 4.5s ease-in-out infinite;
+        }
+        .testimonial-card:nth-child(2) { animation-delay: 0.6s; }
+        .testimonial-card:nth-child(3) { animation-delay: 1.2s; }
+        @keyframes testimonialFloat {
+            0%,100% { transform: translateY(0px); }
+            50% { transform: translateY(-8px); }
+        }
+        .testimonial-card:hover { transform: translateY(-6px); box-shadow: 0 20px 50px rgba(0,0,0,0.08); animation-play-state: paused; }
+        .testimonial-card .stars { color: #f39c12; font-size: 1rem; margin-bottom: 10px; }
+        .testimonial-card p { color: #555; font-size: 0.95rem; line-height: 1.8; }
+        .testimonial-card .author .name { font-weight: 700; color: var(--dark-navy); }
+        .testimonial-card .author .role { font-size: 0.8rem; color: #888; }
+
+        /* ===== CONTACT ===== */
+        .contact-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+        }
+        .contact-info-item {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 14px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .contact-info-item .icon {
+            width: 48px;
+            height: 48px;
+            background: rgba(69,179,255,0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary-blue);
+            font-size: 1.2rem;
+        }
+        .contact-info-item .text .label { font-size: 0.8rem; color: #888; }
+        .contact-info-item .text .value { font-weight: 600; color: var(--dark-navy); }
+
+        .contact-form input,
+        .contact-form textarea {
+            width: 100%;
+            padding: 14px 18px;
+            border-radius: 14px;
+            border: 2px solid #e8e8e8;
+            background: #fafafa;
+            font-size: 1rem;
+            font-family: 'Cairo', sans-serif;
+            transition: var(--transition);
+            margin-bottom: 16px;
+        }
+        .contact-form input:focus,
+        .contact-form textarea:focus { border-color: var(--primary-blue); outline: none; box-shadow: 0 0 0 4px rgba(69,179,255,0.1); }
+        .contact-form textarea { min-height: 120px; resize: vertical; }
+
+        /* ===== FOOTER ===== */
+        .footer {
+            background: var(--dark-navy);
+            color: #fff;
+            padding: 60px 20px 30px;
+        }
+        .footer-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 40px;
+            max-width: 1300px;
+            margin: 0 auto;
+        }
+        .footer-col h4 { font-size: 1.1rem; margin-bottom: 16px; color: #fff; }
+        .footer-col p,
+        .footer-col a {
+            color: rgba(255,255,255,0.7);
+            text-decoration: none;
+            display: block;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+            transition: var(--transition);
+        }
+        .footer-col a:hover { color: var(--primary-blue); }
+        .footer-social {
+            display: flex;
+            gap: 14px;
+            margin-top: 10px;
+        }
+        .footer-social a {
+            color: rgba(255,255,255,0.6);
+            font-size: 1.4rem;
+            transition: var(--transition);
+        }
+        .footer-social a:hover { color: var(--primary-blue); transform: translateY(-3px); }
+        .footer-bottom {
+            text-align: center;
+            padding-top: 30px;
+            margin-top: 40px;
+            border-top: 1px solid rgba(255,255,255,0.06);
+            font-size: 0.85rem;
+            color: rgba(255,255,255,0.4);
+        }
+
+        /* ===== POPUPS ===== */
+        .popup-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(12px);
+            z-index: 99999;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .popup-overlay.active { display: flex; }
+        .popup-box {
+            background: #fff;
             border-radius: 30px;
-            padding: 6px 18px;
+            padding: 40px 35px;
+            max-width: 520px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 30px 80px rgba(0,0,0,0.3);
+            animation: popupIn 0.5s ease;
+        }
+        @keyframes popupIn {
+            0% { transform: scale(0.85) rotate(-2deg); opacity: 0; }
+            100% { transform: scale(1) rotate(0); opacity: 1; }
+        }
+        .popup-box .icon { font-size: 3.5rem; color: #2ecc71; margin-bottom: 8px; }
+        .popup-box h3 {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: var(--dark-navy);
+            margin-bottom: 6px;
+        }
+        .popup-box .sub { color: #888; font-size: 0.95rem; margin-bottom: 12px; }
+        .popup-box .info-grid {
+            text-align: right;
+            padding: 14px;
+            background: var(--light-bg);
+            border-radius: 14px;
+            font-size: 0.9rem;
+            line-height: 2;
+            margin-bottom: 14px;
+        }
+        .popup-box .info-grid p { margin: 2px 0; color: #333; }
+        .popup-box .info-grid strong { color: var(--dark-navy); }
+        .popup-close {
+            background: linear-gradient(135deg, var(--primary-blue), var(--secondary-blue));
+            border: none;
+            padding: 12px 40px;
+            border-radius: 60px;
+            font-weight: 700;
+            color: #fff;
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 1rem;
+        }
+        .popup-close:hover { transform: scale(1.04); box-shadow: 0 8px 30px rgba(69,179,255,0.3); }
+
+        /* ===== ADMIN TOGGLE ===== */
+        .admin-toggle {
+            position: fixed;
+            bottom: 24px;
+            left: 24px;
+            z-index: 9998;
+            background: var(--dark-navy);
+            border: none;
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 60px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 0.85rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .admin-toggle:hover { background: var(--primary-blue); transform: translateY(-3px); }
+
+        /* ===== DASHBOARD ===== */
+        .dashboard-wrapper {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #f0f2f5;
+            z-index: 99999;
+            overflow: hidden;
+            font-family: 'Cairo', sans-serif;
+            direction: rtl;
+        }
+        .dashboard-wrapper.active { display: flex; }
+
+        .dashboard-sidebar {
+            width: var(--sidebar-width);
+            height: 100%;
+            background: var(--dark-navy);
+            color: #fff;
+            padding: 20px 0;
+            overflow-y: auto;
+            flex-shrink: 0;
+            box-shadow: 2px 0 15px rgba(0,0,0,0.1);
+            position: relative;
+        }
+        .dashboard-sidebar .logo {
+            text-align: center;
+            padding: 10px 0 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .dashboard-sidebar .logo img {
+            height: 50px;
+            width: auto;
+        }
+        .dashboard-sidebar .logo h2 {
+            font-size: 1.1rem;
+            margin-top: 6px;
+            color: var(--primary-blue);
+        }
+        .dashboard-sidebar .menu-item {
+            display: block;
+            padding: 14px 24px;
+            color: rgba(255,255,255,0.7);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: var(--transition);
+            border-right: 3px solid transparent;
+            cursor: pointer;
+        }
+        .dashboard-sidebar .menu-item:hover,
+        .dashboard-sidebar .menu-item.active {
+            background: rgba(69,179,255,0.1);
+            color: #fff;
+            border-right-color: var(--primary-blue);
+        }
+        .dashboard-sidebar .menu-item i {
+            margin-left: 12px;
+            width: 20px;
+            text-align: center;
+        }
+        .dashboard-sidebar .logout-btn {
+            position: absolute;
+            bottom: 20px;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            padding: 12px;
+            background: rgba(231,76,60,0.2);
+            color: #e74c3c;
+            border: none;
+            font-weight: 700;
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 0.9rem;
+        }
+        .dashboard-sidebar .logout-btn:hover { background: rgba(231,76,60,0.3); }
+
+        .dashboard-content {
+            flex: 1;
+            padding: 20px 30px;
+            overflow-y: auto;
+            height: 100vh;
+            background: #f0f2f5;
+        }
+        .dashboard-content .page-title {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--dark-navy);
+            margin-bottom: 6px;
+        }
+        .dashboard-content .page-sub {
+            color: #888;
+            margin-bottom: 20px;
+        }
+
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .stat-box {
+            background: #fff;
+            border-radius: 16px;
+            padding: 16px 14px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+            border: 1px solid #e8ecf1;
+        }
+        .stat-box .num {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--primary-blue);
+        }
+        .stat-box .label {
+            font-size: 0.8rem;
+            color: #888;
+            margin-top: 2px;
+        }
+
+        .table-wrap {
+            background: #fff;
+            border-radius: 16px;
+            overflow: auto;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+            border: 1px solid #e8ecf1;
+            margin-bottom: 20px;
+        }
+        .table-wrap table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+            min-width: 700px;
+        }
+        .table-wrap th {
+            background: var(--dark-navy);
+            color: #fff;
+            padding: 12px 10px;
+            text-align: center;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+        .table-wrap td {
+            padding: 10px 8px;
+            text-align: center;
+            border-bottom: 1px solid #f0f0f0;
+            vertical-align: middle;
+        }
+        .table-wrap tr:hover td { background: rgba(69,179,255,0.04); }
+
+        .badge-status {
+            display: inline-block;
+            padding: 2px 12px;
+            border-radius: 30px;
+            font-size: 0.7rem;
+            font-weight: 700;
+        }
+        .badge-status.paid { background: #d4edda; color: #155724; }
+        .badge-status.unpaid { background: #f8d7da; color: #721c24; }
+        .badge-status.present { background: #d4edda; color: #155724; }
+        .badge-status.absent { background: #f8d7da; color: #721c24; }
+
+        .btn-sm {
+            padding: 4px 12px;
+            border-radius: 30px;
+            border: none;
             font-weight: 600;
             cursor: pointer;
             transition: var(--transition);
+            font-size: 0.7rem;
+            margin: 2px;
+        }
+        .btn-sm-primary { background: var(--primary-blue); color: #fff; }
+        .btn-sm-primary:hover { background: var(--secondary-blue); }
+        .btn-sm-success { background: #28a745; color: #fff; }
+        .btn-sm-danger { background: #dc3545; color: #fff; }
+        .btn-sm-warning { background: #ffc107; color: #212529; }
+        .btn-sm-info { background: #17a2b8; color: #fff; }
+
+        .form-card {
+            background: #fff;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+            border: 1px solid #e8ecf1;
+            margin-bottom: 24px;
+        }
+        .form-card h3 {
+            font-size: 1.2rem;
+            margin-bottom: 16px;
+            color: var(--dark-navy);
+        }
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 14px;
+        }
+        .form-grid .full { grid-column: 1 / -1; }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .form-group label {
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: #333;
+        }
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            padding: 8px 12px;
+            border-radius: 10px;
+            border: 2px solid #e0e0e0;
+            font-family: 'Cairo', sans-serif;
+            font-size: 0.9rem;
+            transition: var(--transition);
+            background: #fafafa;
+        }
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            border-color: var(--primary-blue);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(69,179,255,0.1);
+        }
+        .btn-submit {
+            background: linear-gradient(135deg, var(--primary-blue), var(--secondary-blue));
+            border: none;
+            padding: 12px 30px;
+            border-radius: 60px;
+            font-weight: 700;
+            color: #fff;
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 0.95rem;
             display: inline-flex;
             align-items: center;
             gap: 8px;
         }
-        .player-detail-card .documents .doc-btn:hover {
-            background: var(--primary-blue);
-            color: #fff;
-            border-color: var(--primary-blue);
+        .btn-submit:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(69,179,255,0.3); }
+
+        .parent-dashboard {
+            max-width: 900px;
+            margin: 0 auto;
+            background: #fff;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: var(--shadow);
+        }
+        .parent-dashboard .player-card {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 16px;
+            margin-bottom: 16px;
+        }
+        .parent-dashboard .player-card img {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid var(--primary-blue);
+        }
+        .parent-dashboard .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        .parent-dashboard .info-grid .item {
+            background: var(--light-bg);
+            padding: 10px 14px;
+            border-radius: 12px;
+        }
+        .parent-dashboard .info-grid .item .label {
+            font-size: 0.7rem;
+            color: #888;
+        }
+        .parent-dashboard .info-grid .item .value {
+            font-weight: 700;
+            color: var(--dark-navy);
         }
 
-        /* قالب التدريبات المتطور */
-        .training-card {
-            background: #fff;
-            border-radius: 16px;
-            padding: 18px 24px;
-            margin-bottom: 16px;
-            border-right: 6px solid var(--primary-blue);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.04);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-        .training-card .info { display: flex; gap: 20px; flex-wrap: wrap; align-items: center; }
-        .training-card .info .title { font-weight: 800; color: var(--dark-navy); font-size: 1.1rem; }
-        .training-card .info .meta { color: #666; font-size: 0.85rem; }
-        .training-card .info .meta i { margin-left: 4px; color: var(--primary-blue); }
-        .training-card .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+        .hidden { display: none !important; }
+        .flex-center { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+        .mt-2 { margin-top: 12px; }
+        .mb-2 { margin-bottom: 12px; }
+        .text-center { text-align: center; }
+        .text-muted { color: #888; font-size: 0.85rem; }
+        .w-100 { width: 100%; }
 
         /* ===== RESPONSIVE ===== */
-        @media (max-width: 768px) {
-            .player-detail-card .header { flex-direction: column; text-align: center; }
-            .player-detail-card .info-grid { grid-template-columns: 1fr; }
-            .training-card { flex-direction: column; align-items: stretch; gap: 12px; }
+        @media (max-width: 1024px) {
+            .hero-content h1 { font-size: 3rem; }
+            .about-grid { grid-template-columns: 1fr; }
+            .contact-grid { grid-template-columns: 1fr; }
         }
 
-        /* ===== باقي الأنماط (navbar, hero, etc) موجودة في الكود الكامل أدناه ===== */
-        /* (اختصاراً، سيتم تضمينها في الكود النهائي) */
+        @media (max-width: 768px) {
+            .navbar { padding: 10px 16px; background: rgba(4,26,56,0.95); }
+            .navbar.scrolled { padding: 8px 16px; }
+            .nav-links {
+                display: none;
+                flex-direction: column;
+                width: 100%;
+                text-align: center;
+                padding: 16px 0;
+                gap: 12px;
+                background: rgba(4,26,56,0.98);
+                position: absolute;
+                top: 100%;
+                left: 0;
+                border-top: 1px solid rgba(255,255,255,0.05);
+            }
+            .nav-links.show { display: flex; }
+            .menu-btn { display: block; }
+
+            .hero-content h1 { font-size: 2.2rem; }
+            .hero-content p { font-size: 1rem; }
+            .section-title { font-size: 1.8rem; }
+            section { padding: 50px 0; }
+
+            .registration-wrapper { padding: 24px 18px 30px; }
+            .reg-form-grid { grid-template-columns: 1fr; }
+
+            .dashboard-sidebar { width: 200px; }
+            .dashboard-content { padding: 16px; }
+            .form-grid { grid-template-columns: 1fr; }
+            .parent-dashboard .info-grid { grid-template-columns: 1fr; }
+        }
+
+        @media (max-width: 576px) {
+            .dashboard-sidebar { width: 60px; padding: 10px 0; }
+            .dashboard-sidebar .logo h2,
+            .dashboard-sidebar .menu-item span { display: none; }
+            .dashboard-sidebar .menu-item { padding: 14px 10px; text-align: center; }
+            .dashboard-sidebar .menu-item i { margin: 0; font-size: 1.2rem; }
+            .dashboard-content { padding: 12px; }
+        }
     </style>
 </head>
 <body>
@@ -279,7 +1434,6 @@
             </div>
             <h3 style="text-align:center; font-size:1.8rem; color:var(--dark-navy); margin-bottom:20px; margin-top:30px;">المدربون</h3>
             <div class="coaches-grid">
-                <!-- صور المدربين كما هي -->
                 <div class="coach-card"><img src="https://raw.githubusercontent.com/darkonovic51-hash/Mohamed-test/4d3dd75518d4a06c13dcaafd6df2acd56737f402/file_000000000d3071fba30ea133d602d552.png" alt="مدرب" /><div class="coach-name">مدرب</div><div class="coach-desc"></div></div>
                 <div class="coach-card"><img src="https://raw.githubusercontent.com/darkonovic51-hash/Mohamed-test/4d3dd75518d4a06c13dcaafd6df2acd56737f402/file_00000000059871fb869eb5723eabe23c.png" alt="مدرب" /><div class="coach-name">مدرب</div><div class="coach-desc">مدرب في الأكاديمية<br />ليسانس رياضة<br />شهادة CAF C</div></div>
                 <div class="coach-card"><img src="https://raw.githubusercontent.com/darkonovic51-hash/Mohamed-test/4d3dd75518d4a06c13dcaafd6df2acd56737f402/file_00000000446071fbb4b652ec022c2d3e.png" alt="مدرب" /><div class="coach-name">مدرب</div><div class="coach-desc">متحصل على شهادة Caf A</div></div>
@@ -419,7 +1573,7 @@
     </div>
 
     <!-- ============================================================ -->
-    <!--  جافا سكريبت – النظام المحسّن                                  -->
+    <!--  جافا سكريبت – النظام المحسّن بالكامل                        -->
     <!-- ============================================================ -->
     <script>
         // ================================================================
@@ -434,11 +1588,16 @@
             messagingSenderId: "205174400637",
             appId: "1:205174400637:web:8d4312e8d70e5a194b3314"
         };
-        try { firebase.initializeApp(firebaseConfig); console.log('✅ Firebase initialized'); } catch (e) { console.error('❌ Firebase init error:', e); }
+        try {
+            firebase.initializeApp(firebaseConfig);
+            console.log('✅ Firebase initialized');
+        } catch (e) {
+            console.error('❌ Firebase init error:', e);
+        }
         const db = firebase.database();
 
         // ================================================================
-        // 2. متغيرات عامة – مع استماع مباشر لجميع البيانات
+        // 2. متغيرات عامة + استماع مباشر
         // ================================================================
         let currentUser = null;
         let allPlayers = [];
@@ -450,53 +1609,52 @@
         let allPayments = [];
         let allPlayerDetails = {};
         const categories = ['U07', 'U09', 'U11', 'U13'];
+        let currentViewFunction = null;
+        let currentViewArgs = [];
 
-        // --- استماع مباشر للبيانات (للسرعة الفورية) ---
         function listenToAllData() {
-            // اللاعبون
             db.ref('academy/players').on('value', snap => {
                 allPlayers = snap.val() ? Object.keys(snap.val()).map(k => ({ id: k, ...snap.val()[k] })) : [];
                 if (currentUser) refreshCurrentView();
             });
-            // المدربون
             db.ref('academy/coaches').on('value', snap => {
                 allCoaches = snap.val() ? Object.keys(snap.val()).map(k => ({ id: k, ...snap.val()[k] })) : [];
                 if (currentUser) refreshCurrentView();
             });
-            // التدريبات
             db.ref('academy/trainings').on('value', snap => {
                 allTrainings = snap.val() ? Object.keys(snap.val()).map(k => ({ id: k, ...snap.val()[k] })) : [];
                 if (currentUser) refreshCurrentView();
             });
-            // الدورات
             db.ref('academy/tournaments').on('value', snap => {
                 allTournaments = snap.val() ? Object.keys(snap.val()).map(k => ({ id: k, ...snap.val()[k] })) : [];
                 if (currentUser) refreshCurrentView();
             });
-            // المباريات
             db.ref('academy/matches').on('value', snap => {
                 allMatches = snap.val() ? Object.keys(snap.val()).map(k => ({ id: k, ...snap.val()[k] })) : [];
                 if (currentUser) refreshCurrentView();
             });
-            // الحضور
             db.ref('academy/attendances').on('value', snap => {
                 allAttendances = snap.val() ? Object.keys(snap.val()).map(k => ({ id: k, ...snap.val()[k] })) : [];
                 if (currentUser) refreshCurrentView();
             });
-            // الدفعات
             db.ref('academy/payments').on('value', snap => {
                 allPayments = snap.val() ? Object.keys(snap.val()).map(k => ({ id: k, ...snap.val()[k] })) : [];
                 if (currentUser) refreshCurrentView();
             });
-            // تفاصيل اللاعبين (تقييم)
             db.ref('academy/playerDetails').on('value', snap => {
                 allPlayerDetails = snap.val() || {};
                 if (currentUser) refreshCurrentView();
             });
         }
 
+        function refreshCurrentView() {
+            if (currentViewFunction) {
+                currentViewFunction(...currentViewArgs);
+            }
+        }
+
         // ================================================================
-        // 3. فتح وإغلاق لوحة التحكم
+        // 3. فتح/إغلاق اللوحة وتسجيل الدخول
         // ================================================================
         function openDashboard() {
             document.getElementById('dashboardWrapper').classList.add('active');
@@ -523,7 +1681,7 @@
                         <button class="btn-submit" onclick="loginAs('coach')" style="flex:1; background:linear-gradient(135deg,#28a745,#20c997);"><i class="fas fa-chalkboard-teacher"></i> مدرب</button>
                         <button class="btn-submit" onclick="loginAs('parent')" style="flex:1; background:linear-gradient(135deg,#ffc107,#e0a800); color:#212529;"><i class="fas fa-user-friends"></i> ولي أمر</button>
                     </div>
-                    <div id="loginError" style="color:#e74c3c; margin-top:12px; text-align:center; display:none;">❌ كود غير صحيح، حاول مرة أخرى</div>
+                    <div id="loginError" style="color:#e74c3c; margin-top:12px; text-align:center; display:none;">❌ كود غير صحيح</div>
                 </div>
             `;
             document.getElementById('sidebarMenu').innerHTML = `
@@ -531,9 +1689,6 @@
             `;
         }
 
-        // ================================================================
-        // 4. تسجيل الدخول
-        // ================================================================
         async function loginAs(role) {
             const code = document.getElementById('loginCode').value.trim();
             if (!code) { alert('الرجاء إدخال الكود'); return; }
@@ -542,9 +1697,7 @@
                 if (role === 'admin') {
                     const snap = await db.ref('academy/admins/adminId').once('value');
                     const data = snap.val();
-                    if (data && data.code === code) {
-                        user = { role: 'admin', data: data, id: 'adminId' };
-                    }
+                    if (data && data.code === code) user = { role: 'admin', data, id: 'adminId' };
                 } else if (role === 'coach') {
                     const snap = await db.ref('academy/coaches').orderByChild('code').equalTo(code).once('value');
                     if (snap.val()) {
@@ -561,7 +1714,6 @@
                 if (user) {
                     currentUser = user;
                     document.getElementById('loginError').style.display = 'none';
-                    // بدء الاستماع المباشر إذا لم يكن قد بدأ
                     if (!window._listenersStarted) {
                         listenToAllData();
                         window._listenersStarted = true;
@@ -574,9 +1726,6 @@
                 alert('خطأ في الاتصال بقاعدة البيانات'); }
         }
 
-        // ================================================================
-        // 5. عرض لوحة التحكم حسب الدور
-        // ================================================================
         function renderDashboard() {
             const sidebar = document.getElementById('sidebarMenu');
             if (currentUser.role === 'admin') {
@@ -605,32 +1754,20 @@
         }
 
         // ================================================================
-        // 6. تحديث العرض الحالي عند تغير البيانات (استدعاء من الاستماع)
-        // ================================================================
-        let currentViewFunction = null;
-        let currentViewArgs = [];
-
-        function refreshCurrentView() {
-            if (currentViewFunction) {
-                currentViewFunction(...currentViewArgs);
-            }
-        }
-
-        // ================================================================
-        // 7. صفحات المدير (محسّنة)
+        // 4. صفحات المدير
         // ================================================================
         function showAdminHome() {
             currentViewFunction = showAdminHome;
             currentViewArgs = [];
-            const total = allPlayers.length;
-            const coaches = allCoaches.length;
-            const trainings = allTrainings.length;
-            const matches = allMatches.length;
-            const pending = allPlayers.filter(p => p.status === 'pending').length;
+            const total = allPlayers.length,
+                coaches = allCoaches.length,
+                trainings = allTrainings.length,
+                matches = allMatches.length,
+                pending = allPlayers.filter(p => p.status === 'pending').length;
             const content = document.getElementById('pageContent');
             content.innerHTML = `
                 <h2 class="page-title">🏠 لوحة المدير</h2>
-                <p class="page-sub">مرحباً، لديك صلاحية كاملة على النظام.</p>
+                <p class="page-sub">مرحباً، لديك صلاحية كاملة.</p>
                 <div class="stats-row">
                     <div class="stat-box"><div class="num">${total}</div><div class="label">اللاعبون</div></div>
                     <div class="stat-box"><div class="num">${coaches}</div><div class="label">المدربون</div></div>
@@ -639,16 +1776,16 @@
                     <div class="stat-box"><div class="num" style="color:#f39c12;">${pending}</div><div class="label">طلبات pending</div></div>
                 </div>
                 <div style="display:flex; gap:12px; flex-wrap:wrap;">
-                    <button class="btn-submit" onclick="showAdminPlayers()"><i class="fas fa-users"></i> إدارة اللاعبين</button>
-                    <button class="btn-submit" onclick="showAdminTrainings()"><i class="fas fa-futbol"></i> إدارة التدريبات</button>
-                    <button class="btn-submit" onclick="showAdminTournaments()"><i class="fas fa-trophy"></i> إدارة الدورات</button>
-                    <button class="btn-submit" onclick="showAdminMatches()"><i class="fas fa-handshake"></i> إدارة المباريات</button>
+                    <button class="btn-submit" onclick="showAdminPlayers()"><i class="fas fa-users"></i> اللاعبون</button>
+                    <button class="btn-submit" onclick="showAdminTrainings()"><i class="fas fa-futbol"></i> التدريبات</button>
+                    <button class="btn-submit" onclick="showAdminTournaments()"><i class="fas fa-trophy"></i> الدورات</button>
+                    <button class="btn-submit" onclick="showAdminMatches()"><i class="fas fa-handshake"></i> المباريات</button>
                 </div>
             `;
             setActiveMenu(0);
         }
 
-        // ---- إدارة اللاعبين (مع عرض الصورة والوثائق) ----
+        // ---- إدارة اللاعبين ----
         function showAdminPlayers() {
             currentViewFunction = showAdminPlayers;
             currentViewArgs = [];
@@ -673,7 +1810,7 @@
                         <div class="form-group"><label>تاريخ الميلاد</label><input type="date" id="newBirthDate" /></div>
                         <div class="form-group"><label>الولي</label><input type="text" id="newGuardian" /></div>
                         <div class="form-group"><label>هاتف الولي</label><input type="text" id="newGuardianPhone" /></div>
-                        <div class="form-group full"><button class="btn-submit" onclick="addPlayer()"><i class="fas fa-save"></i> حفظ اللاعب</button></div>
+                        <div class="form-group full"><button class="btn-submit" onclick="addPlayer()"><i class="fas fa-save"></i> حفظ</button></div>
                     </div>
                 </div>
             `;
@@ -688,7 +1825,8 @@
             let players = allPlayers;
             if (filterCategory !== 'all') players = players.filter(p => p.categoryId === filterCategory);
             if (players.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="10" style="text-align:center;color:#888;padding:20px;">لا يوجد لاعبون</td></tr>`;
+                tbody.innerHTML =
+                `<tr><td colspan="10" style="text-align:center;color:#888;padding:20px;">لا يوجد لاعبون</td></tr>`;
                 return;
             }
             let html = '';
@@ -700,141 +1838,26 @@
                 const payStatus = payment ? payment.status : 'unpaid';
                 const expiry = payment ? payment.expiryDate : '-';
                 const rating = allPlayerDetails[p.id] ? allPlayerDetails[p.id].rating : '-';
-                // الصورة
                 const imgSrc = p.photo && p.photo.startsWith('data:image') ? p.photo :
                     'https://via.placeholder.com/50';
                 html += `<tr>
                     <td>${idx+1}</td>
                     <td><img src="${imgSrc}" style="width:40px; height:40px; border-radius:50%; object-fit:cover; border:2px solid var(--primary-blue);" /></td>
-                    <td>${p.firstName || ''} ${p.lastName || ''}</td>
-                    <td><strong>${p.categoryId || ''}</strong></td>
-                    <td>${p.guardianName || ''}</td>
-                    <td><span class="badge-status ${p.status === 'approved' ? 'paid' : 'unpaid'}">${p.status === 'approved' ? 'معتمد' : 'قيد الانتظار'}</span></td>
-                    <td><span class="badge-status ${present > absent ? 'present' : 'absent'}">ح:${present} / غ:${absent}</span></td>
-                    <td><span class="badge-status ${payStatus === 'paid' ? 'paid' : 'unpaid'}">${payStatus === 'paid' ? 'مدفوع' : 'غير مدفوع'} (${expiry})</span></td>
+                    <td>${p.firstName||''} ${p.lastName||''}</td>
+                    <td><strong>${p.categoryId||''}</strong></td>
+                    <td>${p.guardianName||''}</td>
+                    <td><span class="badge-status ${p.status==='approved'?'paid':'unpaid'}">${p.status==='approved'?'معتمد':'قيد الانتظار'}</span></td>
+                    <td><span class="badge-status ${present>absent?'present':'absent'}">ح:${present} / غ:${absent}</span></td>
+                    <td><span class="badge-status ${payStatus==='paid'?'paid':'unpaid'}">${payStatus==='paid'?'مدفوع':'غير مدفوع'} (${expiry})</span></td>
                     <td>${rating}</td>
-                    <td>
-                        <button class="btn-sm btn-sm-info" onclick="showPlayerDetails('${p.id}')"><i class="fas fa-eye"></i></button>
-                        <button class="btn-sm btn-sm-danger" onclick="deletePlayer('${p.id}')"><i class="fas fa-trash"></i></button>
-                    </td>
+                    <td><button class="btn-sm btn-sm-info" onclick="showPlayerDetails('${p.id}')"><i class="fas fa-eye"></i></button>
+                        <button class="btn-sm btn-sm-danger" onclick="deletePlayer('${p.id}')"><i class="fas fa-trash"></i></button></td>
                 </tr>`;
             });
             tbody.innerHTML = html;
         }
-
         window.filterPlayers = function(cat) { renderPlayersTable(cat); };
 
-        // ---- عرض تفاصيل اللاعب (قالب متطور مع الصورة والوثائق) ----
-        window.showPlayerDetails = function(playerId) {
-            const p = allPlayers.find(x => x.id === playerId);
-            if (!p) { alert('اللاعب غير موجود'); return; }
-            const payment = allPayments.find(pay => pay.playerId === playerId);
-            const details = allPlayerDetails[playerId] || { rating: '', notes: '' };
-            const attendances = allAttendances.filter(a => a.playerId === playerId);
-            const imgSrc = p.photo && p.photo.startsWith('data:image') ? p.photo :
-                'https://via.placeholder.com/100';
-
-            // تحضير الوثائق
-            const hasParental = p.parentalDoc && p.parentalDoc.startsWith('data:image');
-            const hasInternal = p.internalDoc && p.internalDoc.startsWith('data:image');
-
-            const html = `
-                <div class="player-detail-card">
-                    <div class="header">
-                        <div class="avatar">
-                            <img src="${imgSrc}" alt="${p.firstName}" />
-                        </div>
-                        <div>
-                            <h2 style="font-size:1.8rem; color:var(--dark-navy);">${p.firstName} ${p.lastName}</h2>
-                            <p style="color:#888;">كود ولي الأمر: <strong style="color:var(--primary-blue);">${p.parentCode}</strong></p>
-                        </div>
-                    </div>
-                    <div class="info-grid">
-                        <div class="item"><div class="label">الفئة</div><div class="value">${p.categoryId}</div></div>
-                        <div class="item"><div class="label">تاريخ الميلاد</div><div class="value">${p.birthDate}</div></div>
-                        <div class="item"><div class="label">مكان الميلاد</div><div class="value">${p.birthPlace || '-'}</div></div>
-                        <div class="item"><div class="label">المستوى الدراسي</div><div class="value">${p.studyLevel || '-'}</div></div>
-                        <div class="item"><div class="label">الحالة الصحية</div><div class="value">${p.health || 'سليم'}</div></div>
-                        <div class="item"><div class="label">الزمرة الدموية</div><div class="value">${p.bloodType || '-'}</div></div>
-                        <div class="item"><div class="label">الولي</div><div class="value">${p.guardianName}</div></div>
-                        <div class="item"><div class="label">هاتف الولي</div><div class="value">${p.guardianPhone}</div></div>
-                        <div class="item"><div class="label">الحالة</div><div class="value"><span class="badge-status ${p.status === 'approved' ? 'paid' : 'unpaid'}">${p.status === 'approved' ? 'معتمد' : 'قيد الانتظار'}</span></div></div>
-                        <div class="item"><div class="label">تاريخ التسجيل</div><div class="value">${p.registrationDate ? new Date(p.registrationDate).toLocaleDateString('ar-EG') : '-'}</div></div>
-                    </div>
-
-                    <div style="margin:16px 0; border-top:1px solid #eee; padding-top:16px;">
-                        <h4>📋 التقييم</h4>
-                        <p>التقييم: <strong>${details.rating || 'لم يُقيّم'}</strong> - ملاحظات: ${details.notes || 'لا توجد'}</p>
-                        <button class="btn-sm btn-sm-primary" onclick="openRatingEditor('${playerId}')">تعديل التقييم</button>
-                    </div>
-
-                    <div style="margin:16px 0; border-top:1px solid #eee; padding-top:16px;">
-                        <h4>📅 الحضور (آخر 7 أيام)</h4>
-                        <div style="display:flex; gap:8px; flex-wrap:wrap;">
-                            ${attendances.slice(0,7).map(a => `<span class="badge-status ${a.status === 'present' ? 'present' : 'absent'}">${a.date}</span>`).join('')}
-                        </div>
-                        <div style="margin-top:8px;">
-                            <button class="btn-sm btn-sm-success" onclick="markAttendance('${playerId}','present')">✅ حضور اليوم</button>
-                            <button class="btn-sm btn-sm-danger" onclick="markAttendance('${playerId}','absent')">❌ غياب اليوم</button>
-                        </div>
-                    </div>
-
-                    <div style="margin:16px 0; border-top:1px solid #eee; padding-top:16px;">
-                        <h4>💳 الدفع</h4>
-                        <p>الحالة: <span class="badge-status ${payment ? payment.status === 'paid' ? 'paid' : 'unpaid' : 'unpaid'}">${payment ? (payment.status === 'paid' ? 'مدفوع' : 'غير مدفوع') : 'غير مدفوع'}</span> - تاريخ الانتهاء: ${payment ? payment.expiryDate : '-'}</p>
-                        <button class="btn-sm btn-sm-success" onclick="updatePayment('${playerId}','paid')">تحديد مدفوع</button>
-                        <button class="btn-sm btn-sm-danger" onclick="updatePayment('${playerId}','unpaid')">تحديد غير مدفوع</button>
-                        <button class="btn-sm btn-sm-info" onclick="extendPayment('${playerId}')">➕ تمديد شهر</button>
-                    </div>
-
-                    <div class="documents">
-                        <h4 style="width:100%;">📎 الوثائق المرفوعة</h4>
-                        ${hasParental ? `<button class="doc-btn" onclick="viewDocument('${p.parentalDoc}')"><i class="fas fa-file-signature"></i> الترخيص الأبوي</button>` : `<span class="text-muted">لا يوجد ترخيص أبوي</span>`}
-                        ${hasInternal ? `<button class="doc-btn" onclick="viewDocument('${p.internalDoc}')"><i class="fas fa-file-contract"></i> القانون الداخلي</button>` : `<span class="text-muted">لا يوجد قانون داخلي</span>`}
-                    </div>
-
-                    <div style="margin-top:20px; text-align:center;">
-                        <button class="btn-sm btn-sm-warning" onclick="closeModal()">إغلاق</button>
-                    </div>
-                </div>
-            `;
-            const overlay = document.createElement('div');
-            overlay.id = 'detailOverlay';
-            overlay.style.cssText =
-                'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); backdrop-filter:blur(4px); z-index:999999; display:flex; align-items:center; justify-content:center; padding:20px; overflow-y:auto;';
-            overlay.innerHTML = html;
-            document.body.appendChild(overlay);
-            overlay.onclick = function(e) { if (e.target === overlay) closeModal(); };
-        };
-
-        // عرض وثيقة (فتح في تبويب جديد)
-        window.viewDocument = function(dataUrl) {
-            if (!dataUrl) return;
-            const win = window.open();
-            win.document.write(`<img src="${dataUrl}" style="max-width:100%; max-height:100vh;" />`);
-        };
-
-        // محرر التقييم
-        window.openRatingEditor = function(playerId) {
-            const details = allPlayerDetails[playerId] || { rating: '', notes: '' };
-            const newRating = prompt('أدخل التقييم (0-5):', details.rating || 0);
-            if (newRating === null) return;
-            const rating = parseFloat(newRating);
-            if (isNaN(rating) || rating < 0 || rating > 5) { alert('القيمة بين 0 و 5'); return; }
-            const notes = prompt('ملاحظات:', details.notes || '');
-            db.ref('academy/playerDetails/' + playerId).set({ rating, notes: notes || '' })
-                .then(() => { alert('✅ تم حفظ التقييم');
-                    closeModal();
-                    refreshCurrentView(); });
-        };
-
-        // ================================================================
-        // 8. باقي دوال المدير (مختصرة ولكن بنفس القوة)
-        // ================================================================
-        // (الدوال التالية مطابقة لما سبق ولكن مع استخدام refreshCurrentView()
-        //  بدلاً من fetchAllData(). ثم show...)
-
-        // ---- إضافة لاعب ----
         window.addPlayer = function() {
             const firstName = document.getElementById('newFirstName').value.trim();
             const lastName = document.getElementById('newLastName').value.trim();
@@ -850,14 +1873,119 @@
             const newPlayer = { firstName, lastName, categoryId, birthDate, guardianName, guardianPhone, parentCode,
                 status: 'approved', registrationDate: new Date().toISOString() };
             db.ref('academy/players').push(newPlayer)
-                .then(() => { alert('✅ تم إضافة اللاعب'); })
+                .then(() => alert('✅ تم إضافة اللاعب'))
                 .catch(err => alert('❌ خطأ: ' + err.message));
         };
 
         window.deletePlayer = function(id) {
             if (!confirm('حذف هذا اللاعب؟')) return;
             db.ref('academy/players/' + id).remove()
-                .then(() => { alert('تم الحذف'); });
+                .then(() => alert('تم الحذف'));
+        };
+
+        // ---- عرض تفاصيل اللاعب (متطور) ----
+        window.showPlayerDetails = function(playerId) {
+            const p = allPlayers.find(x => x.id === playerId);
+            if (!p) { alert('اللاعب غير موجود'); return; }
+            const payment = allPayments.find(pay => pay.playerId === playerId);
+            const details = allPlayerDetails[playerId] || { rating: '', notes: '' };
+            const attendances = allAttendances.filter(a => a.playerId === playerId);
+            const imgSrc = p.photo && p.photo.startsWith('data:image') ? p.photo :
+                'https://via.placeholder.com/100';
+            const hasParental = p.parentalDoc && p.parentalDoc.startsWith('data:image');
+            const hasInternal = p.internalDoc && p.internalDoc.startsWith('data:image');
+
+            const html = `
+                <div class="player-detail-card" style="background:#fff; border-radius:24px; padding:30px; box-shadow:var(--shadow); max-width:800px; margin:10px auto;">
+                    <div style="display:flex; align-items:center; gap:24px; border-bottom:2px solid #f0f0f0; padding-bottom:20px; margin-bottom:20px; flex-wrap:wrap;">
+                        <div style="width:100px; height:100px; border-radius:50%; overflow:hidden; border:4px solid var(--primary-blue); flex-shrink:0; background:#f0f0f0;">
+                            <img src="${imgSrc}" style="width:100%; height:100%; object-fit:cover;" />
+                        </div>
+                        <div><h2 style="font-size:1.8rem; color:var(--dark-navy);">${p.firstName} ${p.lastName}</h2>
+                            <p style="color:#888;">كود ولي الأمر: <strong style="color:var(--primary-blue);">${p.parentCode}</strong></p></div>
+                    </div>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px 24px;">
+                        <div style="background:var(--light-bg); padding:8px 14px; border-radius:12px;"><div style="font-size:0.7rem; color:#888;">الفئة</div><div style="font-weight:700;">${p.categoryId}</div></div>
+                        <div style="background:var(--light-bg); padding:8px 14px; border-radius:12px;"><div style="font-size:0.7rem; color:#888;">تاريخ الميلاد</div><div style="font-weight:700;">${p.birthDate}</div></div>
+                        <div style="background:var(--light-bg); padding:8px 14px; border-radius:12px;"><div style="font-size:0.7rem; color:#888;">مكان الميلاد</div><div style="font-weight:700;">${p.birthPlace||'-'}</div></div>
+                        <div style="background:var(--light-bg); padding:8px 14px; border-radius:12px;"><div style="font-size:0.7rem; color:#888;">المستوى الدراسي</div><div style="font-weight:700;">${p.studyLevel||'-'}</div></div>
+                        <div style="background:var(--light-bg); padding:8px 14px; border-radius:12px;"><div style="font-size:0.7rem; color:#888;">الحالة الصحية</div><div style="font-weight:700;">${p.health||'سليم'}</div></div>
+                        <div style="background:var(--light-bg); padding:8px 14px; border-radius:12px;"><div style="font-size:0.7rem; color:#888;">الزمرة الدموية</div><div style="font-weight:700;">${p.bloodType||'-'}</div></div>
+                        <div style="background:var(--light-bg); padding:8px 14px; border-radius:12px;"><div style="font-size:0.7rem; color:#888;">الولي</div><div style="font-weight:700;">${p.guardianName}</div></div>
+                        <div style="background:var(--light-bg); padding:8px 14px; border-radius:12px;"><div style="font-size:0.7rem; color:#888;">هاتف الولي</div><div style="font-weight:700;">${p.guardianPhone}</div></div>
+                        <div style="background:var(--light-bg); padding:8px 14px; border-radius:12px;"><div style="font-size:0.7rem; color:#888;">الحالة</div><div style="font-weight:700;"><span class="badge-status ${p.status==='approved'?'paid':'unpaid'}">${p.status==='approved'?'معتمد':'قيد الانتظار'}</span></div></div>
+                        <div style="background:var(--light-bg); padding:8px 14px; border-radius:12px;"><div style="font-size:0.7rem; color:#888;">تاريخ التسجيل</div><div style="font-weight:700;">${p.registrationDate?new Date(p.registrationDate).toLocaleDateString('ar-EG'):'-'}</div></div>
+                    </div>
+                    <div style="margin:16px 0; border-top:1px solid #eee; padding-top:16px;">
+                        <h4>📋 التقييم</h4>
+                        <p>التقييم: <strong>${details.rating||'لم يُقيّم'}</strong> - ملاحظات: ${details.notes||'لا توجد'}</p>
+                        <button class="btn-sm btn-sm-primary" onclick="openRatingEditor('${playerId}')">تعديل التقييم</button>
+                    </div>
+                    <div style="margin:16px 0; border-top:1px solid #eee; padding-top:16px;">
+                        <h4>📅 الحضور (آخر 7 أيام)</h4>
+                        <div style="display:flex; gap:8px; flex-wrap:wrap;">${attendances.slice(0,7).map(a => `<span class="badge-status ${a.status==='present'?'present':'absent'}">${a.date}</span>`).join('')}</div>
+                        <div style="margin-top:8px;"><button class="btn-sm btn-sm-success" onclick="markAttendance('${playerId}','present')">✅ حضور اليوم</button>
+                        <button class="btn-sm btn-sm-danger" onclick="markAttendance('${playerId}','absent')">❌ غياب اليوم</button></div>
+                    </div>
+                    <div style="margin:16px 0; border-top:1px solid #eee; padding-top:16px;">
+                        <h4>💳 الدفع</h4>
+                        <p>الحالة: <span class="badge-status ${payment?payment.status==='paid'?'paid':'unpaid':'unpaid'}">${payment?(payment.status==='paid'?'مدفوع':'غير مدفوع'):'غير مدفوع'}</span> - تاريخ الانتهاء: ${payment?payment.expiryDate:'-'}</p>
+                        <p>المبلغ: ${payment?payment.amount||'-':' -'} دج - طريقة الدفع: ${payment?payment.method||'-':'-'}</p>
+                        <p>ملاحظات: ${payment?payment.notes||'-':'-'}</p>
+                        <button class="btn-sm btn-sm-success" onclick="updatePayment('${playerId}','paid')">تحديد مدفوع</button>
+                        <button class="btn-sm btn-sm-danger" onclick="updatePayment('${playerId}','unpaid')">تحديد غير مدفوع</button>
+                        <button class="btn-sm btn-sm-info" onclick="extendPayment('${playerId}')">➕ تمديد شهر</button>
+                        <button class="btn-sm btn-sm-warning" onclick="editPayment('${playerId}')">✏️ تعديل المبلغ والطريقة</button>
+                    </div>
+                    <div style="display:flex; gap:16px; flex-wrap:wrap; margin-top:16px; border-top:1px solid #eee; padding-top:16px;">
+                        <h4 style="width:100%;">📎 الوثائق</h4>
+                        ${hasParental?`<button class="btn-sm btn-sm-info" onclick="viewDocument('${p.parentalDoc}')"><i class="fas fa-file-signature"></i> الترخيص الأبوي</button>`:'<span class="text-muted">لا يوجد ترخيص</span>'}
+                        ${hasInternal?`<button class="btn-sm btn-sm-info" onclick="viewDocument('${p.internalDoc}')"><i class="fas fa-file-contract"></i> القانون الداخلي</button>`:'<span class="text-muted">لا يوجد قانون</span>'}
+                    </div>
+                    <div style="margin-top:20px; text-align:center;"><button class="btn-sm btn-sm-warning" onclick="closeModal()">إغلاق</button></div>
+                </div>
+            `;
+            const overlay = document.createElement('div');
+            overlay.id = 'detailOverlay';
+            overlay.style.cssText =
+                'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); backdrop-filter:blur(4px); z-index:999999; display:flex; align-items:center; justify-content:center; padding:20px; overflow-y:auto;';
+            overlay.innerHTML = html;
+            document.body.appendChild(overlay);
+            overlay.onclick = function(e) { if (e.target === overlay) closeModal(); };
+        };
+
+        window.viewDocument = function(dataUrl) {
+            if (!dataUrl) return;
+            const win = window.open();
+            win.document.write(`<img src="${dataUrl}" style="max-width:100%; max-height:100vh;" />`);
+        };
+
+        window.openRatingEditor = function(playerId) {
+            const details = allPlayerDetails[playerId] || { rating: '', notes: '' };
+            const newRating = prompt('أدخل التقييم (0-5):', details.rating || 0);
+            if (newRating === null) return;
+            const rating = parseFloat(newRating);
+            if (isNaN(rating) || rating < 0 || rating > 5) { alert('القيمة بين 0 و 5'); return; }
+            const notes = prompt('ملاحظات:', details.notes || '');
+            db.ref('academy/playerDetails/' + playerId).set({ rating, notes: notes || '' })
+                .then(() => { alert('✅ تم حفظ التقييم');
+                    closeModal();
+                    refreshCurrentView(); });
+        };
+
+        window.editPayment = function(playerId) {
+            const existing = allPayments.find(p => p.playerId === playerId);
+            const amount = prompt('المبلغ (دج):', existing ? existing.amount || '' : '');
+            if (amount === null) return;
+            const method = prompt('طريقة الدفع (نقدي/تحويل/شيك):', existing ? existing.method || 'نقدي' : 'نقدي');
+            if (method === null) return;
+            const notes = prompt('ملاحظات:', existing ? existing.notes || '' : '');
+            if (notes === null) return;
+            const ref = existing ? db.ref('academy/payments/' + existing.id) : db.ref('academy/payments').push();
+            ref.update({ amount: parseFloat(amount) || 0, method: method || 'نقدي', notes: notes || '' })
+                .then(() => { alert('✅ تم تحديث معلومات الدفع');
+                    closeModal();
+                    refreshCurrentView(); });
         };
 
         window.markAttendance = function(playerId, status) {
@@ -874,7 +2002,10 @@
                 playerId,
                 status,
                 date: new Date().toISOString(),
-                expiryDate: existing ? existing.expiryDate : new Date(Date.now() + 30 * 86400000).toISOString().split('T')[0]
+                expiryDate: existing ? existing.expiryDate : new Date(Date.now() + 30 * 86400000).toISOString().split('T')[0],
+                amount: existing ? existing.amount || 0 : 0,
+                method: existing ? existing.method || 'نقدي' : 'نقدي',
+                notes: existing ? existing.notes || '' : ''
             };
             ref.set(data).then(() => { alert('✅ تم تحديث الدفع');
                 closeModal(); });
@@ -903,8 +2034,11 @@
                         <div class="form-group"><label>العنوان</label><input type="text" id="trainingTitle" /></div>
                         <div class="form-group"><label>الفئة</label><select id="trainingCategory" onchange="updateTrainingPlayersList()">${categories.map(c=>`<option value="${c}">${c}</option>`).join('')}</select></div>
                         <div class="form-group"><label>التاريخ</label><input type="date" id="trainingDate" /></div>
-                        <div class="form-group"><label>الوقت</label><input type="time" id="trainingTime" /></div>
+                        <div class="form-group"><label>وقت البداية</label><input type="time" id="trainingStartTime" /></div>
+                        <div class="form-group"><label>وقت النهاية</label><input type="time" id="trainingEndTime" /></div>
                         <div class="form-group"><label>الملعب</label><input type="text" id="trainingField" /></div>
+                        <div class="form-group"><label>الحالة</label><select id="trainingStatus"><option value="مقرر">مقرر</option><option value="منتهي">منتهي</option><option value="ملغي">ملغي</option></select></div>
+                        <div class="form-group full"><label>ملاحظات</label><textarea id="trainingNotes" rows="2"></textarea></div>
                         <div class="form-group full">
                             <label>اللاعبون المستدعون</label>
                             <select id="trainingPlayersSelect" multiple style="height:100px;"></select>
@@ -930,17 +2064,20 @@
             }
             let html = '';
             allTrainings.forEach(t => {
+                const statusColor = t.status === 'منتهي' ? '#28a745' : t.status === 'ملغي' ? '#dc3545' : '#ffc107';
                 html += `
-                    <div class="training-card">
-                        <div class="info">
-                            <span class="title">${t.title || 'تدريب'}</span>
-                            <span class="meta"><i class="fas fa-tag"></i> ${t.categoryId}</span>
-                            <span class="meta"><i class="fas fa-calendar-alt"></i> ${t.date}</span>
-                            <span class="meta"><i class="fas fa-clock"></i> ${t.time}</span>
-                            <span class="meta"><i class="fas fa-map-pin"></i> ${t.field}</span>
-                            <span class="meta"><i class="fas fa-users"></i> ${(t.playersList||[]).length} لاعب</span>
+                    <div class="training-card" style="background:#fff; border-radius:16px; padding:18px 24px; margin-bottom:16px; border-right:6px solid ${statusColor}; box-shadow:0 4px 12px rgba(0,0,0,0.04); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap;">
+                        <div style="display:flex; gap:20px; flex-wrap:wrap; align-items:center;">
+                            <span style="font-weight:800; color:var(--dark-navy); font-size:1.1rem;">${t.title||'تدريب'}</span>
+                            <span style="color:#666; font-size:0.85rem;"><i class="fas fa-tag" style="margin-left:4px;color:var(--primary-blue);"></i> ${t.categoryId}</span>
+                            <span style="color:#666; font-size:0.85rem;"><i class="fas fa-calendar-alt" style="margin-left:4px;color:var(--primary-blue);"></i> ${t.date}</span>
+                            <span style="color:#666; font-size:0.85rem;"><i class="fas fa-clock" style="margin-left:4px;color:var(--primary-blue);"></i> ${t.startTime||''} - ${t.endTime||''}</span>
+                            <span style="color:#666; font-size:0.85rem;"><i class="fas fa-map-pin" style="margin-left:4px;color:var(--primary-blue);"></i> ${t.field}</span>
+                            <span style="color:#666; font-size:0.85rem;"><i class="fas fa-users" style="margin-left:4px;color:var(--primary-blue);"></i> ${(t.playersList||[]).length} لاعب</span>
+                            <span style="color:#666; font-size:0.85rem;"><span class="badge-status" style="background:${statusColor}22; color:${statusColor};">${t.status||'مقرر'}</span></span>
                         </div>
-                        <div class="actions">
+                        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                            <button class="btn-sm btn-sm-info" onclick="editTraining('${t.id}')"><i class="fas fa-edit"></i></button>
                             <button class="btn-sm btn-sm-danger" onclick="deleteTraining('${t.id}')"><i class="fas fa-trash"></i></button>
                         </div>
                     </div>
@@ -967,12 +2104,19 @@
             const title = document.getElementById('trainingTitle').value.trim();
             const categoryId = document.getElementById('trainingCategory').value;
             const date = document.getElementById('trainingDate').value;
-            const time = document.getElementById('trainingTime').value;
+            const startTime = document.getElementById('trainingStartTime').value;
+            const endTime = document.getElementById('trainingEndTime').value;
             const field = document.getElementById('trainingField').value.trim();
+            const status = document.getElementById('trainingStatus').value;
+            const notes = document.getElementById('trainingNotes').value.trim();
             const select = document.getElementById('trainingPlayersSelect');
             const playersList = Array.from(select.selectedOptions).map(o => o.value);
-            if (!title || !categoryId || !date || !time || !field) { alert('الرجاء ملء جميع الحقول'); return; }
-            db.ref('academy/trainings').push({ title, categoryId, date, time, field, playersList, coachId: '' })
+            if (!title || !categoryId || !date || !startTime || !endTime || !field) {
+                alert('الرجاء ملء جميع الحقول الإجبارية');
+                return;
+            }
+            db.ref('academy/trainings').push({ title, categoryId, date, startTime, endTime, field, status, notes,
+                    playersList, coachId: '' })
                 .then(() => { alert('✅ تم إضافة التدريب'); });
         };
 
@@ -981,7 +2125,36 @@
             db.ref('academy/trainings/' + id).remove();
         };
 
-        // ---- إدارة الدورات والمباريات (بنفس النمط، اختصاراً) ----
+        window.editTraining = function(id) {
+            const t = allTrainings.find(x => x.id === id);
+            if (!t) { alert('التدريب غير موجود'); return; }
+            // نفتح نافذة تعديل بسيطة (يمكن تحسينها)
+            const newTitle = prompt('العنوان:', t.title);
+            if (newTitle === null) return;
+            const newDate = prompt('التاريخ (YYYY-MM-DD):', t.date);
+            if (newDate === null) return;
+            const newStart = prompt('وقت البداية (HH:MM):', t.startTime);
+            if (newStart === null) return;
+            const newEnd = prompt('وقت النهاية (HH:MM):', t.endTime);
+            if (newEnd === null) return;
+            const newField = prompt('الملعب:', t.field);
+            if (newField === null) return;
+            const newStatus = prompt('الحالة (مقرر/منتهي/ملغي):', t.status || 'مقرر');
+            if (newStatus === null) return;
+            const newNotes = prompt('ملاحظات:', t.notes || '');
+            if (newNotes === null) return;
+            db.ref('academy/trainings/' + id).update({
+                title: newTitle,
+                date: newDate,
+                startTime: newStart,
+                endTime: newEnd,
+                field: newField,
+                status: newStatus,
+                notes: newNotes
+            }).then(() => { alert('✅ تم التحديث'); });
+        };
+
+        // ---- إدارة الدورات (متطورة) ----
         function showAdminTournaments() {
             currentViewFunction = showAdminTournaments;
             currentViewArgs = [];
@@ -993,9 +2166,12 @@
                     <div class="form-grid">
                         <div class="form-group"><label>العنوان</label><input type="text" id="tournamentTitle" /></div>
                         <div class="form-group"><label>الفئة</label><select id="tournamentCategory" onchange="updateTournamentPlayers()">${categories.map(c=>`<option value="${c}">${c}</option>`).join('')}</select></div>
+                        <div class="form-group"><label>نوع الدورة</label><select id="tournamentType"><option value="ودية">ودية</option><option value="رسمية">رسمية</option><option value="تصفيات">تصفيات</option></select></div>
                         <div class="form-group"><label>تاريخ البداية</label><input type="date" id="tournamentStart" /></div>
                         <div class="form-group"><label>تاريخ النهاية</label><input type="date" id="tournamentEnd" /></div>
                         <div class="form-group"><label>المكان</label><input type="text" id="tournamentLocation" /></div>
+                        <div class="form-group"><label>الجوائز</label><input type="text" id="tournamentPrize" placeholder="كأس، ميداليات، ..." /></div>
+                        <div class="form-group full"><label>ملاحظات</label><textarea id="tournamentNotes" rows="2"></textarea></div>
                         <div class="form-group full">
                             <label>اللاعبون المستدعون</label>
                             <select id="tournamentPlayersSelect" multiple style="height:100px;"></select>
@@ -1014,19 +2190,24 @@
         function renderTournamentsList() {
             const container = document.getElementById('tournamentsList');
             if (!container) return;
-            if (allTournaments.length === 0) { container.innerHTML = `<p class="text-muted text-center">لا توجد دورات</p>`; return; }
+            if (allTournaments.length === 0) {
+                container.innerHTML = `<p class="text-muted text-center">لا توجد دورات</p>`;
+                return;
+            }
             let html = '';
             allTournaments.forEach(t => {
                 html += `
-                    <div class="training-card" style="border-right-color:#f39c12;">
-                        <div class="info">
-                            <span class="title">${t.title}</span>
-                            <span class="meta"><i class="fas fa-tag"></i> ${t.categoryId}</span>
-                            <span class="meta"><i class="fas fa-calendar-alt"></i> ${t.startDate} - ${t.endDate}</span>
-                            <span class="meta"><i class="fas fa-map-pin"></i> ${t.location}</span>
-                            <span class="meta"><i class="fas fa-users"></i> ${(t.playersList||[]).length} لاعب</span>
+                    <div class="training-card" style="background:#fff; border-radius:16px; padding:18px 24px; margin-bottom:16px; border-right:6px solid #f39c12; box-shadow:0 4px 12px rgba(0,0,0,0.04); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap;">
+                        <div style="display:flex; gap:20px; flex-wrap:wrap; align-items:center;">
+                            <span style="font-weight:800; color:var(--dark-navy); font-size:1.1rem;">${t.title}</span>
+                            <span style="color:#666; font-size:0.85rem;"><i class="fas fa-tag" style="margin-left:4px;color:var(--primary-blue);"></i> ${t.categoryId}</span>
+                            <span style="color:#666; font-size:0.85rem;"><i class="fas fa-calendar-alt" style="margin-left:4px;color:var(--primary-blue);"></i> ${t.startDate} - ${t.endDate}</span>
+                            <span style="color:#666; font-size:0.85rem;"><i class="fas fa-map-pin" style="margin-left:4px;color:var(--primary-blue);"></i> ${t.location}</span>
+                            <span style="color:#666; font-size:0.85rem;"><i class="fas fa-trophy" style="margin-left:4px;color:var(--primary-blue);"></i> ${t.prize||'-'}</span>
+                            <span style="color:#666; font-size:0.85rem;"><i class="fas fa-users" style="margin-left:4px;color:var(--primary-blue);"></i> ${(t.playersList||[]).length} لاعب</span>
                         </div>
-                        <div class="actions">
+                        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                            <button class="btn-sm btn-sm-info" onclick="editTournament('${t.id}')"><i class="fas fa-edit"></i></button>
                             <button class="btn-sm btn-sm-danger" onclick="deleteTournament('${t.id}')"><i class="fas fa-trash"></i></button>
                         </div>
                     </div>
@@ -1052,13 +2233,20 @@
         window.saveTournament = function() {
             const title = document.getElementById('tournamentTitle').value.trim();
             const categoryId = document.getElementById('tournamentCategory').value;
+            const type = document.getElementById('tournamentType').value;
             const startDate = document.getElementById('tournamentStart').value;
             const endDate = document.getElementById('tournamentEnd').value;
             const location = document.getElementById('tournamentLocation').value.trim();
+            const prize = document.getElementById('tournamentPrize').value.trim();
+            const notes = document.getElementById('tournamentNotes').value.trim();
             const select = document.getElementById('tournamentPlayersSelect');
             const playersList = Array.from(select.selectedOptions).map(o => o.value);
-            if (!title || !categoryId || !startDate || !endDate || !location) { alert('الرجاء ملء جميع الحقول'); return; }
-            db.ref('academy/tournaments').push({ title, categoryId, startDate, endDate, location, playersList })
+            if (!title || !categoryId || !startDate || !endDate || !location) {
+                alert('الرجاء ملء جميع الحقول الإجبارية');
+                return;
+            }
+            db.ref('academy/tournaments').push({ title, categoryId, type, startDate, endDate, location, prize, notes,
+                    playersList })
                 .then(() => { alert('✅ تم إضافة الدورة'); });
         };
 
@@ -1067,7 +2255,29 @@
             db.ref('academy/tournaments/' + id).remove();
         };
 
-        // ---- المباريات ----
+        window.editTournament = function(id) {
+            const t = allTournaments.find(x => x.id === id);
+            if (!t) { alert('الدورة غير موجودة'); return; }
+            const newTitle = prompt('العنوان:', t.title);
+            if (newTitle === null) return;
+            const newStart = prompt('تاريخ البداية (YYYY-MM-DD):', t.startDate);
+            if (newStart === null) return;
+            const newEnd = prompt('تاريخ النهاية (YYYY-MM-DD):', t.endDate);
+            if (newEnd === null) return;
+            const newLocation = prompt('المكان:', t.location);
+            if (newLocation === null) return;
+            const newPrize = prompt('الجوائز:', t.prize || '');
+            if (newPrize === null) return;
+            db.ref('academy/tournaments/' + id).update({
+                title: newTitle,
+                startDate: newStart,
+                endDate: newEnd,
+                location: newLocation,
+                prize: newPrize
+            }).then(() => { alert('✅ تم التحديث'); });
+        };
+
+        // ---- إدارة المباريات (متطورة) ----
         function showAdminMatches() {
             currentViewFunction = showAdminMatches;
             currentViewArgs = [];
@@ -1082,6 +2292,9 @@
                         <div class="form-group"><label>التاريخ</label><input type="date" id="matchDate" /></div>
                         <div class="form-group"><label>الوقت</label><input type="time" id="matchTime" /></div>
                         <div class="form-group"><label>الملعب</label><input type="text" id="matchField" /></div>
+                        <div class="form-group"><label>النتيجة</label><input type="text" id="matchScore" placeholder="مثال: 3-1" /></div>
+                        <div class="form-group"><label>الحالة</label><select id="matchStatus"><option value="قادمة">قادمة</option><option value="منتهية">منتهية</option><option value="ملغية">ملغية</option></select></div>
+                        <div class="form-group full"><label>ملاحظات</label><textarea id="matchNotes" rows="2"></textarea></div>
                         <div class="form-group full">
                             <label>اللاعبون المستدعون</label>
                             <select id="matchPlayersSelect" multiple style="height:100px;"></select>
@@ -1100,20 +2313,26 @@
         function renderMatchesList() {
             const container = document.getElementById('matchesList');
             if (!container) return;
-            if (allMatches.length === 0) { container.innerHTML = `<p class="text-muted text-center">لا توجد مباريات</p>`; return; }
+            if (allMatches.length === 0) {
+                container.innerHTML = `<p class="text-muted text-center">لا توجد مباريات</p>`;
+                return;
+            }
             let html = '';
             allMatches.forEach(m => {
+                const statusColor = m.status === 'منتهية' ? '#28a745' : m.status === 'ملغية' ? '#dc3545' : '#ffc107';
                 html += `
-                    <div class="training-card" style="border-right-color:#e74c3c;">
-                        <div class="info">
-                            <span class="title">ضد ${m.opponent}</span>
-                            <span class="meta"><i class="fas fa-tag"></i> ${m.categoryId}</span>
-                            <span class="meta"><i class="fas fa-calendar-alt"></i> ${m.date}</span>
-                            <span class="meta"><i class="fas fa-clock"></i> ${m.time}</span>
-                            <span class="meta"><i class="fas fa-map-pin"></i> ${m.field}</span>
-                            <span class="meta"><i class="fas fa-users"></i> ${(m.playersList||[]).length} لاعب</span>
+                    <div class="training-card" style="background:#fff; border-radius:16px; padding:18px 24px; margin-bottom:16px; border-right:6px solid ${statusColor}; box-shadow:0 4px 12px rgba(0,0,0,0.04); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap;">
+                        <div style="display:flex; gap:20px; flex-wrap:wrap; align-items:center;">
+                            <span style="font-weight:800; color:var(--dark-navy); font-size:1.1rem;">ضد ${m.opponent}</span>
+                            <span style="color:#666; font-size:0.85rem;"><i class="fas fa-tag" style="margin-left:4px;color:var(--primary-blue);"></i> ${m.categoryId}</span>
+                            <span style="color:#666; font-size:0.85rem;"><i class="fas fa-calendar-alt" style="margin-left:4px;color:var(--primary-blue);"></i> ${m.date}</span>
+                            <span style="color:#666; font-size:0.85rem;"><i class="fas fa-clock" style="margin-left:4px;color:var(--primary-blue);"></i> ${m.time}</span>
+                            <span style="color:#666; font-size:0.85rem;"><i class="fas fa-map-pin" style="margin-left:4px;color:var(--primary-blue);"></i> ${m.field}</span>
+                            <span style="color:#666; font-size:0.85rem;"><i class="fas fa-futbol" style="margin-left:4px;color:var(--primary-blue);"></i> ${m.score||'-'}</span>
+                            <span style="color:#666; font-size:0.85rem;"><span class="badge-status" style="background:${statusColor}22; color:${statusColor};">${m.status||'قادمة'}</span></span>
                         </div>
-                        <div class="actions">
+                        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                            <button class="btn-sm btn-sm-info" onclick="editMatch('${m.id}')"><i class="fas fa-edit"></i></button>
                             <button class="btn-sm btn-sm-danger" onclick="deleteMatch('${m.id}')"><i class="fas fa-trash"></i></button>
                         </div>
                     </div>
@@ -1142,16 +2361,47 @@
             const date = document.getElementById('matchDate').value;
             const time = document.getElementById('matchTime').value;
             const field = document.getElementById('matchField').value.trim();
+            const score = document.getElementById('matchScore').value.trim();
+            const status = document.getElementById('matchStatus').value;
+            const notes = document.getElementById('matchNotes').value.trim();
             const select = document.getElementById('matchPlayersSelect');
             const playersList = Array.from(select.selectedOptions).map(o => o.value);
-            if (!opponent || !categoryId || !date || !time || !field) { alert('الرجاء ملء جميع الحقول'); return; }
-            db.ref('academy/matches').push({ opponent, categoryId, date, time, field, playersList })
+            if (!opponent || !categoryId || !date || !time || !field) {
+                alert('الرجاء ملء جميع الحقول الإجبارية');
+                return;
+            }
+            db.ref('academy/matches').push({ opponent, categoryId, date, time, field, score, status, notes, playersList })
                 .then(() => { alert('✅ تم إضافة المباراة'); });
         };
 
         window.deleteMatch = function(id) {
             if (!confirm('حذف هذه المباراة؟')) return;
             db.ref('academy/matches/' + id).remove();
+        };
+
+        window.editMatch = function(id) {
+            const m = allMatches.find(x => x.id === id);
+            if (!m) { alert('المباراة غير موجودة'); return; }
+            const newOpp = prompt('الخصم:', m.opponent);
+            if (newOpp === null) return;
+            const newDate = prompt('التاريخ (YYYY-MM-DD):', m.date);
+            if (newDate === null) return;
+            const newTime = prompt('الوقت (HH:MM):', m.time);
+            if (newTime === null) return;
+            const newField = prompt('الملعب:', m.field);
+            if (newField === null) return;
+            const newScore = prompt('النتيجة:', m.score || '');
+            if (newScore === null) return;
+            const newStatus = prompt('الحالة (قادمة/منتهية/ملغية):', m.status || 'قادمة');
+            if (newStatus === null) return;
+            db.ref('academy/matches/' + id).update({
+                opponent: newOpp,
+                date: newDate,
+                time: newTime,
+                field: newField,
+                score: newScore,
+                status: newStatus
+            }).then(() => { alert('✅ تم التحديث'); });
         };
 
         // ---- إدارة المدربين ----
@@ -1188,12 +2438,8 @@
             }
             let html = '';
             allCoaches.forEach(c => {
-                html += `<tr>
-                    <td>${c.name || ''}</td>
-                    <td>${c.categoryId || ''}</td>
-                    <td><strong>${c.code || ''}</strong></td>
-                    <td><button class="btn-sm btn-sm-danger" onclick="deleteCoach('${c.id}')"><i class="fas fa-trash"></i></button></td>
-                </tr>`;
+                html += `<tr><td>${c.name||''}</td><td>${c.categoryId||''}</td><td><strong>${c.code||''}</strong></td>
+                    <td><button class="btn-sm btn-sm-danger" onclick="deleteCoach('${c.id}')"><i class="fas fa-trash"></i></button></td></tr>`;
             });
             tbody.innerHTML = html;
         }
@@ -1204,7 +2450,7 @@
             if (!name) { alert('الرجاء إدخال اسم المدرب'); return; }
             const code = 'COACH-' + Math.random().toString(36).substring(2, 6).toUpperCase();
             db.ref('academy/coaches').push({ name, categoryId, code })
-                .then(() => { alert(`✅ تم إضافة المدرب\nالكود: ${code}\nاحتفظ بهذا الكود للمدرب`); });
+                .then(() => { alert(`✅ تم إضافة المدرب\nالكود: ${code}`); });
         };
 
         window.deleteCoach = function(id) {
@@ -1213,7 +2459,7 @@
         };
 
         // ================================================================
-        // 9. صفحات المدرب (مع الربط الفعلي بالفئة)
+        // 5. صفحات المدرب
         // ================================================================
         function showCoachHome() {
             currentViewFunction = showCoachHome;
@@ -1225,7 +2471,7 @@
             const content = document.getElementById('pageContent');
             content.innerHTML = `
                 <h2 class="page-title">🧑‍🏫 لوحة المدرب</h2>
-                <p class="page-sub">مرحباً ${coach.name || ''}، أنت مسؤول عن فئة ${categoryId}</p>
+                <p class="page-sub">مرحباً ${coach.name||''}، أنت مسؤول عن فئة ${categoryId}</p>
                 <div class="stats-row">
                     <div class="stat-box"><div class="num">${myPlayers.length}</div><div class="label">لاعبين في فئتي</div></div>
                     <div class="stat-box"><div class="num">${myTrainings.length}</div><div class="label">تدريبات</div></div>
@@ -1263,7 +2509,7 @@
                         <td>${idx+1}</td>
                         <td><img src="${imgSrc}" style="width:36px; height:36px; border-radius:50%; object-fit:cover; border:2px solid var(--primary-blue);" /></td>
                         <td>${p.firstName} ${p.lastName}</td>
-                        <td><span class="badge-status ${present > absent ? 'present' : 'absent'}">ح:${present} / غ:${absent}</span></td>
+                        <td><span class="badge-status ${present>absent?'present':'absent'}">ح:${present} / غ:${absent}</span></td>
                         <td>${rating}</td>
                         <td>
                             <button class="btn-sm btn-sm-success" onclick="coachMarkAttendance('${p.id}','present')">حاضر</button>
@@ -1281,7 +2527,7 @@
         window.coachMarkAttendance = function(playerId, status) {
             const date = new Date().toISOString().split('T')[0];
             db.ref('academy/attendances').push({ playerId, date, status, timestamp: Date.now() })
-                .then(() => { alert('✅ تم التسجيل'); });
+                .then(() => alert('✅ تم التسجيل'));
         };
 
         window.coachRatePlayer = function(playerId) {
@@ -1292,7 +2538,7 @@
             if (isNaN(rating) || rating < 0 || rating > 5) { alert('القيمة بين 0 و 5'); return; }
             const notes = prompt('ملاحظات:', current.notes || '');
             db.ref('academy/playerDetails/' + playerId).set({ rating, notes: notes || '' })
-                .then(() => { alert('✅ تم حفظ التقييم'); });
+                .then(() => alert('✅ تم حفظ التقييم'));
         };
 
         function showCoachTrainings() {
@@ -1310,8 +2556,11 @@
                     <div class="form-grid">
                         <div class="form-group"><label>العنوان</label><input type="text" id="coachTrainingTitle" /></div>
                         <div class="form-group"><label>التاريخ</label><input type="date" id="coachTrainingDate" /></div>
-                        <div class="form-group"><label>الوقت</label><input type="time" id="coachTrainingTime" /></div>
+                        <div class="form-group"><label>وقت البداية</label><input type="time" id="coachTrainingStart" /></div>
+                        <div class="form-group"><label>وقت النهاية</label><input type="time" id="coachTrainingEnd" /></div>
                         <div class="form-group"><label>الملعب</label><input type="text" id="coachTrainingField" /></div>
+                        <div class="form-group"><label>الحالة</label><select id="coachTrainingStatus"><option value="مقرر">مقرر</option><option value="منتهي">منتهي</option><option value="ملغي">ملغي</option></select></div>
+                        <div class="form-group full"><label>ملاحظات</label><textarea id="coachTrainingNotes" rows="2"></textarea></div>
                         <div class="form-group full">
                             <label>اللاعبون المستدعون</label>
                             <select id="coachTrainingPlayersSelect" multiple style="height:100px;"></select>
@@ -1329,24 +2578,28 @@
             } else {
                 let listHtml = '';
                 myTrainings.forEach(t => {
+                    const statusColor = t.status === 'منتهي' ? '#28a745' : t.status === 'ملغي' ? '#dc3545' :
+                        '#ffc107';
                     listHtml += `
-                        <div class="training-card">
-                            <div class="info">
-                                <span class="title">${t.title}</span>
-                                <span class="meta"><i class="fas fa-calendar-alt"></i> ${t.date}</span>
-                                <span class="meta"><i class="fas fa-clock"></i> ${t.time}</span>
-                                <span class="meta"><i class="fas fa-map-pin"></i> ${t.field}</span>
-                                <span class="meta"><i class="fas fa-users"></i> ${(t.playersList||[]).length} لاعب</span>
+                        <div class="training-card" style="background:#fff; border-radius:16px; padding:18px 24px; margin-bottom:16px; border-right:6px solid ${statusColor}; box-shadow:0 4px 12px rgba(0,0,0,0.04); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap;">
+                            <div style="display:flex; gap:20px; flex-wrap:wrap; align-items:center;">
+                                <span style="font-weight:800; color:var(--dark-navy); font-size:1.1rem;">${t.title}</span>
+                                <span style="color:#666; font-size:0.85rem;"><i class="fas fa-calendar-alt" style="margin-left:4px;color:var(--primary-blue);"></i> ${t.date}</span>
+                                <span style="color:#666; font-size:0.85rem;"><i class="fas fa-clock" style="margin-left:4px;color:var(--primary-blue);"></i> ${t.startTime||''} - ${t.endTime||''}</span>
+                                <span style="color:#666; font-size:0.85rem;"><i class="fas fa-map-pin" style="margin-left:4px;color:var(--primary-blue);"></i> ${t.field}</span>
+                                <span style="color:#666; font-size:0.85rem;"><i class="fas fa-users" style="margin-left:4px;color:var(--primary-blue);"></i> ${(t.playersList||[]).length} لاعب</span>
+                                <span style="color:#666; font-size:0.85rem;"><span class="badge-status" style="background:${statusColor}22; color:${statusColor};">${t.status||'مقرر'}</span></span>
                             </div>
-                            <div class="actions">
-                                <button class="btn-sm btn-sm-info" onclick="editTrainingPlayers('${t.id}')"><i class="fas fa-edit"></i> تعديل</button>
+                            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                                <button class="btn-sm btn-sm-info" onclick="editCoachTraining('${t.id}')"><i class="fas fa-edit"></i></button>
+                                <button class="btn-sm btn-sm-danger" onclick="deleteTraining('${t.id}')"><i class="fas fa-trash"></i></button>
                             </div>
                         </div>
                     `;
                 });
                 container.innerHTML = listHtml;
             }
-            // تعبئة قائمة اللاعبين للإضافة
+            // تعبئة قائمة اللاعبين
             const players = allPlayers.filter(p => p.categoryId === categoryId && p.status === 'approved');
             const select = document.getElementById('coachTrainingPlayersSelect');
             if (select) {
@@ -1364,55 +2617,55 @@
             const coach = currentUser.data;
             const title = document.getElementById('coachTrainingTitle').value.trim();
             const date = document.getElementById('coachTrainingDate').value;
-            const time = document.getElementById('coachTrainingTime').value;
+            const startTime = document.getElementById('coachTrainingStart').value;
+            const endTime = document.getElementById('coachTrainingEnd').value;
             const field = document.getElementById('coachTrainingField').value.trim();
+            const status = document.getElementById('coachTrainingStatus').value;
+            const notes = document.getElementById('coachTrainingNotes').value.trim();
             const select = document.getElementById('coachTrainingPlayersSelect');
             const playersList = Array.from(select.selectedOptions).map(o => o.value);
-            if (!title || !date || !time || !field) { alert('الرجاء ملء جميع الحقول'); return; }
-            db.ref('academy/trainings').push({ title, categoryId: coach.categoryId, date, time, field, playersList,
-                    coachId: currentUser.id })
+            if (!title || !date || !startTime || !endTime || !field) {
+                alert('الرجاء ملء جميع الحقول الإجبارية');
+                return;
+            }
+            db.ref('academy/trainings').push({ title, categoryId: coach.categoryId, date, startTime, endTime, field,
+                    status, notes, playersList, coachId: currentUser.id })
                 .then(() => { alert('✅ تم إضافة التدريب'); });
         };
 
-        window.editTrainingPlayers = function(trainingId) {
-            const training = allTrainings.find(t => t.id === trainingId);
-            if (!training) { alert('التدريب غير موجود'); return; }
-            const players = allPlayers.filter(p => p.categoryId === training.categoryId && p.status === 'approved');
-            const selected = training.playersList || [];
-            const listHtml = players.map(p =>
-                `<label><input type="checkbox" value="${p.id}" ${selected.includes(p.id) ? 'checked' : ''}> ${p.firstName} ${p.lastName}</label><br>`
-            ).join('');
-            const container = document.createElement('div');
-            container.id = 'editTrainingModal';
-            container.style.cssText =
-                'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); display:flex; align-items:center; justify-content:center; z-index:999999;';
-            container.innerHTML = `
-                <div style="background:#fff; padding:24px; border-radius:16px; max-width:400px; width:100%;">
-                    <h3>تعديل اللاعبين المستدعين</h3>
-                    <div style="max-height:300px; overflow-y:auto;">${listHtml}</div>
-                    <button class="btn-submit" onclick="saveEditedTrainingPlayers('${trainingId}')" style="margin-top:12px;">حفظ</button>
-                    <button onclick="closeEditModal()" style="margin-top:8px; background:#6c757d; border:none; padding:8px 20px; border-radius:30px; color:#fff; cursor:pointer;">إلغاء</button>
-                </div>
-            `;
-            document.body.appendChild(container);
-            window._editTrainingId = trainingId;
+        window.editCoachTraining = function(id) {
+            const t = allTrainings.find(x => x.id === id);
+            if (!t) { alert('التدريب غير موجود'); return; }
+            // تعديل بسيط
+            const newTitle = prompt('العنوان:', t.title);
+            if (newTitle === null) return;
+            const newDate = prompt('التاريخ (YYYY-MM-DD):', t.date);
+            if (newDate === null) return;
+            const newStart = prompt('وقت البداية (HH:MM):', t.startTime);
+            if (newStart === null) return;
+            const newEnd = prompt('وقت النهاية (HH:MM):', t.endTime);
+            if (newEnd === null) return;
+            const newField = prompt('الملعب:', t.field);
+            if (newField === null) return;
+            const newStatus = prompt('الحالة (مقرر/منتهي/ملغي):', t.status || 'مقرر');
+            if (newStatus === null) return;
+            db.ref('academy/trainings/' + id).update({
+                title: newTitle,
+                date: newDate,
+                startTime: newStart,
+                endTime: newEnd,
+                field: newField,
+                status: newStatus
+            }).then(() => { alert('✅ تم التحديث'); });
         };
 
-        window.saveEditedTrainingPlayers = function(trainingId) {
-            const checks = document.querySelectorAll('#editTrainingModal input[type="checkbox"]');
-            const playersList = Array.from(checks).filter(c => c.checked).map(c => c.value);
-            db.ref('academy/trainings/' + trainingId).update({ playersList })
-                .then(() => { alert('✅ تم تحديث القائمة');
-                    closeEditModal(); });
-        };
-
-        window.closeEditModal = function() {
-            const el = document.getElementById('editTrainingModal');
-            if (el) el.remove();
+        window.deleteTraining = function(id) {
+            if (!confirm('حذف هذا التدريب؟')) return;
+            db.ref('academy/trainings/' + id).remove();
         };
 
         // ================================================================
-        // 10. صفحة ولي الأمر (نفس السابق)
+        // 6. صفحة ولي الأمر
         // ================================================================
         function showParentHome() {
             currentViewFunction = showParentHome;
@@ -1439,20 +2692,20 @@
                         </div>
                     </div>
                     <div class="info-grid">
-                        <div class="item"><div class="label">📋 التقييم</div><div class="value">${details.rating || 'لم يُقيّم'}</div></div>
-                        <div class="item"><div class="label">💳 حالة الدفع</div><div class="value">${payments.length > 0 ? payments[0].status : 'غير مدفوع'} (${payments.length > 0 ? payments[0].expiryDate : '-'})</div></div>
-                        <div class="item"><div class="label">📅 الحضور (آخر 7 أيام)</div><div class="value">${attendances.slice(0,7).map(a => a.status === 'present' ? '✅' : '❌').join(' ')}</div></div>
+                        <div class="item"><div class="label">📋 التقييم</div><div class="value">${details.rating||'لم يُقيّم'}</div></div>
+                        <div class="item"><div class="label">💳 حالة الدفع</div><div class="value">${payments.length>0?payments[0].status:'غير مدفوع'} (${payments.length>0?payments[0].expiryDate:'-'})</div></div>
+                        <div class="item"><div class="label">📅 الحضور (آخر 7 أيام)</div><div class="value">${attendances.slice(0,7).map(a=>a.status==='present'?'✅':'❌').join(' ')}</div></div>
                         <div class="item"><div class="label">⚽ تدريبات</div><div class="value">${trainings.length} حصة</div></div>
                         <div class="item"><div class="label">🏆 دورات</div><div class="value">${tournaments.length} دورة</div></div>
                         <div class="item"><div class="label">🤝 مباريات ودية</div><div class="value">${matches.length} مباراة</div></div>
                     </div>
                     <div style="margin-top:16px; background:#f8f9fa; padding:12px; border-radius:12px;">
                         <h4>🗓️ تفاصيل التدريبات القادمة</h4>
-                        ${trainings.length === 0 ? '<p class="text-muted">لا توجد تدريبات</p>' : trainings.map(t => `<p>${t.title} - ${t.date} ${t.time} في ${t.field}</p>`).join('')}
+                        ${trainings.length===0?'<p class="text-muted">لا توجد تدريبات</p>':trainings.map(t=>`<p>${t.title} - ${t.date} ${t.startTime} في ${t.field}</p>`).join('')}
                     </div>
                     <div style="margin-top:16px; background:#f8f9fa; padding:12px; border-radius:12px;">
                         <h4>🏟️ المباريات القادمة</h4>
-                        ${matches.length === 0 ? '<p class="text-muted">لا توجد مباريات</p>' : matches.map(m => `<p>ضد ${m.opponent} - ${m.date} ${m.time} في ${m.field}</p>`).join('')}
+                        ${matches.length===0?'<p class="text-muted">لا توجد مباريات</p>':matches.map(m=>`<p>ضد ${m.opponent} - ${m.date} ${m.time} في ${m.field}</p>`).join('')}
                     </div>
                 </div>
             `;
@@ -1460,7 +2713,7 @@
         }
 
         // ================================================================
-        // 11. دوال مساعدة
+        // 7. دوال مساعدة
         // ================================================================
         function isThisWeek(dateStr) {
             const today = new Date();
@@ -1495,7 +2748,7 @@
         };
 
         // ================================================================
-        // 12. تهيئة البيانات الأولية
+        // 8. تهيئة البيانات الأولية
         // ================================================================
         function initDatabase() {
             db.ref('academy/admins/adminId').once('value').then(snap => {
@@ -1514,7 +2767,7 @@
         initDatabase();
 
         // ================================================================
-        // 13. استمارة التسجيل (بدون منع تكرار)
+        // 9. استمارة التسجيل (بدون منع تكرار)
         // ================================================================
         document.getElementById('registrationForm').addEventListener('submit', async function(e) {
             e.preventDefault();
@@ -1596,7 +2849,7 @@
         }
 
         // ================================================================
-        // 14. باقي وظائف الموقع العام
+        // 10. باقي وظائف الموقع
         // ================================================================
         const galleryImages = [
             { id: 1, title: 'لاعبو الأكاديمية', url: 'https://raw.githubusercontent.com/darkonovic51-hash/Mohamed-test/4a065c0a8a951b1d39707aa5eb90a5ce7512bec4/1782370717656.jpg' },
@@ -1692,7 +2945,8 @@
         window.openDashboard = openDashboard;
         window.logoutDashboard = logoutDashboard;
 
-        console.log('✅ النظام المحسّن جاهز مع استماع فوري وتصميم متطور');
+        console.log('✅ النظام المحسّن جاهز مع بيانات كاملة وحفظ فوري');
     </script>
+
 </body>
 </html>
