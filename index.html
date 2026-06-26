@@ -936,7 +936,7 @@
         }
         .popup-close:hover { transform: scale(1.04); box-shadow: 0 8px 30px rgba(69,179,255,0.3); }
 
-        /* ===== ADMIN PANEL (OLD) ===== */
+        /* ===== ADMIN TOGGLE ===== */
         .admin-toggle {
             position: fixed;
             bottom: 24px;
@@ -958,7 +958,7 @@
         }
         .admin-toggle:hover { background: var(--primary-blue); transform: translateY(-3px); }
 
-        /* ===== DASHBOARD (NEW SYSTEM) ===== */
+        /* ===== DASHBOARD ===== */
         .dashboard-wrapper {
             display: none;
             position: fixed;
@@ -1589,35 +1589,28 @@
         </div>
     </div>
 
-    <!-- ===== ADMIN TOGGLE (يفتح اللوحة الجديدة) ===== -->
+    <!-- ===== ADMIN TOGGLE ===== -->
     <button class="admin-toggle" id="adminToggle" onclick="openDashboard()">
         <i class="fas fa-cog"></i> الإدارة
     </button>
 
-    <!-- ===== DASHBOARD (النظام الجديد) ===== -->
+    <!-- ===== DASHBOARD ===== -->
     <div class="dashboard-wrapper" id="dashboardWrapper">
-        <!-- الشريط الجانبي -->
         <aside class="dashboard-sidebar" id="dashboardSidebar">
             <div class="logo">
                 <img src="https://raw.githubusercontent.com/darkonovic51-hash/Mohamed-test/4a065c0a8a951b1d39707aa5eb90a5ce7512bec4/1000015625-removebg-preview.png" alt="شعار" />
                 <h2>ASSARU <span style="color:var(--primary-blue);">Academy</span></h2>
             </div>
-            <div id="sidebarMenu">
-                <!-- يُعبأ بواسطة JS -->
-            </div>
+            <div id="sidebarMenu"></div>
             <button class="logout-btn" onclick="logoutDashboard()"><i class="fas fa-sign-out-alt"></i> تسجيل الخروج</button>
         </aside>
-
-        <!-- المحتوى الرئيسي -->
         <main class="dashboard-content" id="dashboardContent">
-            <div id="pageContent">
-                <!-- يُعبأ بواسطة JS -->
-            </div>
+            <div id="pageContent"></div>
         </main>
     </div>
 
     <!-- ============================================================ -->
-    <!--  جافا سكريبت – النظام الكامل                                 -->
+    <!--  جافا سكريبت                                                 -->
     <!-- ============================================================ -->
 
     <script>
@@ -1637,7 +1630,7 @@
         const db = firebase.database();
 
         // ================================================================
-        // 2. المتغيرات العامة للنظام الجديد
+        // 2. المتغيرات العامة
         // ================================================================
         let currentUser = null;
         let allPlayers = [];
@@ -2606,14 +2599,11 @@
         initDatabase();
 
         // ================================================================
-        // 12. ربط استمارة التسجيل بالنظام الجديد
+        // 12. ربط استمارة التسجيل (تم إزالة منع التسجيل المتكرر)
         // ================================================================
         document.getElementById('registrationForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-            if (localStorage.getItem('assaru_registered') === 'true') {
-                alert('⚠️ هذا الجهاز مسجل مسبقاً.');
-                return;
-            }
+
             const firstName = document.getElementById('regFirstName').value.trim();
             const lastName = document.getElementById('regLastName').value.trim();
             const category = document.getElementById('regCategory').value;
@@ -2624,11 +2614,13 @@
             const bloodType = document.getElementById('regBloodType').value.trim();
             const guardianName = document.getElementById('regGuardianName').value.trim();
             const guardianPhone = document.getElementById('regGuardianPhone').value.trim();
+
             if (!firstName || !lastName || !category || !birthDate || !birthPlace || !studyLevel || !guardianName || !
                 guardianPhone) {
                 alert('❌ الرجاء ملء جميع الحقول الإجبارية');
                 return;
             }
+
             const photoFile = document.getElementById('regPhoto').files[0];
             const parentalFile = document.getElementById('regParental').files[0];
             const internalFile = document.getElementById('regInternal').files[0];
@@ -2636,10 +2628,12 @@
                 alert('❌ الرجاء رفع جميع الصور المطلوبة');
                 return;
             }
+
             try {
                 const photoData = await readFileAsBase64(photoFile);
                 const parentalData = await readFileAsBase64(parentalFile);
                 const internalData = await readFileAsBase64(internalFile);
+
                 const parentCode = `${firstName}${lastName}${category}${new Date(birthDate).getFullYear()}`;
                 const newPlayer = {
                     firstName,
@@ -2659,7 +2653,9 @@
                     parentalDoc: parentalData,
                     internalDoc: internalData
                 };
+
                 await db.ref('academy/players').push(newPlayer);
+
                 document.getElementById('confirmInfo').innerHTML = `
                     <p><strong>الاسم:</strong> ${firstName}</p>
                     <p><strong>اللقب:</strong> ${lastName}</p>
@@ -2669,10 +2665,11 @@
                     <p style="color:#e74c3c; font-size:0.85rem;">احتفظ بهذا الكود للدخول إلى لوحة ولي الأمر</p>
                 `;
                 document.getElementById('confirmPopup').classList.add('active');
-                localStorage.setItem('assaru_registered', 'true');
+
                 this.reset();
                 document.querySelectorAll('.upload-area').forEach(el => el.classList.remove('has-file'));
                 document.querySelectorAll('.file-name').forEach(el => el.textContent = '');
+
             } catch (error) {
                 console.error(error);
                 alert('❌ حدث خطأ أثناء التسجيل، حاول مرة أخرى.');
@@ -2693,7 +2690,7 @@
         }
 
         // ================================================================
-        // 13. باقي وظائف الموقع القديم
+        // 13. باقي وظائف الموقع العام
         // ================================================================
         // Gallery
         const galleryImages = [
@@ -2776,10 +2773,10 @@
         document.getElementById('confirmPopup').addEventListener('click', function(e) { if (e.target === this)
                 closeConfirmPopup(); });
 
-        // تحميل البيانات مسبقاً
+        // تحميل البيانات
         fetchAllData();
 
-        // جعل الدوال عامة للوصول من HTML
+        // جعل الدوال عامة
         window.showAdminHome = showAdminHome;
         window.showAdminPlayers = showAdminPlayers;
         window.showAdminTrainings = showAdminTrainings;
@@ -2793,7 +2790,7 @@
         window.openDashboard = openDashboard;
         window.logoutDashboard = logoutDashboard;
 
-        console.log('✅ نظام ASSARU Academy جاهز تماماً!');
+        console.log('✅ نظام ASSARU Academy جاهز تماماً (تم إلغاء منع التسجيل المتكرر)');
     </script>
 
 </body>
