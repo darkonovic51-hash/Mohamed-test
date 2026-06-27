@@ -626,6 +626,96 @@
             border-right: 4px solid var(--primary-blue);
         }
 
+        /* ===== أنماط صفحة تفاصيل اللاعب ===== */
+        .player-detail-page {
+            background: #fff;
+            border-radius: 24px;
+            padding: 30px;
+            box-shadow: var(--shadow);
+            max-width: 1200px;
+            margin: 10px auto;
+        }
+        .player-detail-page .player-header {
+            display: flex;
+            align-items: center;
+            gap: 30px;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 20px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .player-detail-page .player-header .avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            overflow: hidden;
+            border: 4px solid var(--primary-blue);
+            flex-shrink: 0;
+            background: #f0f0f0;
+        }
+        .player-detail-page .player-header .avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .player-detail-page .player-header .info h2 {
+            font-size: 2rem;
+            color: var(--dark-navy);
+        }
+        .player-detail-page .player-header .info .sub-info {
+            color: #888;
+            font-size: 0.95rem;
+        }
+        .player-detail-page .info-grid-detail {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .player-detail-page .info-grid-detail .item {
+            background: var(--light-bg);
+            padding: 10px 14px;
+            border-radius: 12px;
+        }
+        .player-detail-page .info-grid-detail .item .label {
+            font-size: 0.7rem;
+            color: #888;
+        }
+        .player-detail-page .info-grid-detail .item .value {
+            font-weight: 700;
+            color: var(--dark-navy);
+        }
+        .player-detail-page .section-title-detail {
+            font-weight: 700;
+            color: var(--dark-navy);
+            margin: 20px 0 12px;
+            font-size: 1.1rem;
+            border-bottom: 2px solid var(--primary-blue);
+            padding-bottom: 6px;
+        }
+        .player-detail-page .stat-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+        .player-detail-page .stat-cards .stat-item {
+            background: var(--light-bg);
+            padding: 12px;
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid #e0e0e0;
+        }
+        .player-detail-page .stat-cards .stat-item .number {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--primary-blue);
+        }
+        .player-detail-page .stat-cards .stat-item .label {
+            font-size: 0.7rem;
+            color: #888;
+        }
+
         /* ===== RESPONSIVE ===== */
         @media (max-width: 1024px) {
             .hero-content h1 { font-size: 3rem; }
@@ -652,6 +742,9 @@
             .week-grid { grid-template-columns: repeat(7, 1fr); }
             .week-grid .day-item { font-size: 0.6rem; padding: 4px 2px; }
             .session-detail-modal .modal-content { padding: 16px; }
+            .player-detail-page .player-header { flex-direction: column; text-align: center; }
+            .player-detail-page .info-grid-detail { grid-template-columns: 1fr 1fr; }
+            .player-detail-page .stat-cards { grid-template-columns: repeat(3, 1fr); }
         }
         @media (max-width: 576px) {
             .dashboard-sidebar { width: 60px; padding: 10px 0; }
@@ -661,6 +754,8 @@
             .dashboard-content { padding: 12px; }
             .payment-grid { grid-template-columns: repeat(2, 1fr); }
             .session-detail-modal .info-grid-session { grid-template-columns: 1fr 1fr; }
+            .player-detail-page .info-grid-detail { grid-template-columns: 1fr; }
+            .player-detail-page .stat-cards { grid-template-columns: repeat(2, 1fr); }
         }
     </style>
 </head>
@@ -1008,6 +1103,8 @@
         const categories = ['U07', 'U09', 'U11', 'U13'];
         let currentViewFunction = null;
         let currentViewArgs = [];
+        let previousViewFunction = null;
+        let previousViewArgs = [];
         const MONTHS_AR = ['جانفي', 'فيفري', 'مارس', 'أبريل', 'ماي', 'جوان', 'جويلية', 'أوت', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
         const DAYS_AR = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
         const TRAINING_TYPES = ['بدني', 'تقني', 'تكتيكي', 'تدريب حراس', 'مباراة تطبيقية', 'استشفاء', 'تدريب خاص'];
@@ -1212,9 +1309,8 @@
         }
 
         // ================================================================
-        // 6. تعريف جميع الدوال في النطاق العام
+        // 6. دوال اللاعبين
         // ================================================================
-        // دوال اللاعبين
         window.showAdminPlayers = function() {
             currentViewFunction = window.showAdminPlayers;
             currentViewArgs = [];
@@ -1290,7 +1386,7 @@
                     <td><span class="badge-status ${payStatus==='paid'?'paid':'unpaid'}">${payStatus==='paid'?'مدفوع':'غير مدفوع'} (${expiry})</span></td>
                     <td>${rating}</td>
                     <td>
-                        <button class="btn-sm btn-sm-info" onclick="showPlayerDetails('${p.id}')"><i class="fas fa-eye"></i></button>
+                        <button class="btn-sm btn-sm-info" onclick="showPlayerDetailPage('${p.id}')"><i class="fas fa-eye"></i> عرض</button>
                         <button class="btn-sm btn-sm-danger" onclick="deletePlayer('${p.id}')"><i class="fas fa-trash"></i></button>
                     </td>
                 </tr>`;
@@ -1360,167 +1456,272 @@
 
         window.filterPlayers = function(cat) { renderPlayersTable(cat); };
 
-        window.showPlayerDetails = function(playerId) {
+        // ================================================================
+        // 7. صفحة تفاصيل اللاعب (صفحة كاملة)
+        // ================================================================
+        window.showPlayerDetailPage = function(playerId) {
+            // حفظ الصفحة الحالية للرجوع إليها
+            previousViewFunction = currentViewFunction;
+            previousViewArgs = currentViewArgs;
+
             const p = allPlayers.find(x => x.id === playerId);
             if (!p) { alert('اللاعب غير موجود'); return; }
-            const imgSrc = p.photo && p.photo.startsWith('data:image') ? p.photo : 'https://via.placeholder.com/100';
+
+            currentViewFunction = window.showPlayerDetailPage;
+            currentViewArgs = [playerId];
+
+            const content = document.getElementById('pageContent');
+            const imgSrc = p.photo && p.photo.startsWith('data:image') ? p.photo : 'https://via.placeholder.com/120';
             const details = allPlayerDetails[playerId] || {};
-            const extraFields = [
-                { key: 'goals', label: '⚽ الأهداف', default: 0 },
-                { key: 'manOfMatch', label: '🏆 رجل المباراة', default: 0 },
-                { key: 'fitness', label: '💪 الجاهزية %', default: 80 },
-                { key: 'yellowCards', label: '🟨 بطاقات صفراء', default: 0 },
-                { key: 'redCards', label: '🟥 بطاقات حمراء', default: 0 },
-                { key: 'assists', label: '🎯 تمريرات حاسمة', default: 0 },
-                { key: 'minutesPlayed', label: '⏱️ دقائق لعب', default: 0 }
-            ];
-            let extraHtml = '<div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-top:10px;">';
-            extraFields.forEach(f => {
-                const val = details[f.key] !== undefined ? details[f.key] : f.default;
-                extraHtml += `
-                    <div style="background:var(--light-bg); padding:6px 10px; border-radius:8px; text-align:center;">
-                        <div style="font-size:0.7rem; color:#888;">${f.label}</div>
-                        <div style="font-weight:700; cursor:pointer;" class="editable-field" onclick="editPlayerExtra('${playerId}','${f.key}','${val}','${f.label}')">${val}</div>
+
+            // إحصائيات اللاعب
+            const playerAttendances = allAttendances.filter(a => a.playerId === playerId);
+            const totalSessions = playerAttendances.length;
+            const presentSessions = playerAttendances.filter(a => a.status === 'present').length;
+            const absentSessions = playerAttendances.filter(a => a.status === 'absent').length;
+            const excusedSessions = playerAttendances.filter(a => a.status === 'excused').length;
+            const attendanceRate = totalSessions > 0 ? Math.round((presentSessions / totalSessions) * 100) : 0;
+
+            // الدفع الشهري
+            const paymentData = allPayments.find(pay => pay.playerId === playerId) || {};
+            const monthly = paymentData.monthly || {};
+
+            let paymentHtml = '<div class="payment-grid">';
+            MONTHS_AR.forEach((m, i) => {
+                const monthKey = `2026_${String(i+1).padStart(2,'0')}`;
+                const data = monthly[monthKey] || { paid: false, amount: 0 };
+                const statusClass = data.paid ? 'paid' : 'unpaid';
+                const statusText = data.paid ? 'مدفوع' : 'غير مدفوع';
+                paymentHtml += `
+                    <div class="month-item">
+                        <div class="month-label">${m}</div>
+                        <div class="status-badge ${statusClass}" onclick="toggleMonthPayment('${playerId}','${monthKey}')">${statusText}</div>
+                        <input class="amount-input" type="number" value="${data.amount||0}" onchange="updateMonthAmount('${playerId}','${monthKey}',this.value)" />
                     </div>
                 `;
             });
-            extraHtml += '</div>';
+            paymentHtml += '</div>';
 
-            const playerSessions = allTrainingSessions.filter(s => {
-                const att = s.attendance || {};
-                return att[playerId] !== undefined;
-            });
-
-            let sessionsHtml = '<div style="max-height:150px; overflow-y:auto;">';
-            if (playerSessions.length === 0) {
-                sessionsHtml += '<span class="text-muted">لا توجد جلسات مسجلة</span>';
+            // سجل الحضور
+            let attendHtml = '<div style="max-height:300px; overflow-y:auto; border:1px solid #eee; border-radius:12px; padding:8px;">';
+            if (playerAttendances.length === 0) {
+                attendHtml += '<span class="text-muted">لا توجد جلسات مسجلة</span>';
             } else {
-                playerSessions.slice().reverse().forEach(s => {
-                    const status = (s.attendance || {})[playerId] || 'غير محدد';
-                    const statusText = status === 'present' ? '✅ حاضر' : status === 'absent' ? '❌ غائب' :
-                        status === 'excused' ? '⚠️ معذور' : 'غير محدد';
-                    const statusClass = status === 'present' ? 'present' : status === 'absent' ? 'absent' :
+                playerAttendances.slice().reverse().forEach(a => {
+                    const statusText = a.status === 'present' ? '✅ حاضر' : a.status === 'absent' ? '❌ غائب' :
+                        a.status === 'excused' ? '⚠️ معذور' : 'غير محدد';
+                    const statusClass = a.status === 'present' ? 'present' : a.status === 'absent' ? 'absent' :
                         'excused';
-                    const rating = (s.ratings || {})[playerId] || '';
-                    sessionsHtml += `
-                            <div style="display:flex; justify-content:space-between; padding:4px 8px; border-bottom:1px solid #eee; font-size:0.8rem;">
-                                <span>${s.title || 'حصة'}</span>
-                                <span>${s.date}</span>
-                                <span class="badge-status ${statusClass}">${statusText}</span>
-                                ${rating ? `<span>⭐ ${rating}</span>` : ''}
-                            </div>
-                        `;
+                    attendHtml += `
+                        <div style="display:flex; justify-content:space-between; padding:6px 12px; border-bottom:1px solid #eee; font-size:0.85rem; align-items:center;">
+                            <span><strong>${a.sessionType||'جلسة'}</strong></span>
+                            <span>${a.date}</span>
+                            <span class="badge-status ${statusClass}">${statusText}</span>
+                        </div>
+                    `;
                 });
             }
-            sessionsHtml += '</div>';
+            attendHtml += '</div>';
 
-            const html = `
-                    <div class="player-detail-card" style="background:#fff; border-radius:24px; padding:30px; box-shadow:var(--shadow); max-width:900px; margin:10px auto;">
-                        <div style="display:flex; align-items:center; gap:24px; border-bottom:2px solid #f0f0f0; padding-bottom:20px; margin-bottom:20px; flex-wrap:wrap;">
-                            <div style="width:100px; height:100px; border-radius:50%; overflow:hidden; border:4px solid var(--primary-blue); flex-shrink:0; background:#f0f0f0;">
-                                <img src="${imgSrc}" style="width:100%; height:100%; object-fit:cover;" />
-                            </div>
-                            <div><h2 style="font-size:1.8rem; color:var(--dark-navy);">${p.firstName} ${p.lastName}</h2>
-                                <p style="color:#888;">كود ولي الأمر: <strong style="color:var(--primary-blue);">${p.parentCode}</strong></p>
-                                <p style="color:#888;">الحالة: <span class="badge-status ${p.status==='approved'?'paid':p.status==='rejected'?'unpaid':'unpaid'}">${p.status==='approved'?'معتمد':p.status==='rejected'?'مرفوض':'قيد الانتظار'}</span></p>
-                            </div>
-                        </div>
-                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px 24px;">
-                            <div style="background:var(--light-bg); padding:8px 14px; border-radius:12px;"><div style="font-size:0.7rem; color:#888;">الفئة</div><div style="font-weight:700;" class="editable-field" onclick="editField('${playerId}','categoryId','${p.categoryId}')">${p.categoryId}</div></div>
-                            <div style="background:var(--light-bg); padding:8px 14px; border-radius:12px;"><div style="font-size:0.7rem; color:#888;">تاريخ الميلاد</div><div style="font-weight:700;" class="editable-field" onclick="editField('${playerId}','birthDate','${p.birthDate}')">${p.birthDate}</div></div>
-                            <div style="background:var(--light-bg); padding:8px 14px; border-radius:12px;"><div style="font-size:0.7rem; color:#888;">مكان الميلاد</div><div style="font-weight:700;" class="editable-field" onclick="editField('${playerId}','birthPlace','${p.birthPlace||''}')">${p.birthPlace||'-'}</div></div>
-                            <div style="background:var(--light-bg); padding:8px 14px; border-radius:12px;"><div style="font-size:0.7rem; color:#888;">المستوى الدراسي</div><div style="font-weight:700;" class="editable-field" onclick="editField('${playerId}','studyLevel','${p.studyLevel||''}')">${p.studyLevel||'-'}</div></div>
-                            <div style="background:var(--light-bg); padding:8px 14px; border-radius:12px;"><div style="font-size:0.7rem; color:#888;">الحالة الصحية</div><div style="font-weight:700;" class="editable-field" onclick="editField('${playerId}','health','${p.health||''}')">${p.health||'سليم'}</div></div>
-                            <div style="background:var(--light-bg); padding:8px 14px; border-radius:12px;"><div style="font-size:0.7rem; color:#888;">الزمرة الدموية</div><div style="font-weight:700;" class="editable-field" onclick="editField('${playerId}','bloodType','${p.bloodType||''}')">${p.bloodType||'-'}</div></div>
-                            <div style="background:var(--light-bg); padding:8px 14px; border-radius:12px;"><div style="font-size:0.7rem; color:#888;">الولي</div><div style="font-weight:700;" class="editable-field" onclick="editField('${playerId}','guardianName','${p.guardianName}')">${p.guardianName}</div></div>
-                            <div style="background:var(--light-bg); padding:8px 14px; border-radius:12px;"><div style="font-size:0.7rem; color:#888;">هاتف الولي</div><div style="font-weight:700;" class="editable-field" onclick="editField('${playerId}','guardianPhone','${p.guardianPhone}')">${p.guardianPhone}</div></div>
-                        </div>
-                        <div style="margin:16px 0; border-top:1px solid #eee; padding-top:16px;">
-                            <h4>📊 إحصائيات اللاعب <span style="font-size:0.7rem;color:#888;">(يعدلها المدرب)</span></h4>
-                            ${extraHtml}
-                        </div>
-                        <div style="margin:16px 0; border-top:1px solid #eee; padding-top:16px;">
-                            <h4>📋 التقييم</h4>
-                            <p>التقييم: <strong class="editable-field" onclick="editRating('${playerId}')">${allPlayerDetails[playerId]?.rating||'لم يُقيّم'}</strong> - ملاحظات: <span class="editable-field" onclick="editRatingNotes('${playerId}')">${allPlayerDetails[playerId]?.notes||'لا توجد'}</span></p>
-                        </div>
-                        <div style="margin:16px 0; border-top:1px solid #eee; padding-top:16px;">
-                            <h4>📋 سجل الجلسات</h4>
-                            ${sessionsHtml}
-                        </div>
-                        <div style="margin-top:20px; text-align:center;"><button class="btn-sm btn-sm-warning" onclick="closeModal('detailOverlay')">إغلاق</button></div>
+            // بطاقات الإحصائيات
+            const stats = [
+                { label: '📊 نسبة الحضور', value: `${attendanceRate}%` },
+                { label: '✅ جلسات حضرها', value: presentSessions },
+                { label: '❌ جلسات غاب عنها', value: absentSessions },
+                { label: '⚠️ معذور', value: excusedSessions },
+                { label: '⚽ الأهداف', value: details.goals || 0 },
+                { label: '🏆 رجل المباراة', value: details.manOfMatch || 0 },
+                { label: '💪 الجاهزية', value: `${details.fitness || 80}%` },
+                { label: '🟨 بطاقات صفراء', value: details.yellowCards || 0 }
+            ];
+
+            let statsHtml = '';
+            stats.forEach(s => {
+                statsHtml += `
+                    <div class="stat-item">
+                        <div class="number">${s.value}</div>
+                        <div class="label">${s.label}</div>
                     </div>
                 `;
-            const overlay = document.createElement('div');
-            overlay.id = 'detailOverlay';
-            overlay.style.cssText =
-                'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); backdrop-filter:blur(4px); z-index:999999; display:flex; align-items:center; justify-content:center; padding:20px; overflow-y:auto;';
-            overlay.innerHTML = html;
-            document.body.appendChild(overlay);
-            overlay.onclick = function(e) { if (e.target === overlay) closeModal('detailOverlay'); };
-        };
+            });
 
-        window.editField = function(playerId, field, currentValue) {
-            if (isProcessing) return;
-            const newVal = prompt(`تعديل ${field}`, currentValue);
-            if (newVal === null || newVal === currentValue) return;
-            showLoading('جاري التحديث...');
-            isProcessing = true;
-            const update = {};
-            update[field] = newVal;
-            db.ref('academy/players/' + playerId).update(update)
-                .then(() => { hideLoading(); alert('✅ تم التحديث');
-                    closeModal('detailOverlay');
-                    showPlayerDetails(playerId); })
-                .catch(err => { hideLoading(); alert('❌ خطأ: ' + err.message); });
-        };
+            // معلومات اللاعب
+            const infoFields = [
+                { label: 'الفئة', value: p.categoryId },
+                { label: 'تاريخ الميلاد', value: p.birthDate },
+                { label: 'مكان الميلاد', value: p.birthPlace || '-' },
+                { label: 'المستوى الدراسي', value: p.studyLevel || '-' },
+                { label: 'الحالة الصحية', value: p.health || 'سليم' },
+                { label: 'الزمرة الدموية', value: p.bloodType || '-' },
+                { label: 'الولي', value: p.guardianName },
+                { label: 'هاتف الولي', value: p.guardianPhone },
+                { label: 'التقييم', value: details.rating || 'لم يُقيّم' },
+                { label: 'ملاحظات', value: details.notes || 'لا توجد' }
+            ];
 
-        window.editPlayerExtra = function(playerId, key, current, label) {
-            if (isProcessing) return;
-            const newVal = prompt(`تعديل ${label}`, current);
-            if (newVal === null || newVal === current) return;
-            showLoading('جاري التحديث...');
-            isProcessing = true;
-            const update = {};
-            update[key] = isNaN(newVal) ? newVal : parseFloat(newVal);
-            db.ref('academy/playerDetails/' + playerId).update(update)
-                .then(() => { hideLoading(); alert('✅ تم التحديث');
-                    closeModal('detailOverlay');
-                    showPlayerDetails(playerId); })
-                .catch(err => { hideLoading(); alert('❌ خطأ: ' + err.message); });
-        };
+            let infoHtml = '';
+            infoFields.forEach(f => {
+                infoHtml += `
+                    <div class="item">
+                        <div class="label">${f.label}</div>
+                        <div class="value">${f.value}</div>
+                    </div>
+                `;
+            });
 
-        window.editRating = function(playerId) {
-            if (isProcessing) return;
-            const current = allPlayerDetails[playerId]?.rating || 0;
-            const newVal = prompt('أدخل التقييم (0-5)', current);
-            if (newVal === null) return;
-            const rating = parseFloat(newVal);
-            if (isNaN(rating) || rating < 0 || rating > 5) { alert('القيمة بين 0 و 5'); return; }
-            showLoading('جاري التحديث...');
-            isProcessing = true;
-            db.ref('academy/playerDetails/' + playerId).update({ rating })
-                .then(() => { hideLoading(); alert('✅ تم التحديث');
-                    closeModal('detailOverlay');
-                    showPlayerDetails(playerId); })
-                .catch(err => { hideLoading(); alert('❌ خطأ: ' + err.message); });
-        };
+            content.innerHTML = `
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap;">
+                    <button class="btn-sm btn-sm-secondary" onclick="goBackToPrevious()">
+                        <i class="fas fa-arrow-right"></i> الرجوع
+                    </button>
+                    <h2 class="page-title" style="margin:0;">👤 تفاصيل اللاعب</h2>
+                    <div></div>
+                </div>
 
-        window.editRatingNotes = function(playerId) {
-            if (isProcessing) return;
-            const current = allPlayerDetails[playerId]?.notes || '';
-            const newVal = prompt('ملاحظات التقييم', current);
-            if (newVal === null) return;
-            showLoading('جاري التحديث...');
-            isProcessing = true;
-            db.ref('academy/playerDetails/' + playerId).update({ notes: newVal })
-                .then(() => { hideLoading(); alert('✅ تم التحديث');
-                    closeModal('detailOverlay');
-                    showPlayerDetails(playerId); })
-                .catch(err => { hideLoading(); alert('❌ خطأ: ' + err.message); });
+                <div class="player-detail-page">
+                    <!-- رأس الصفحة -->
+                    <div class="player-header">
+                        <div class="avatar">
+                            <img src="${imgSrc}" alt="صورة اللاعب" />
+                        </div>
+                        <div class="info">
+                            <h2>${p.firstName} ${p.lastName}</h2>
+                            <div class="sub-info">
+                                <span>كود ولي الأمر: <strong style="color:var(--primary-blue);">${p.parentCode}</strong></span>
+                                <span style="margin-right:16px;">الحالة: <span class="badge-status ${p.status==='approved'?'paid':p.status==='rejected'?'unpaid':'unpaid'}">${p.status==='approved'?'معتمد':p.status==='rejected'?'مرفوض':'قيد الانتظار'}</span></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- المعلومات الأساسية -->
+                    <div class="section-title-detail">📋 المعلومات الأساسية</div>
+                    <div class="info-grid-detail">
+                        ${infoHtml}
+                    </div>
+
+                    <!-- الإحصائيات -->
+                    <div class="section-title-detail">📊 إحصائيات اللاعب</div>
+                    <div class="stat-cards">
+                        ${statsHtml}
+                    </div>
+
+                    <!-- جدول الدفع الشهري -->
+                    <div class="section-title-detail">💳 جدول الدفع الشهري (2026)</div>
+                    ${paymentHtml}
+                    <div style="margin-top:8px; display:flex; gap:8px; flex-wrap:wrap;">
+                        <button class="btn-sm btn-sm-success" onclick="saveMonthlyPayment('${playerId}')">💾 حفظ الدفع الشهري</button>
+                        <button class="btn-sm btn-sm-warning" onclick="archiveMonthPayments('${playerId}')">📦 نقل إلى السجل</button>
+                    </div>
+
+                    <!-- سجل الحضور -->
+                    <div class="section-title-detail">📋 سجل الحضور والجلسات</div>
+                    ${attendHtml}
+
+                    <!-- الوثائق -->
+                    <div class="section-title-detail">📎 الوثائق</div>
+                    <div style="display:flex; gap:16px; flex-wrap:wrap; margin-bottom:16px;">
+                        ${p.parentalDoc && p.parentalDoc.startsWith('data:image') ?
+                            `<button class="btn-sm btn-sm-info" onclick="viewDocument('${p.parentalDoc}')"><i class="fas fa-file-signature"></i> الترخيص الأبوي</button>` :
+                            '<span class="text-muted">لا يوجد ترخيص</span>'}
+                        ${p.internalDoc && p.internalDoc.startsWith('data:image') ?
+                            `<button class="btn-sm btn-sm-info" onclick="viewDocument('${p.internalDoc}')"><i class="fas fa-file-contract"></i> القانون الداخلي</button>` :
+                            '<span class="text-muted">لا يوجد قانون</span>'}
+                    </div>
+
+                    <div style="margin-top:16px; text-align:center;">
+                        <button class="btn-sm btn-sm-secondary" onclick="goBackToPrevious()"><i class="fas fa-arrow-right"></i> الرجوع</button>
+                    </div>
+                </div>
+            `;
         };
 
         // ================================================================
-        // 7. دوال المدرب
+        // 8. دوال الرجوع للصفحة السابقة
+        // ================================================================
+        window.goBackToPrevious = function() {
+            if (previousViewFunction) {
+                const func = previousViewFunction;
+                const args = previousViewArgs;
+                previousViewFunction = null;
+                previousViewArgs = [];
+                func(...args);
+            } else {
+                showAdminPlayers();
+            }
+        };
+
+        // ================================================================
+        // 9. دوال الدفع والحضور (مستمرة)
+        // ================================================================
+        window.toggleMonthPayment = function(playerId, monthKey) {
+            if (isProcessing) return;
+            const payment = allPayments.find(p => p.playerId === playerId);
+            const monthly = payment?.monthly || {};
+            const current = monthly[monthKey] || { paid: false, amount: 0 };
+            current.paid = !current.paid;
+            showLoading('جاري التحديث...');
+            isProcessing = true;
+            const ref = payment ? db.ref('academy/payments/' + payment.id) : db.ref('academy/payments').push();
+            const data = { playerId, monthly: { ...monthly, [monthKey]: current }, status: 'active', date: new Date()
+                    .toISOString() };
+            ref.set(data)
+                .then(() => { hideLoading(); alert('✅ تم التحديث');
+                    showPlayerDetailPage(playerId); })
+                .catch(err => { hideLoading(); alert('❌ خطأ: ' + err.message); });
+        };
+
+        window.updateMonthAmount = function(playerId, monthKey, value) {
+            if (isProcessing) return;
+            const payment = allPayments.find(p => p.playerId === playerId);
+            const monthly = payment?.monthly || {};
+            const current = monthly[monthKey] || { paid: false, amount: 0 };
+            current.amount = parseFloat(value) || 0;
+            showLoading('جاري التحديث...');
+            isProcessing = true;
+            const ref = payment ? db.ref('academy/payments/' + payment.id) : db.ref('academy/payments').push();
+            const data = { playerId, monthly: { ...monthly, [monthKey]: current }, status: 'active', date: new Date()
+                    .toISOString() };
+            ref.set(data)
+                .then(() => { hideLoading();
+                    showPlayerDetailPage(playerId); })
+                .catch(err => { hideLoading(); alert('❌ خطأ: ' + err.message); });
+        };
+
+        window.saveMonthlyPayment = function(playerId) {
+            alert('✅ تم حفظ بيانات الدفع الشهري بنجاح');
+        };
+
+        window.archiveMonthPayments = function(playerId) {
+            if (isProcessing) return;
+            if (!confirm('نقل بيانات الدفع الشهري إلى السجل؟ سيتم إعادة تعيين الدفع للشهر الحالي.')) return;
+            showLoading('جاري النقل إلى السجل...');
+            isProcessing = true;
+            const payment = allPayments.find(p => p.playerId === playerId);
+            if (payment) {
+                const archiveKey = `archive_${new Date().toISOString().slice(0,7)}`;
+                const archiveData = { ...payment, archivedAt: new Date().toISOString() };
+                db.ref('academy/paymentArchive/' + playerId + '/' + archiveKey).set(archiveData)
+                    .then(() => {
+                        db.ref('academy/payments/' + payment.id).update({ monthly: {}, status: 'archived' })
+                            .then(() => { hideLoading(); alert('✅ تم نقل البيانات إلى السجل');
+                                showPlayerDetailPage(playerId); })
+                            .catch(err => { hideLoading(); alert('❌ خطأ: ' + err.message); });
+                    })
+                    .catch(err => { hideLoading(); alert('❌ خطأ: ' + err.message); });
+            } else {
+                hideLoading();
+                alert('لا توجد بيانات دفع لهذا اللاعب');
+            }
+        };
+
+        window.viewDocument = function(dataUrl) {
+            if (!dataUrl) return;
+            const win = window.open();
+            win.document.write(`<img src="${dataUrl}" style="max-width:100%; max-height:100vh;" />`);
+        };
+
+        // ================================================================
+        // 10. دوال المدرب
         // ================================================================
         window.showCoachHome = function() {
             currentViewFunction = window.showCoachHome;
@@ -1533,19 +1734,19 @@
             const myMatches = allMatches.filter(m => m.categoryId === categoryId);
             const content = document.getElementById('pageContent');
             content.innerHTML = `
-                    <h2 class="page-title">🧑‍🏫 لوحة المدرب</h2>
-                    <p class="page-sub">مرحباً ${coach.name||''}، أنت مسؤول عن فئة ${categoryId}</p>
-                    <div class="stats-row">
-                        <div class="stat-box"><div class="num">${myPlayers.length}</div><div class="label">لاعبين في فئتي</div></div>
-                        <div class="stat-box"><div class="num">${mySessions.length}</div><div class="label">حصص تدريبية</div></div>
-                        <div class="stat-box"><div class="num">${myMatches.length}</div><div class="label">مباريات</div></div>
-                    </div>
-                    <div style="display:flex; gap:12px; flex-wrap:wrap;">
-                        <button class="btn-submit" onclick="showCoachPlayers()"><i class="fas fa-users"></i> عرض اللاعبين</button>
-                        <button class="btn-submit" onclick="showCoachTrainingSessions()"><i class="fas fa-futbol"></i> حصصي التدريبية</button>
-                        <button class="btn-submit" onclick="showCoachMatches()"><i class="fas fa-handshake"></i> المباريات</button>
-                    </div>
-                `;
+                <h2 class="page-title">🧑‍🏫 لوحة المدرب</h2>
+                <p class="page-sub">مرحباً ${coach.name||''}، أنت مسؤول عن فئة ${categoryId}</p>
+                <div class="stats-row">
+                    <div class="stat-box"><div class="num">${myPlayers.length}</div><div class="label">لاعبين في فئتي</div></div>
+                    <div class="stat-box"><div class="num">${mySessions.length}</div><div class="label">حصص تدريبية</div></div>
+                    <div class="stat-box"><div class="num">${myMatches.length}</div><div class="label">مباريات</div></div>
+                </div>
+                <div style="display:flex; gap:12px; flex-wrap:wrap;">
+                    <button class="btn-submit" onclick="showCoachPlayers()"><i class="fas fa-users"></i> عرض اللاعبين</button>
+                    <button class="btn-submit" onclick="showCoachTrainingSessions()"><i class="fas fa-futbol"></i> حصصي التدريبية</button>
+                    <button class="btn-submit" onclick="showCoachMatches()"><i class="fas fa-handshake"></i> المباريات</button>
+                </div>
+            `;
             setActiveMenu(0);
         };
 
@@ -1558,8 +1759,8 @@
             const content = document.getElementById('pageContent');
             let html = `<h2 class="page-title">👥 لاعبي فئتي (${categoryId})</h2>`;
             html += `<div class="table-wrap"><table>
-                    <thead><tr><th>#</th><th>الصورة</th><th>الاسم</th><th>التقييم</th><th>إجراءات</th></tr></thead>
-                    <tbody>`;
+                <thead><tr><th>#</th><th>الصورة</th><th>الاسم</th><th>التقييم</th><th>إجراءات</th></tr></thead>
+                <tbody>`;
             if (players.length === 0) {
                 html += `<tr><td colspan="5" style="text-align:center;color:#888;padding:20px;">لا يوجد لاعبون</td></tr>`;
             } else {
@@ -1568,14 +1769,14 @@
                     const imgSrc = p.photo && p.photo.startsWith('data:image') ? p.photo :
                         'https://via.placeholder.com/40';
                     html += `<tr>
-                            <td>${idx+1}</td>
-                            <td><img src="${imgSrc}" style="width:36px; height:36px; border-radius:50%; object-fit:cover; border:2px solid var(--primary-blue);" /></td>
-                            <td>${p.firstName} ${p.lastName}</td>
-                            <td class="editable-field" onclick="coachRatePlayer('${p.id}')">${rating}</td>
-                            <td>
-                                <button class="btn-sm btn-sm-info" onclick="showPlayerDetails('${p.id}')"><i class="fas fa-eye"></i></button>
-                            </td>
-                        </tr>`;
+                        <td>${idx+1}</td>
+                        <td><img src="${imgSrc}" style="width:36px; height:36px; border-radius:50%; object-fit:cover; border:2px solid var(--primary-blue);" /></td>
+                        <td>${p.firstName} ${p.lastName}</td>
+                        <td class="editable-field" onclick="coachRatePlayer('${p.id}')">${rating}</td>
+                        <td>
+                            <button class="btn-sm btn-sm-info" onclick="showPlayerDetailPage('${p.id}')"><i class="fas fa-eye"></i> عرض</button>
+                        </td>
+                    </tr>`;
                 });
             }
             html += `</tbody></table></div>`;
@@ -1599,7 +1800,7 @@
         };
 
         // ================================================================
-        // 8. دوال المدرب للحصص التدريبية
+        // 11. دوال المدرب للحصص التدريبية
         // ================================================================
         window.showCoachTrainingSessions = function() {
             currentViewFunction = window.showCoachTrainingSessions;
@@ -1609,14 +1810,14 @@
             .name);
             const content = document.getElementById('pageContent');
             let html = `
-                    <h2 class="page-title">⚽ حصصي التدريبية</h2>
-                    <p class="page-sub">إدارة الحصص التدريبية الخاصة بي</p>
-                    <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:20px;">
-                        <button class="btn-submit" onclick="showCreateTrainingSession()"><i class="fas fa-plus"></i> إنشاء حصة جديدة</button>
-                        <button class="btn-submit" onclick="showTrainingSessionsArchive()" style="background:linear-gradient(135deg,#6c757d,#495057);"><i class="fas fa-archive"></i> أرشيف الحصص</button>
-                    </div>
-                    <div id="coachSessionsList"></div>
-                `;
+                <h2 class="page-title">⚽ حصصي التدريبية</h2>
+                <p class="page-sub">إدارة الحصص التدريبية الخاصة بي</p>
+                <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:20px;">
+                    <button class="btn-submit" onclick="showCreateTrainingSession()"><i class="fas fa-plus"></i> إنشاء حصة جديدة</button>
+                    <button class="btn-submit" onclick="showTrainingSessionsArchive()" style="background:linear-gradient(135deg,#6c757d,#495057);"><i class="fas fa-archive"></i> أرشيف الحصص</button>
+                </div>
+                <div id="coachSessionsList"></div>
+            `;
             content.innerHTML = html;
             setActiveMenu(2);
             const container = document.getElementById('coachSessionsList');
@@ -1636,27 +1837,27 @@
                 const color = statusColors[s.status] || '#45B3FF';
                 const dayName = new Date(s.date + 'T00:00:00').toLocaleDateString('ar-EG', { weekday: 'long' });
                 listHtml += `
-                        <div class="session-card" style="border-right-color:${color};" onclick="openSessionDetail('${s.id}')">
-                            <div class="session-header">
-                                <span class="session-title">${s.title || 'حصة تدريبية'}</span>
-                                <span class="badge-status" style="background:${color}22; color:${color};">${s.status}</span>
-                            </div>
-                            <div class="session-meta" style="margin-top:8px;">
-                                <span><i class="fas fa-calendar-alt"></i> ${s.date} - ${dayName}</span>
-                                <span><i class="fas fa-clock"></i> ${s.startTime} - ${s.endTime}</span>
-                                <span><i class="fas fa-tag"></i> ${s.categoryId}</span>
-                                <span><i class="fas fa-user-tie"></i> ${s.coachName}</span>
-                                <span><i class="fas fa-map-pin"></i> ${s.field}</span>
-                                <span><i class="fas fa-dumbbell"></i> ${s.trainingType}</span>
-                            </div>
+                    <div class="session-card" style="border-right-color:${color};" onclick="openSessionDetail('${s.id}')">
+                        <div class="session-header">
+                            <span class="session-title">${s.title || 'حصة تدريبية'}</span>
+                            <span class="badge-status" style="background:${color}22; color:${color};">${s.status}</span>
                         </div>
-                    `;
+                        <div class="session-meta" style="margin-top:8px;">
+                            <span><i class="fas fa-calendar-alt"></i> ${s.date} - ${dayName}</span>
+                            <span><i class="fas fa-clock"></i> ${s.startTime} - ${s.endTime}</span>
+                            <span><i class="fas fa-tag"></i> ${s.categoryId}</span>
+                            <span><i class="fas fa-user-tie"></i> ${s.coachName}</span>
+                            <span><i class="fas fa-map-pin"></i> ${s.field}</span>
+                            <span><i class="fas fa-dumbbell"></i> ${s.trainingType}</span>
+                        </div>
+                    </div>
+                `;
             });
             container.innerHTML = listHtml;
         };
 
         // ================================================================
-        // 9. دوال المدرب للمباريات
+        // 12. دوال المدرب للمباريات
         // ================================================================
         window.showCoachMatches = function() {
             currentViewFunction = window.showCoachMatches;
@@ -1668,24 +1869,24 @@
             let html = `<h2 class="page-title">🤝 مباريات فئتي</h2>`;
             html += `<div id="coachMatchesList"></div>`;
             html += `
-                    <div class="form-card">
-                        <h3>➕ إضافة مباراة ودية</h3>
-                        <div class="form-grid">
-                            <div class="form-group"><label>الخصم</label><input type="text" id="coachMatchOpponent" /></div>
-                            <div class="form-group"><label>التاريخ</label><input type="date" id="coachMatchDate" /></div>
-                            <div class="form-group"><label>الوقت</label><input type="time" id="coachMatchTime" /></div>
-                            <div class="form-group"><label>الملعب</label><input type="text" id="coachMatchField" /></div>
-                            <div class="form-group"><label>النتيجة</label><input type="text" id="coachMatchScore" placeholder="مثال: 3-1" /></div>
-                            <div class="form-group"><label>الحالة</label><select id="coachMatchStatus"><option value="قادمة">قادمة</option><option value="منتهية">منتهية</option><option value="ملغية">ملغية</option></select></div>
-                            <div class="form-group full"><label>ملاحظات</label><textarea id="coachMatchNotes" rows="2"></textarea></div>
-                            <div class="form-group full">
-                                <label>اللاعبون المستدعون</label>
-                                <select id="coachMatchPlayersSelect" multiple style="height:100px;"></select>
-                            </div>
-                            <div class="form-group full"><button class="btn-submit" onclick="saveCoachMatch()"><i class="fas fa-save"></i> حفظ المباراة</button></div>
+                <div class="form-card">
+                    <h3>➕ إضافة مباراة ودية</h3>
+                    <div class="form-grid">
+                        <div class="form-group"><label>الخصم</label><input type="text" id="coachMatchOpponent" /></div>
+                        <div class="form-group"><label>التاريخ</label><input type="date" id="coachMatchDate" /></div>
+                        <div class="form-group"><label>الوقت</label><input type="time" id="coachMatchTime" /></div>
+                        <div class="form-group"><label>الملعب</label><input type="text" id="coachMatchField" /></div>
+                        <div class="form-group"><label>النتيجة</label><input type="text" id="coachMatchScore" placeholder="مثال: 3-1" /></div>
+                        <div class="form-group"><label>الحالة</label><select id="coachMatchStatus"><option value="قادمة">قادمة</option><option value="منتهية">منتهية</option><option value="ملغية">ملغية</option></select></div>
+                        <div class="form-group full"><label>ملاحظات</label><textarea id="coachMatchNotes" rows="2"></textarea></div>
+                        <div class="form-group full">
+                            <label>اللاعبون المستدعون</label>
+                            <select id="coachMatchPlayersSelect" multiple style="height:100px;"></select>
                         </div>
+                        <div class="form-group full"><button class="btn-submit" onclick="saveCoachMatch()"><i class="fas fa-save"></i> حفظ المباراة</button></div>
                     </div>
-                `;
+                </div>
+            `;
             content.innerHTML = html;
             setActiveMenu(3);
             const container = document.getElementById('coachMatchesList');
@@ -1698,21 +1899,21 @@
                         '#dc3545' : '#ffc107';
                     const hasReport = allMatchReports.some(r => r.matchId === m.id);
                     listHtml += `
-                            <div class="training-card" style="background:#fff; border-radius:16px; padding:18px 24px; margin-bottom:16px; border-right:6px solid ${statusColor}; box-shadow:0 4px 12px rgba(0,0,0,0.04); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap;">
-                                <div style="display:flex; gap:20px; flex-wrap:wrap; align-items:center;">
-                                    <span style="font-weight:800; color:var(--dark-navy); font-size:1.1rem;" class="editable-field" onclick="editCoachMatchField('${m.id}','opponent','${m.opponent||''}')">ضد ${m.opponent}</span>
-                                    <span style="color:#666; font-size:0.85rem;" class="editable-field" onclick="editCoachMatchField('${m.id}','date','${m.date||''}')"><i class="fas fa-calendar-alt"></i> ${m.date}</span>
-                                    <span style="color:#666; font-size:0.85rem;" class="editable-field" onclick="editCoachMatchField('${m.id}','time','${m.time||''}')"><i class="fas fa-clock"></i> ${m.time}</span>
-                                    <span style="color:#666; font-size:0.85rem;"><i class="fas fa-map-pin"></i> ${m.field}</span>
-                                    <span style="color:#666; font-size:0.85rem;" class="editable-field" onclick="editCoachMatchField('${m.id}','score','${m.score||''}')"><i class="fas fa-futbol"></i> ${m.score||'-'}</span>
-                                    <span style="color:#666; font-size:0.85rem;"><span class="badge-status" style="background:${statusColor}22; color:${statusColor};">${m.status||'قادمة'}</span></span>
-                                </div>
-                                <div style="display:flex; gap:8px; flex-wrap:wrap;">
-                                    <button class="btn-sm btn-sm-primary" onclick="showMatchLineup('${m.id}')"><i class="fas fa-sitemap"></i> تشكيلة</button>
-                                    ${!hasReport ? `<button class="btn-sm btn-sm-success" onclick="createMatchReport('${m.id}')"><i class="fas fa-flag-checkered"></i> تقرير</button>` : `<button class="btn-sm btn-sm-info" onclick="viewMatchReport('${m.id}')"><i class="fas fa-eye"></i> التقرير</button>`}
-                                </div>
+                        <div class="training-card" style="background:#fff; border-radius:16px; padding:18px 24px; margin-bottom:16px; border-right:6px solid ${statusColor}; box-shadow:0 4px 12px rgba(0,0,0,0.04); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap;">
+                            <div style="display:flex; gap:20px; flex-wrap:wrap; align-items:center;">
+                                <span style="font-weight:800; color:var(--dark-navy); font-size:1.1rem;" class="editable-field" onclick="editCoachMatchField('${m.id}','opponent','${m.opponent||''}')">ضد ${m.opponent}</span>
+                                <span style="color:#666; font-size:0.85rem;" class="editable-field" onclick="editCoachMatchField('${m.id}','date','${m.date||''}')"><i class="fas fa-calendar-alt"></i> ${m.date}</span>
+                                <span style="color:#666; font-size:0.85rem;" class="editable-field" onclick="editCoachMatchField('${m.id}','time','${m.time||''}')"><i class="fas fa-clock"></i> ${m.time}</span>
+                                <span style="color:#666; font-size:0.85rem;"><i class="fas fa-map-pin"></i> ${m.field}</span>
+                                <span style="color:#666; font-size:0.85rem;" class="editable-field" onclick="editCoachMatchField('${m.id}','score','${m.score||''}')"><i class="fas fa-futbol"></i> ${m.score||'-'}</span>
+                                <span style="color:#666; font-size:0.85rem;"><span class="badge-status" style="background:${statusColor}22; color:${statusColor};">${m.status||'قادمة'}</span></span>
                             </div>
-                        `;
+                            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                                <button class="btn-sm btn-sm-primary" onclick="showMatchLineup('${m.id}')"><i class="fas fa-sitemap"></i> تشكيلة</button>
+                                ${!hasReport ? `<button class="btn-sm btn-sm-success" onclick="createMatchReport('${m.id}')"><i class="fas fa-flag-checkered"></i> تقرير</button>` : `<button class="btn-sm btn-sm-info" onclick="viewMatchReport('${m.id}')"><i class="fas fa-eye"></i> التقرير</button>`}
+                            </div>
+                        </div>
+                    `;
                 });
                 container.innerHTML = listHtml;
             }
@@ -1776,7 +1977,7 @@
         };
 
         // ================================================================
-        // 10. دوال المدير للحصص التدريبية
+        // 13. دوال المدير للحصص التدريبية
         // ================================================================
         window.showAdminHome = function() {
             currentViewFunction = window.showAdminHome;
@@ -1788,22 +1989,22 @@
                 pending = allPlayers.filter(p => p.status === 'pending').length;
             const content = document.getElementById('pageContent');
             content.innerHTML = `
-                    <h2 class="page-title">🏠 لوحة المدير</h2>
-                    <p class="page-sub">مرحباً، لديك صلاحية كاملة.</p>
-                    <div class="stats-row">
-                        <div class="stat-box"><div class="num">${total}</div><div class="label">اللاعبون</div></div>
-                        <div class="stat-box"><div class="num">${coaches}</div><div class="label">المدربون</div></div>
-                        <div class="stat-box"><div class="num">${sessions}</div><div class="label">حصص تدريبية</div></div>
-                        <div class="stat-box"><div class="num">${matches}</div><div class="label">مباريات</div></div>
-                        <div class="stat-box"><div class="num" style="color:#f39c12;">${pending}</div><div class="label">طلبات pending</div></div>
-                    </div>
-                    <div style="display:flex; gap:12px; flex-wrap:wrap;">
-                        <button class="btn-submit" onclick="showAdminPlayers()"><i class="fas fa-users"></i> اللاعبون</button>
-                        <button class="btn-submit" onclick="showAdminTrainingSessions()"><i class="fas fa-futbol"></i> الحصص التدريبية</button>
-                        <button class="btn-submit" onclick="showAdminTournaments()"><i class="fas fa-trophy"></i> الدورات</button>
-                        <button class="btn-submit" onclick="showAdminMatches()"><i class="fas fa-handshake"></i> المباريات</button>
-                    </div>
-                `;
+                <h2 class="page-title">🏠 لوحة المدير</h2>
+                <p class="page-sub">مرحباً، لديك صلاحية كاملة.</p>
+                <div class="stats-row">
+                    <div class="stat-box"><div class="num">${total}</div><div class="label">اللاعبون</div></div>
+                    <div class="stat-box"><div class="num">${coaches}</div><div class="label">المدربون</div></div>
+                    <div class="stat-box"><div class="num">${sessions}</div><div class="label">حصص تدريبية</div></div>
+                    <div class="stat-box"><div class="num">${matches}</div><div class="label">مباريات</div></div>
+                    <div class="stat-box"><div class="num" style="color:#f39c12;">${pending}</div><div class="label">طلبات pending</div></div>
+                </div>
+                <div style="display:flex; gap:12px; flex-wrap:wrap;">
+                    <button class="btn-submit" onclick="showAdminPlayers()"><i class="fas fa-users"></i> اللاعبون</button>
+                    <button class="btn-submit" onclick="showAdminTrainingSessions()"><i class="fas fa-futbol"></i> الحصص التدريبية</button>
+                    <button class="btn-submit" onclick="showAdminTournaments()"><i class="fas fa-trophy"></i> الدورات</button>
+                    <button class="btn-submit" onclick="showAdminMatches()"><i class="fas fa-handshake"></i> المباريات</button>
+                </div>
+            `;
             setActiveMenu(0);
         };
 
@@ -1812,14 +2013,14 @@
             currentViewArgs = [];
             const content = document.getElementById('pageContent');
             let html = `
-                    <h2 class="page-title">⚽ الحصص التدريبية</h2>
-                    <p class="page-sub">إدارة جميع الحصص التدريبية - جدول التدريبات</p>
-                    <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:20px;">
-                        <button class="btn-submit" onclick="showCreateTrainingSession()"><i class="fas fa-plus"></i> إنشاء حصة جديدة</button>
-                        <button class="btn-submit" onclick="showTrainingSessionsArchive()" style="background:linear-gradient(135deg,#6c757d,#495057);"><i class="fas fa-archive"></i> أرشيف الحصص</button>
-                    </div>
-                    <div id="sessionsList"></div>
-                `;
+                <h2 class="page-title">⚽ الحصص التدريبية</h2>
+                <p class="page-sub">إدارة جميع الحصص التدريبية - جدول التدريبات</p>
+                <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:20px;">
+                    <button class="btn-submit" onclick="showCreateTrainingSession()"><i class="fas fa-plus"></i> إنشاء حصة جديدة</button>
+                    <button class="btn-submit" onclick="showTrainingSessionsArchive()" style="background:linear-gradient(135deg,#6c757d,#495057);"><i class="fas fa-archive"></i> أرشيف الحصص</button>
+                </div>
+                <div id="sessionsList"></div>
+            `;
             content.innerHTML = html;
             setActiveMenu(2);
             renderSessionsList('upcoming');
@@ -1851,72 +2052,72 @@
                 const color = statusColors[s.status] || '#45B3FF';
                 const dayName = new Date(s.date + 'T00:00:00').toLocaleDateString('ar-EG', { weekday: 'long' });
                 html += `
-                        <div class="session-card" style="border-right-color:${color};" onclick="openSessionDetail('${s.id}')">
-                            <div class="session-header">
-                                <span class="session-title">${s.title || 'حصة تدريبية'}</span>
-                                <span class="badge-status" style="background:${color}22; color:${color};">${s.status}</span>
-                            </div>
-                            <div class="session-meta" style="margin-top:8px;">
-                                <span><i class="fas fa-calendar-alt"></i> ${s.date} - ${dayName}</span>
-                                <span><i class="fas fa-clock"></i> ${s.startTime} - ${s.endTime}</span>
-                                <span><i class="fas fa-tag"></i> ${s.categoryId}</span>
-                                <span><i class="fas fa-user-tie"></i> ${s.coachName || 'غير محدد'}</span>
-                                <span><i class="fas fa-map-pin"></i> ${s.field || 'غير محدد'}</span>
-                                <span><i class="fas fa-dumbbell"></i> ${s.trainingType}</span>
-                            </div>
+                    <div class="session-card" style="border-right-color:${color};" onclick="openSessionDetail('${s.id}')">
+                        <div class="session-header">
+                            <span class="session-title">${s.title || 'حصة تدريبية'}</span>
+                            <span class="badge-status" style="background:${color}22; color:${color};">${s.status}</span>
                         </div>
-                    `;
+                        <div class="session-meta" style="margin-top:8px;">
+                            <span><i class="fas fa-calendar-alt"></i> ${s.date} - ${dayName}</span>
+                            <span><i class="fas fa-clock"></i> ${s.startTime} - ${s.endTime}</span>
+                            <span><i class="fas fa-tag"></i> ${s.categoryId}</span>
+                            <span><i class="fas fa-user-tie"></i> ${s.coachName || 'غير محدد'}</span>
+                            <span><i class="fas fa-map-pin"></i> ${s.field || 'غير محدد'}</span>
+                            <span><i class="fas fa-dumbbell"></i> ${s.trainingType}</span>
+                        </div>
+                    </div>
+                `;
             });
             container.innerHTML = html;
         }
 
         // ================================================================
-        // 11. إنشاء حصة تدريبية جديدة
+        // 14. إنشاء حصة تدريبية جديدة
         // ================================================================
         window.showCreateTrainingSession = function() {
             const content = document.getElementById('pageContent');
             const coachesOptions = allCoaches.map(c => `<option value="${c.id}">${c.name} (${c.categoryId})</option>`)
             .join('');
             content.innerHTML = `
-                    <h2 class="page-title">📝 إنشاء حصة تدريبية جديدة</h2>
-                    <p class="page-sub">أكمل بيانات الحصة التدريبية</p>
-                    <div class="form-card">
-                        <div class="form-grid">
-                            <div class="form-group"><label>عنوان الحصة</label><input type="text" id="sessionTitle" placeholder="اختياري" /></div>
-                            <div class="form-group"><label>التاريخ <span class="required">*</span></label><input type="date" id="sessionDate" required onchange="updateSessionDay()" /></div>
-                            <div class="form-group"><label>اليوم</label><input type="text" id="sessionDay" readonly style="background:#f0f0f0;" /></div>
-                            <div class="form-group"><label>وقت البداية <span class="required">*</span></label><input type="time" id="sessionStartTime" required /></div>
-                            <div class="form-group"><label>وقت النهاية <span class="required">*</span></label><input type="time" id="sessionEndTime" required /></div>
-                            <div class="form-group"><label>الفئة <span class="required">*</span></label>
-                                <select id="sessionCategory" required>
-                                    <option value="">اختر الفئة</option>
-                                    ${categories.map(c => `<option value="${c}">${c}</option>`).join('')}
-                                </select>
-                            </div>
-                            <div class="form-group"><label>المدرب <span class="required">*</span></label>
-                                <select id="sessionCoach" required>
-                                    <option value="">اختر المدرب</option>
-                                    ${coachesOptions}
-                                </select>
-                            </div>
-                            <div class="form-group"><label>الملعب</label><input type="text" id="sessionField" placeholder="اسم الملعب" /></div>
-                            <div class="form-group"><label>نوع التدريب <span class="required">*</span></label>
-                                <select id="sessionTrainingType" required>
-                                    <option value="">اختر النوع</option>
-                                    ${TRAINING_TYPES.map(t => `<option value="${t}">${t}</option>`).join('')}
-                                </select>
-                            </div>
-                            <div class="form-group"><label>الحالة</label>
-                                <select id="sessionStatus">
-                                    ${SESSION_STATUS.map(s => `<option value="${s}">${s}</option>`).join('')}
-                                </select>
-                            </div>
-                            <div class="form-group full"><label>ملاحظات</label><textarea id="sessionNotes" rows="2"></textarea></div>
-                            <div class="form-group full"><button class="btn-submit" onclick="saveTrainingSession()"><i class="fas fa-save"></i> حفظ الحصة</button></div>
+                <h2 class="page-title">📝 إنشاء حصة تدريبية جديدة</h2>
+                <p class="page-sub">أكمل بيانات الحصة التدريبية</p>
+                <div class="form-card">
+                    <div class="form-grid">
+                        <div class="form-group"><label>عنوان الحصة</label><input type="text" id="sessionTitle" placeholder="اختياري" /></div>
+                        <div class="form-group"><label>التاريخ <span class="required">*</span></label><input type="date" id="sessionDate" required onchange="updateSessionDay()" /></div>
+                        <div class="form-group"><label>اليوم</label><input type="text" id="sessionDay" readonly style="background:#f0f0f0;" /></div>
+                        <div class="form-group"><label>وقت البداية <span class="required">*</span></label><input type="time" id="sessionStartTime" required /></div>
+                        <div class="form-group"><label>وقت النهاية <span class="required">*</span></label><input type="time" id="sessionEndTime" required /></div>
+                        <div class="form-group"><label>الفئة <span class="required">*</span></label>
+                            <select id="sessionCategory" required>
+                                <option value="">اختر الفئة</option>
+                                ${categories.map(c => `<option value="${c}">${c}</option>`).join('')}
+                            </select>
                         </div>
+                        <div class="form-group"><label>المدرب <span class="required">*</span></label>
+                            <select id="sessionCoach" required>
+                                <option value="">اختر المدرب</option>
+                                ${coachesOptions}
+                            </select>
+                        </div>
+                        <div class="form-group"><label>الملعب</label><input type="text" id="sessionField" placeholder="اسم الملعب" /></div>
+                        <div class="form-group"><label>نوع التدريب <span class="required">*</span></label>
+                            <select id="sessionTrainingType" required>
+                                <option value="">اختر النوع</option>
+                                ${TRAINING_TYPES.map(t => `<option value="${t}">${t}</option>`).join('')}
+                            </select>
+                        </div>
+                        <div class="form-group"><label>الحالة</label>
+                            <select id="sessionStatus">
+                                ${SESSION_STATUS.map(s => `<option value="${s}">${s}</option>`).join('')}
+                            </select>
+                        </div>
+                        <div class="form-group full"><label>ملاحظات</label><textarea id="sessionNotes" rows="2"></textarea></div>
+                        <div class="form-group full"><button class="btn-submit" onclick="saveTrainingSession()"><i class="fas fa-save"></i> حفظ الحصة</button></div>
                     </div>
-                    <button class="btn-sm btn-sm-secondary" onclick="showAdminTrainingSessions()"><i class="fas fa-arrow-right"></i> العودة للجدول</button>
-                `;
+                </div>
+                <button class="btn-sm btn-sm-secondary" onclick="showAdminTrainingSessions()"><i class="fas fa-arrow-right"></i> العودة للجدول</button>
+            `;
         };
 
         window.updateSessionDay = function() {
@@ -1984,7 +2185,7 @@
         };
 
         // ================================================================
-        // 12. عرض تفاصيل الحصة التدريبية
+        // 15. عرض تفاصيل الحصة التدريبية
         // ================================================================
         window.openSessionDetail = function(sessionId) {
             const session = allTrainingSessions.find(s => s.id === sessionId);
@@ -2009,121 +2210,122 @@
             container.className = 'session-detail-modal';
             container.id = 'sessionDetailModal';
             container.innerHTML = `
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h2>${session.title || 'حصة تدريبية'}</h2>
-                            <div style="display:flex; gap:8px; flex-wrap:wrap;">
-                                <span class="badge-status" style="background:${session.status==='مكتملة'?'#17a2b8':session.status==='ملغاة'?'#dc3545':session.status==='مؤجلة'?'#ffc107':'#28a745'}22; color:${session.status==='مكتملة'?'#17a2b8':session.status==='ملغاة'?'#dc3545':session.status==='مؤجلة'?'#ffc107':'#28a745'};">${session.status}</span>
-                                <button class="btn-sm btn-sm-danger" onclick="closeModal('sessionDetailModal')"><i class="fas fa-times"></i></button>
-                            </div>
-                        </div>
-
-                        <!-- معلومات الحصة -->
-                        <div class="info-grid-session">
-                            <div class="item"><div class="label">التاريخ</div><div class="value">${session.date}</div></div>
-                            <div class="item"><div class="label">اليوم</div><div class="value">${session.day}</div></div>
-                            <div class="item"><div class="label">الوقت</div><div class="value">${session.startTime} - ${session.endTime}</div></div>
-                            <div class="item"><div class="label">الفئة</div><div class="value">${session.categoryId}</div></div>
-                            <div class="item"><div class="label">المدرب</div><div class="value">${session.coachName}</div></div>
-                            <div class="item"><div class="label">الملعب</div><div class="value">${session.field}</div></div>
-                            <div class="item"><div class="label">نوع التدريب</div><div class="value">${session.trainingType}</div></div>
-                            <div class="item"><div class="label">المدة</div><div class="value">${session.startTime && session.endTime ? '60 دقيقة' : '-'}</div></div>
-                        </div>
-
-                        <!-- إحصائيات قبل التدريب -->
-                        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(120px, 1fr)); gap:10px; background:var(--light-bg); padding:12px; border-radius:12px; margin-bottom:16px;">
-                            <div style="text-align:center;"><div style="font-size:0.7rem;color:#888;">اللاعبين المسجلين</div><div style="font-weight:800;font-size:1.2rem;">${players.length}</div></div>
-                            <div style="text-align:center;"><div style="font-size:0.7rem;color:#888;">✅ حاضر</div><div style="font-weight:800;font-size:1.2rem;color:#28a745;">${present}</div></div>
-                            <div style="text-align:center;"><div style="font-size:0.7rem;color:#888;">❌ غائب</div><div style="font-weight:800;font-size:1.2rem;color:#dc3545;">${absent}</div></div>
-                            <div style="text-align:center;"><div style="font-size:0.7rem;color:#888;">⚠️ معذور</div><div style="font-weight:800;font-size:1.2rem;color:#ffc107;">${excused}</div></div>
-                            <div style="text-align:center;"><div style="font-size:0.7rem;color:#888;">📊 نسبة الحضور</div><div style="font-weight:800;font-size:1.2rem;">${players.length > 0 ? Math.round((present/players.length)*100) : 0}%</div></div>
-                        </div>
-
-                        <!-- قائمة اللاعبين والحضور -->
-                        <div class="section-title-sm">📋 قائمة اللاعبين والحضور</div>
-                        <div style="max-height:300px; overflow-y:auto; border:1px solid #eee; border-radius:12px; padding:8px;">
-                            ${players.map(p => {
-                                const attStatus = attendance[p.id] || 'غير محدد';
-                                const rating = ratings[p.id] || '';
-                                return `
-                                        <div class="player-row">
-                                            <span class="player-name">${p.firstName} ${p.lastName}</span>
-                                            <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
-                                                <select class="attendance-select" onchange="updateSessionAttendance('${sessionId}','${p.id}',this.value)">
-                                                    <option value="present" ${attStatus==='present'?'selected':''}>✅ حاضر</option>
-                                                    <option value="absent" ${attStatus==='absent'?'selected':''}>❌ غائب</option>
-                                                    <option value="excused" ${attStatus==='excused'?'selected':''}>⚠️ معذور</option>
-                                                </select>
-                                                <input type="number" placeholder="⭐ تقييم" value="${rating}" style="width:60px; padding:2px 4px; border-radius:6px; border:1px solid #ddd; font-size:0.7rem;" onchange="updateSessionRating('${sessionId}','${p.id}',this.value)" min="0" max="5" step="0.5" />
-                                            </div>
-                                        </div>
-                                    `;
-                            }).join('')}
-                        </div>
-
-                        <!-- خطة التدريب -->
-                        <div class="section-title-sm">📋 خطة التدريب</div>
-                        <div style="margin-bottom:12px;">
-                            ${plan.length === 0 ? '<p class="text-muted">لا توجد خطة تدريبية</p>' : plan.map((step, i) => `
-                                    <div class="plan-step">
-                                        <div style="display:flex; justify-content:space-between; flex-wrap:wrap;">
-                                            <span style="font-weight:700;">${step.title || 'مرحلة '+(i+1)}</span>
-                                            <span style="color:#888;font-size:0.8rem;">⏱️ ${step.duration || '-'}</span>
-                                        </div>
-                                        <div style="font-size:0.85rem;color:#555;">${step.description || ''}</div>
-                                        <div style="font-size:0.75rem;color:#888;">🛠️ ${step.tools || 'لا توجد أدوات'} | 🎯 ${step.goal || 'بدون هدف'}</div>
-                                    </div>
-                                `).join('')}
-                            <button class="btn-sm btn-sm-primary" onclick="editSessionPlan('${sessionId}')"><i class="fas fa-edit"></i> تعديل الخطة</button>
-                        </div>
-
-                        <!-- أهداف الحصة -->
-                        <div class="section-title-sm">🎯 أهداف الحصة</div>
-                        <div style="margin-bottom:12px;">
-                            ${objectives.length === 0 ? '<p class="text-muted">لا توجد أهداف</p>' : objectives.map(obj => `
-                                    <span style="display:inline-block; background:var(--light-bg); padding:4px 12px; border-radius:20px; margin:4px; font-size:0.8rem;">${obj}</span>
-                                `).join('')}
-                            <button class="btn-sm btn-sm-primary" onclick="editSessionObjectives('${sessionId}')"><i class="fas fa-edit"></i> تعديل الأهداف</button>
-                        </div>
-
-                        <!-- تقرير نهاية الحصة -->
-                        <div class="section-title-sm">📊 تقرير نهاية الحصة</div>
-                        <div style="margin-bottom:12px;">
-                            ${session.report ? `
-                                    <div style="background:var(--light-bg); padding:12px; border-radius:12px;">
-                                        <p>✅ الحاضرون: ${session.report.present || 0}</p>
-                                        <p>❌ الغائبون: ${session.report.absent || 0}</p>
-                                        <p>⚠️ المعذورون: ${session.report.excused || 0}</p>
-                                        <p>🎯 تحققت الأهداف: ${session.report.objectivesAchieved ? '✅ نعم' : '❌ لا'}</p>
-                                        <p>📝 ملاحظات: ${session.report.notes || '-'}</p>
-                                    </div>
-                                ` : `
-                                    <button class="btn-sm btn-sm-success" onclick="completeSession('${sessionId}')"><i class="fas fa-check"></i> إنهاء الحصة وإعداد التقرير</button>
-                                `}
-                        </div>
-
-                        <!-- إحصائيات الحصة -->
-                        <div class="section-title-sm">📈 إحصائيات الحصة</div>
-                        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(100px, 1fr)); gap:10px; background:var(--light-bg); padding:12px; border-radius:12px;">
-                            <div style="text-align:center;"><div style="font-size:0.7rem;color:#888;">نسبة الحضور</div><div style="font-weight:800;">${players.length > 0 ? Math.round((present/players.length)*100) : 0}%</div></div>
-                            <div style="text-align:center;"><div style="font-size:0.7rem;color:#888;">نسبة الغياب</div><div style="font-weight:800;">${players.length > 0 ? Math.round((absent/players.length)*100) : 0}%</div></div>
-                            <div style="text-align:center;"><div style="font-size:0.7rem;color:#888;">المشاركون</div><div style="font-weight:800;">${present}</div></div>
-                            <div style="text-align:center;"><div style="font-size:0.7rem;color:#888;">المدة الفعلية</div><div style="font-weight:800;">${session.startTime && session.endTime ? '60 دقيقة' : '-'}</div></div>
-                        </div>
-
-                        <div style="margin-top:16px; display:flex; gap:8px; flex-wrap:wrap;">
-                            <button class="btn-sm btn-sm-secondary" onclick="closeModal('sessionDetailModal')">إغلاق</button>
-                            ${session.status !== 'مكتملة' ? `<button class="btn-sm btn-sm-success" onclick="completeSession('${sessionId}')"><i class="fas fa-check"></i> إنهاء الحصة</button>` : ''}
-                            <button class="btn-sm btn-sm-warning" onclick="deleteSession('${sessionId}')"><i class="fas fa-trash"></i> حذف</button>
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2>${session.title || 'حصة تدريبية'}</h2>
+                        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                            <span class="badge-status" style="background:${session.status==='مكتملة'?'#17a2b8':session.status==='ملغاة'?'#dc3545':session.status==='مؤجلة'?'#ffc107':'#28a745'}22; color:${session.status==='مكتملة'?'#17a2b8':session.status==='ملغاة'?'#dc3545':session.status==='مؤجلة'?'#ffc107':'#28a745'};">${session.status}</span>
+                            <button class="btn-sm btn-sm-danger" onclick="closeModal('sessionDetailModal')"><i class="fas fa-times"></i></button>
                         </div>
                     </div>
-                `;
+
+                    <!-- معلومات الحصة -->
+                    <div class="info-grid-session">
+                        <div class="item"><div class="label">التاريخ</div><div class="value">${session.date}</div></div>
+                        <div class="item"><div class="label">اليوم</div><div class="value">${session.day}</div></div>
+                        <div class="item"><div class="label">الوقت</div><div class="value">${session.startTime} - ${session.endTime}</div></div>
+                        <div class="item"><div class="label">الفئة</div><div class="value">${session.categoryId}</div></div>
+                        <div class="item"><div class="label">المدرب</div><div class="value">${session.coachName}</div></div>
+                        <div class="item"><div class="label">الملعب</div><div class="value">${session.field}</div></div>
+                        <div class="item"><div class="label">نوع التدريب</div><div class="value">${session.trainingType}</div></div>
+                        <div class="item"><div class="label">المدة</div><div class="value">${session.startTime && session.endTime ? '60 دقيقة' : '-'}</div></div>
+                    </div>
+
+                    <!-- إحصائيات قبل التدريب -->
+                    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(120px, 1fr)); gap:10px; background:var(--light-bg); padding:12px; border-radius:12px; margin-bottom:16px;">
+                        <div style="text-align:center;"><div style="font-size:0.7rem;color:#888;">اللاعبين المسجلين</div><div style="font-weight:800;font-size:1.2rem;">${players.length}</div></div>
+                        <div style="text-align:center;"><div style="font-size:0.7rem;color:#888;">✅ حاضر</div><div style="font-weight:800;font-size:1.2rem;color:#28a745;">${present}</div></div>
+                        <div style="text-align:center;"><div style="font-size:0.7rem;color:#888;">❌ غائب</div><div style="font-weight:800;font-size:1.2rem;color:#dc3545;">${absent}</div></div>
+                        <div style="text-align:center;"><div style="font-size:0.7rem;color:#888;">⚠️ معذور</div><div style="font-weight:800;font-size:1.2rem;color:#ffc107;">${excused}</div></div>
+                        <div style="text-align:center;"><div style="font-size:0.7rem;color:#888;">📊 نسبة الحضور</div><div style="font-weight:800;font-size:1.2rem;">${players.length > 0 ? Math.round((present/players.length)*100) : 0}%</div></div>
+                    </div>
+
+                    <!-- قائمة اللاعبين والحضور -->
+                    <div class="section-title-sm">📋 قائمة اللاعبين والحضور</div>
+                    <div style="max-height:300px; overflow-y:auto; border:1px solid #eee; border-radius:12px; padding:8px;">
+                        ${players.map(p => {
+                            const attStatus = attendance[p.id] || 'غير محدد';
+                            const rating = ratings[p.id] || '';
+                            return `
+                                <div class="player-row">
+                                    <span class="player-name">${p.firstName} ${p.lastName}</span>
+                                    <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                                        <select class="attendance-select" onchange="updateSessionAttendance('${sessionId}','${p.id}',this.value)">
+                                            <option value="present" ${attStatus==='present'?'selected':''}>✅ حاضر</option>
+                                            <option value="absent" ${attStatus==='absent'?'selected':''}>❌ غائب</option>
+                                            <option value="excused" ${attStatus==='excused'?'selected':''}>⚠️ معذور</option>
+                                        </select>
+                                        <input type="number" placeholder="⭐ تقييم" value="${rating}" style="width:60px; padding:2px 4px; border-radius:6px; border:1px solid #ddd; font-size:0.7rem;" onchange="updateSessionRating('${sessionId}','${p.id}',this.value)" min="0" max="5" step="0.5" />
+                                        <button class="btn-sm btn-sm-info" onclick="showPlayerDetailPage('${p.id}')"><i class="fas fa-eye"></i></button>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+
+                    <!-- خطة التدريب -->
+                    <div class="section-title-sm">📋 خطة التدريب</div>
+                    <div style="margin-bottom:12px;">
+                        ${plan.length === 0 ? '<p class="text-muted">لا توجد خطة تدريبية</p>' : plan.map((step, i) => `
+                            <div class="plan-step">
+                                <div style="display:flex; justify-content:space-between; flex-wrap:wrap;">
+                                    <span style="font-weight:700;">${step.title || 'مرحلة '+(i+1)}</span>
+                                    <span style="color:#888;font-size:0.8rem;">⏱️ ${step.duration || '-'}</span>
+                                </div>
+                                <div style="font-size:0.85rem;color:#555;">${step.description || ''}</div>
+                                <div style="font-size:0.75rem;color:#888;">🛠️ ${step.tools || 'لا توجد أدوات'} | 🎯 ${step.goal || 'بدون هدف'}</div>
+                            </div>
+                        `).join('')}
+                        <button class="btn-sm btn-sm-primary" onclick="editSessionPlan('${sessionId}')"><i class="fas fa-edit"></i> تعديل الخطة</button>
+                    </div>
+
+                    <!-- أهداف الحصة -->
+                    <div class="section-title-sm">🎯 أهداف الحصة</div>
+                    <div style="margin-bottom:12px;">
+                        ${objectives.length === 0 ? '<p class="text-muted">لا توجد أهداف</p>' : objectives.map(obj => `
+                            <span style="display:inline-block; background:var(--light-bg); padding:4px 12px; border-radius:20px; margin:4px; font-size:0.8rem;">${obj}</span>
+                        `).join('')}
+                        <button class="btn-sm btn-sm-primary" onclick="editSessionObjectives('${sessionId}')"><i class="fas fa-edit"></i> تعديل الأهداف</button>
+                    </div>
+
+                    <!-- تقرير نهاية الحصة -->
+                    <div class="section-title-sm">📊 تقرير نهاية الحصة</div>
+                    <div style="margin-bottom:12px;">
+                        ${session.report ? `
+                            <div style="background:var(--light-bg); padding:12px; border-radius:12px;">
+                                <p>✅ الحاضرون: ${session.report.present || 0}</p>
+                                <p>❌ الغائبون: ${session.report.absent || 0}</p>
+                                <p>⚠️ المعذورون: ${session.report.excused || 0}</p>
+                                <p>🎯 تحققت الأهداف: ${session.report.objectivesAchieved ? '✅ نعم' : '❌ لا'}</p>
+                                <p>📝 ملاحظات: ${session.report.notes || '-'}</p>
+                            </div>
+                        ` : `
+                            <button class="btn-sm btn-sm-success" onclick="completeSession('${sessionId}')"><i class="fas fa-check"></i> إنهاء الحصة وإعداد التقرير</button>
+                        `}
+                    </div>
+
+                    <!-- إحصائيات الحصة -->
+                    <div class="section-title-sm">📈 إحصائيات الحصة</div>
+                    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(100px, 1fr)); gap:10px; background:var(--light-bg); padding:12px; border-radius:12px;">
+                        <div style="text-align:center;"><div style="font-size:0.7rem;color:#888;">نسبة الحضور</div><div style="font-weight:800;">${players.length > 0 ? Math.round((present/players.length)*100) : 0}%</div></div>
+                        <div style="text-align:center;"><div style="font-size:0.7rem;color:#888;">نسبة الغياب</div><div style="font-weight:800;">${players.length > 0 ? Math.round((absent/players.length)*100) : 0}%</div></div>
+                        <div style="text-align:center;"><div style="font-size:0.7rem;color:#888;">المشاركون</div><div style="font-weight:800;">${present}</div></div>
+                        <div style="text-align:center;"><div style="font-size:0.7rem;color:#888;">المدة الفعلية</div><div style="font-weight:800;">${session.startTime && session.endTime ? '60 دقيقة' : '-'}</div></div>
+                    </div>
+
+                    <div style="margin-top:16px; display:flex; gap:8px; flex-wrap:wrap;">
+                        <button class="btn-sm btn-sm-secondary" onclick="closeModal('sessionDetailModal')">إغلاق</button>
+                        ${session.status !== 'مكتملة' ? `<button class="btn-sm btn-sm-success" onclick="completeSession('${sessionId}')"><i class="fas fa-check"></i> إنهاء الحصة</button>` : ''}
+                        <button class="btn-sm btn-sm-warning" onclick="deleteSession('${sessionId}')"><i class="fas fa-trash"></i> حذف</button>
+                    </div>
+                </div>
+            `;
             document.body.appendChild(container);
             container.onclick = function(e) { if (e.target === container) closeModal('sessionDetailModal'); };
         };
 
         // ================================================================
-        // 13. دوال تحديث الحضور والتقييم وإنهاء الحصة
+        // 16. دوال تحديث الحضور والتقييم وإنهاء الحصة
         // ================================================================
         window.updateSessionAttendance = function(sessionId, playerId, status) {
             if (isProcessing) return;
@@ -2266,26 +2468,26 @@
         };
 
         // ================================================================
-        // 14. أرشيف الحصص
+        // 17. أرشيف الحصص
         // ================================================================
         window.showTrainingSessionsArchive = function() {
             const content = document.getElementById('pageContent');
             content.innerHTML = `
-                    <h2 class="page-title">📦 أرشيف الحصص التدريبية</h2>
-                    <p class="page-sub">جميع الحصص المكتملة والملغاة</p>
-                    <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:16px;">
-                        <button class="btn-sm btn-sm-secondary" onclick="showAdminTrainingSessions()"><i class="fas fa-arrow-right"></i> العودة للجدول</button>
-                        <div style="display:flex; gap:8px; flex-wrap:wrap;">
-                            <select id="archiveFilterCategory" onchange="renderArchiveSessions()">
-                                <option value="all">جميع الفئات</option>
-                                ${categories.map(c => `<option value="${c}">${c}</option>`).join('')}
-                            </select>
-                            <input type="month" id="archiveFilterMonth" onchange="renderArchiveSessions()" />
-                            <button class="btn-sm btn-sm-info" onclick="renderArchiveSessions()">تصفية</button>
-                        </div>
+                <h2 class="page-title">📦 أرشيف الحصص التدريبية</h2>
+                <p class="page-sub">جميع الحصص المكتملة والملغاة</p>
+                <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:16px;">
+                    <button class="btn-sm btn-sm-secondary" onclick="showAdminTrainingSessions()"><i class="fas fa-arrow-right"></i> العودة للجدول</button>
+                    <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                        <select id="archiveFilterCategory" onchange="renderArchiveSessions()">
+                            <option value="all">جميع الفئات</option>
+                            ${categories.map(c => `<option value="${c}">${c}</option>`).join('')}
+                        </select>
+                        <input type="month" id="archiveFilterMonth" onchange="renderArchiveSessions()" />
+                        <button class="btn-sm btn-sm-info" onclick="renderArchiveSessions()">تصفية</button>
                     </div>
-                    <div id="archiveSessionsList"></div>
-                `;
+                </div>
+                <div id="archiveSessionsList"></div>
+            `;
             renderArchiveSessions();
         };
 
@@ -2312,26 +2514,26 @@
                 const color = statusColors[s.status] || '#6c757d';
                 const dayName = new Date(s.date + 'T00:00:00').toLocaleDateString('ar-EG', { weekday: 'long' });
                 html += `
-                        <div class="session-card" style="border-right-color:${color};" onclick="openSessionDetail('${s.id}')">
-                            <div class="session-header">
-                                <span class="session-title">${s.title || 'حصة تدريبية'}</span>
-                                <span class="badge-status" style="background:${color}22; color:${color};">${s.status}</span>
-                            </div>
-                            <div class="session-meta" style="margin-top:8px;">
-                                <span><i class="fas fa-calendar-alt"></i> ${s.date} - ${dayName}</span>
-                                <span><i class="fas fa-clock"></i> ${s.startTime} - ${s.endTime}</span>
-                                <span><i class="fas fa-tag"></i> ${s.categoryId}</span>
-                                <span><i class="fas fa-user-tie"></i> ${s.coachName}</span>
-                                <span><i class="fas fa-dumbbell"></i> ${s.trainingType}</span>
-                            </div>
+                    <div class="session-card" style="border-right-color:${color};" onclick="openSessionDetail('${s.id}')">
+                        <div class="session-header">
+                            <span class="session-title">${s.title || 'حصة تدريبية'}</span>
+                            <span class="badge-status" style="background:${color}22; color:${color};">${s.status}</span>
                         </div>
-                    `;
+                        <div class="session-meta" style="margin-top:8px;">
+                            <span><i class="fas fa-calendar-alt"></i> ${s.date} - ${dayName}</span>
+                            <span><i class="fas fa-clock"></i> ${s.startTime} - ${s.endTime}</span>
+                            <span><i class="fas fa-tag"></i> ${s.categoryId}</span>
+                            <span><i class="fas fa-user-tie"></i> ${s.coachName}</span>
+                            <span><i class="fas fa-dumbbell"></i> ${s.trainingType}</span>
+                        </div>
+                    </div>
+                `;
             });
             container.innerHTML = html;
         };
 
         // ================================================================
-        // 15. دوال المباريات (للمدير)
+        // 18. دوال المباريات (للمدير)
         // ================================================================
         window.showAdminMatches = function() {
             currentViewFunction = window.showAdminMatches;
@@ -2339,26 +2541,26 @@
             const content = document.getElementById('pageContent');
             let html = `<h2 class="page-title">🤝 المباريات الودية</h2><p class="page-sub">إدارة المباريات</p>`;
             html += `
-                    <div class="form-card">
-                        <h3>➕ إضافة مباراة ودية</h3>
-                        <div class="form-grid">
-                            <div class="form-group"><label>الخصم</label><input type="text" id="matchOpponent" /></div>
-                            <div class="form-group"><label>الفئة</label><select id="matchCategory" onchange="updateMatchPlayers()">${categories.map(c=>`<option value="${c}">${c}</option>`).join('')}</select></div>
-                            <div class="form-group"><label>التاريخ</label><input type="date" id="matchDate" /></div>
-                            <div class="form-group"><label>الوقت</label><input type="time" id="matchTime" /></div>
-                            <div class="form-group"><label>الملعب</label><input type="text" id="matchField" /></div>
-                            <div class="form-group"><label>النتيجة</label><input type="text" id="matchScore" placeholder="مثال: 3-1" /></div>
-                            <div class="form-group"><label>الحالة</label><select id="matchStatus"><option value="قادمة">قادمة</option><option value="منتهية">منتهية</option><option value="ملغية">ملغية</option></select></div>
-                            <div class="form-group full"><label>ملاحظات</label><textarea id="matchNotes" rows="2"></textarea></div>
-                            <div class="form-group full">
-                                <label>اللاعبون المستدعون</label>
-                                <select id="matchPlayersSelect" multiple style="height:100px;"></select>
-                            </div>
-                            <div class="form-group full"><button class="btn-submit" onclick="saveMatch()"><i class="fas fa-save"></i> حفظ المباراة</button></div>
+                <div class="form-card">
+                    <h3>➕ إضافة مباراة ودية</h3>
+                    <div class="form-grid">
+                        <div class="form-group"><label>الخصم</label><input type="text" id="matchOpponent" /></div>
+                        <div class="form-group"><label>الفئة</label><select id="matchCategory" onchange="updateMatchPlayers()">${categories.map(c=>`<option value="${c}">${c}</option>`).join('')}</select></div>
+                        <div class="form-group"><label>التاريخ</label><input type="date" id="matchDate" /></div>
+                        <div class="form-group"><label>الوقت</label><input type="time" id="matchTime" /></div>
+                        <div class="form-group"><label>الملعب</label><input type="text" id="matchField" /></div>
+                        <div class="form-group"><label>النتيجة</label><input type="text" id="matchScore" placeholder="مثال: 3-1" /></div>
+                        <div class="form-group"><label>الحالة</label><select id="matchStatus"><option value="قادمة">قادمة</option><option value="منتهية">منتهية</option><option value="ملغية">ملغية</option></select></div>
+                        <div class="form-group full"><label>ملاحظات</label><textarea id="matchNotes" rows="2"></textarea></div>
+                        <div class="form-group full">
+                            <label>اللاعبون المستدعون</label>
+                            <select id="matchPlayersSelect" multiple style="height:100px;"></select>
                         </div>
+                        <div class="form-group full"><button class="btn-submit" onclick="saveMatch()"><i class="fas fa-save"></i> حفظ المباراة</button></div>
                     </div>
-                    <div id="matchesList"></div>
-                `;
+                </div>
+                <div id="matchesList"></div>
+            `;
             content.innerHTML = html;
             setActiveMenu(4);
             renderMatchesList();
@@ -2378,24 +2580,24 @@
                     '#ffc107';
                 const hasReport = allMatchReports.some(r => r.matchId === m.id);
                 html += `
-                        <div class="training-card" style="background:#fff; border-radius:16px; padding:18px 24px; margin-bottom:16px; border-right:6px solid ${statusColor}; box-shadow:0 4px 12px rgba(0,0,0,0.04); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap;">
-                            <div style="display:flex; gap:20px; flex-wrap:wrap; align-items:center;">
-                                <span style="font-weight:800; color:var(--dark-navy); font-size:1.1rem;" class="editable-field" onclick="editMatchField('${m.id}','opponent','${m.opponent||''}')">ضد ${m.opponent}</span>
-                                <span style="color:#666; font-size:0.85rem;"><i class="fas fa-tag"></i> ${m.categoryId}</span>
-                                <span style="color:#666; font-size:0.85rem;" class="editable-field" onclick="editMatchField('${m.id}','date','${m.date||''}')"><i class="fas fa-calendar-alt"></i> ${m.date}</span>
-                                <span style="color:#666; font-size:0.85rem;" class="editable-field" onclick="editMatchField('${m.id}','time','${m.time||''}')"><i class="fas fa-clock"></i> ${m.time}</span>
-                                <span style="color:#666; font-size:0.85rem;" class="editable-field" onclick="editMatchField('${m.id}','field','${m.field||''}')"><i class="fas fa-map-pin"></i> ${m.field}</span>
-                                <span style="color:#666; font-size:0.85rem;" class="editable-field" onclick="editMatchField('${m.id}','score','${m.score||''}')"><i class="fas fa-futbol"></i> ${m.score||'-'}</span>
-                                <span style="color:#666; font-size:0.85rem;"><span class="badge-status" style="background:${statusColor}22; color:${statusColor};">${m.status||'قادمة'}</span></span>
-                            </div>
-                            <div style="display:flex; gap:8px; flex-wrap:wrap;">
-                                <button class="btn-sm btn-sm-info" onclick="editMatchPlayersList('${m.id}')"><i class="fas fa-users"></i> تعديل اللاعبين</button>
-                                <button class="btn-sm btn-sm-primary" onclick="showMatchLineup('${m.id}')"><i class="fas fa-sitemap"></i> تشكيلة</button>
-                                ${!hasReport ? `<button class="btn-sm btn-sm-success" onclick="createMatchReport('${m.id}')"><i class="fas fa-flag-checkered"></i> تقرير</button>` : `<button class="btn-sm btn-sm-info" onclick="viewMatchReport('${m.id}')"><i class="fas fa-eye"></i> التقرير</button>`}
-                                <button class="btn-sm btn-sm-danger" onclick="deleteMatch('${m.id}')"><i class="fas fa-trash"></i></button>
-                            </div>
+                    <div class="training-card" style="background:#fff; border-radius:16px; padding:18px 24px; margin-bottom:16px; border-right:6px solid ${statusColor}; box-shadow:0 4px 12px rgba(0,0,0,0.04); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap;">
+                        <div style="display:flex; gap:20px; flex-wrap:wrap; align-items:center;">
+                            <span style="font-weight:800; color:var(--dark-navy); font-size:1.1rem;" class="editable-field" onclick="editMatchField('${m.id}','opponent','${m.opponent||''}')">ضد ${m.opponent}</span>
+                            <span style="color:#666; font-size:0.85rem;"><i class="fas fa-tag"></i> ${m.categoryId}</span>
+                            <span style="color:#666; font-size:0.85rem;" class="editable-field" onclick="editMatchField('${m.id}','date','${m.date||''}')"><i class="fas fa-calendar-alt"></i> ${m.date}</span>
+                            <span style="color:#666; font-size:0.85rem;" class="editable-field" onclick="editMatchField('${m.id}','time','${m.time||''}')"><i class="fas fa-clock"></i> ${m.time}</span>
+                            <span style="color:#666; font-size:0.85rem;" class="editable-field" onclick="editMatchField('${m.id}','field','${m.field||''}')"><i class="fas fa-map-pin"></i> ${m.field}</span>
+                            <span style="color:#666; font-size:0.85rem;" class="editable-field" onclick="editMatchField('${m.id}','score','${m.score||''}')"><i class="fas fa-futbol"></i> ${m.score||'-'}</span>
+                            <span style="color:#666; font-size:0.85rem;"><span class="badge-status" style="background:${statusColor}22; color:${statusColor};">${m.status||'قادمة'}</span></span>
                         </div>
-                    `;
+                        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                            <button class="btn-sm btn-sm-info" onclick="editMatchPlayersList('${m.id}')"><i class="fas fa-users"></i> تعديل اللاعبين</button>
+                            <button class="btn-sm btn-sm-primary" onclick="showMatchLineup('${m.id}')"><i class="fas fa-sitemap"></i> تشكيلة</button>
+                            ${!hasReport ? `<button class="btn-sm btn-sm-success" onclick="createMatchReport('${m.id}')"><i class="fas fa-flag-checkered"></i> تقرير</button>` : `<button class="btn-sm btn-sm-info" onclick="viewMatchReport('${m.id}')"><i class="fas fa-eye"></i> التقرير</button>`}
+                            <button class="btn-sm btn-sm-danger" onclick="deleteMatch('${m.id}')"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </div>
+                `;
             });
             container.innerHTML = html;
         }
@@ -2426,13 +2628,13 @@
             container.style.cssText =
                 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); display:flex; align-items:center; justify-content:center; z-index:999999;';
             container.innerHTML = `
-                    <div style="background:#fff; padding:24px; border-radius:16px; max-width:400px; width:100%;">
-                        <h3>تعديل اللاعبين المستدعين</h3>
-                        <div style="max-height:300px; overflow-y:auto;">${listHtml}</div>
-                        <button class="btn-submit" onclick="saveEditedMatchPlayers('${matchId}')" style="margin-top:12px;">حفظ</button>
-                        <button onclick="closeModal('editMatchModal')" style="margin-top:8px; background:#6c757d; border:none; padding:8px 20px; border-radius:30px; color:#fff; cursor:pointer;">إلغاء</button>
-                    </div>
-                `;
+                <div style="background:#fff; padding:24px; border-radius:16px; max-width:400px; width:100%;">
+                    <h3>تعديل اللاعبين المستدعين</h3>
+                    <div style="max-height:300px; overflow-y:auto;">${listHtml}</div>
+                    <button class="btn-submit" onclick="saveEditedMatchPlayers('${matchId}')" style="margin-top:12px;">حفظ</button>
+                    <button onclick="closeModal('editMatchModal')" style="margin-top:8px; background:#6c757d; border:none; padding:8px 20px; border-radius:30px; color:#fff; cursor:pointer;">إلغاء</button>
+                </div>
+            `;
             document.body.appendChild(container);
         };
 
@@ -2515,28 +2717,28 @@
             container.style.cssText =
                 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); display:flex; align-items:center; justify-content:center; z-index:999999;';
             let html = `
-                    <div style="background:#fff; padding:24px; border-radius:16px; max-width:600px; width:100%; max-height:90vh; overflow-y:auto;">
-                        <h3 style="text-align:center; color:var(--dark-navy);">📋 تشكيلة المباراة ضد ${match.opponent}</h3>
-                        <div style="display:flex; justify-content:center; margin:10px 0;">
-                            <img src="https://raw.githubusercontent.com/darkonovic51-hash/Mohamed-test/4a065c0a8a951b1d39707aa5eb90a5ce7512bec4/1000015625-removebg-preview.png" style="height:40px;" />
-                            <span style="font-weight:800; font-size:1.2rem; color:var(--dark-navy); margin-right:10px;">ASSARU Academy</span>
-                        </div>
-                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">`;
+                <div style="background:#fff; padding:24px; border-radius:16px; max-width:600px; width:100%; max-height:90vh; overflow-y:auto;">
+                    <h3 style="text-align:center; color:var(--dark-navy);">📋 تشكيلة المباراة ضد ${match.opponent}</h3>
+                    <div style="display:flex; justify-content:center; margin:10px 0;">
+                        <img src="https://raw.githubusercontent.com/darkonovic51-hash/Mohamed-test/4a065c0a8a951b1d39707aa5eb90a5ce7512bec4/1000015625-removebg-preview.png" style="height:40px;" />
+                        <span style="font-weight:800; font-size:1.2rem; color:var(--dark-navy); margin-right:10px;">ASSARU Academy</span>
+                    </div>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">`;
             positions.forEach(pos => {
                 html += `
-                        <div style="border:1px solid #ddd; border-radius:8px; padding:8px;">
-                            <div style="font-weight:700; color:var(--primary-blue); font-size:0.8rem;">${pos}</div>
-                            <select multiple style="width:100%; height:60px; border:1px solid #ddd; border-radius:6px; padding:4px;">
-                                ${players.map(p => `<option value="${p.id}">${p.firstName} ${p.lastName}</option>`).join('')}
-                            </select>
-                        </div>
-                    `;
-            });
-            html += `</div>
-                        <button class="btn-submit" onclick="saveMatchLineup('${matchId}')" style="margin-top:12px; width:100%;">💾 حفظ التشكيلة</button>
-                        <button onclick="closeModal('editMatchLineupModal')" style="margin-top:8px; background:#6c757d; border:none; padding:8px 20px; border-radius:30px; color:#fff; cursor:pointer; width:100%;">إلغاء</button>
+                    <div style="border:1px solid #ddd; border-radius:8px; padding:8px;">
+                        <div style="font-weight:700; color:var(--primary-blue); font-size:0.8rem;">${pos}</div>
+                        <select multiple style="width:100%; height:60px; border:1px solid #ddd; border-radius:6px; padding:4px;">
+                            ${players.map(p => `<option value="${p.id}">${p.firstName} ${p.lastName}</option>`).join('')}
+                        </select>
                     </div>
                 `;
+            });
+            html += `</div>
+                    <button class="btn-submit" onclick="saveMatchLineup('${matchId}')" style="margin-top:12px; width:100%;">💾 حفظ التشكيلة</button>
+                    <button onclick="closeModal('editMatchLineupModal')" style="margin-top:8px; background:#6c757d; border:none; padding:8px 20px; border-radius:30px; color:#fff; cursor:pointer; width:100%;">إلغاء</button>
+                </div>
+            `;
             container.innerHTML = html;
             document.body.appendChild(container);
         };
@@ -2565,15 +2767,15 @@
             container.style.cssText =
                 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); display:flex; align-items:center; justify-content:center; z-index:999999;';
             container.innerHTML = `
-                    <div style="background:#fff; padding:24px; border-radius:16px; max-width:500px; width:100%;">
-                        <h3>📊 تقرير المباراة ضد ${match.opponent}</h3>
-                        <div class="form-group"><label>النتيجة النهائية</label><input type="text" id="reportScore" placeholder="مثال: 3-1" value="${match.score||''}" /></div>
-                        <div class="form-group"><label>أفضل لاعب في المباراة</label><input type="text" id="reportMvp" placeholder="اسم اللاعب" /></div>
-                        <div class="form-group"><label>ملاحظات</label><textarea id="reportNotes" rows="3"></textarea></div>
-                        <button class="btn-submit" onclick="saveMatchReport('${matchId}')" style="margin-top:12px; width:100%;">💾 حفظ التقرير</button>
-                        <button onclick="closeModal('matchReportModal')" style="margin-top:8px; background:#6c757d; border:none; padding:8px 20px; border-radius:30px; color:#fff; cursor:pointer; width:100%;">إلغاء</button>
-                    </div>
-                `;
+                <div style="background:#fff; padding:24px; border-radius:16px; max-width:500px; width:100%;">
+                    <h3>📊 تقرير المباراة ضد ${match.opponent}</h3>
+                    <div class="form-group"><label>النتيجة النهائية</label><input type="text" id="reportScore" placeholder="مثال: 3-1" value="${match.score||''}" /></div>
+                    <div class="form-group"><label>أفضل لاعب في المباراة</label><input type="text" id="reportMvp" placeholder="اسم اللاعب" /></div>
+                    <div class="form-group"><label>ملاحظات</label><textarea id="reportNotes" rows="3"></textarea></div>
+                    <button class="btn-submit" onclick="saveMatchReport('${matchId}')" style="margin-top:12px; width:100%;">💾 حفظ التقرير</button>
+                    <button onclick="closeModal('matchReportModal')" style="margin-top:8px; background:#6c757d; border:none; padding:8px 20px; border-radius:30px; color:#fff; cursor:pointer; width:100%;">إلغاء</button>
+                </div>
+            `;
             document.body.appendChild(container);
         };
 
@@ -2610,8 +2812,8 @@
             const content = document.getElementById('pageContent');
             let html = `<h2 class="page-title">📊 تقارير المباريات</h2><p class="page-sub">جميع تقارير المباريات</p>`;
             html += `<div class="table-wrap"><table>
-                    <thead><tr><th>المباراة</th><th>الفئة</th><th>النتيجة</th><th>أفضل لاعب</th><th>التاريخ</th><th>ملاحظات</th></tr></thead>
-                    <tbody>`;
+                <thead><tr><th>المباراة</th><th>الفئة</th><th>النتيجة</th><th>أفضل لاعب</th><th>التاريخ</th><th>ملاحظات</th></tr></thead>
+                <tbody>`;
             if (allMatchReports.length === 0) {
                 html +=
                     `<tr><td colspan="6" style="text-align:center;color:#888;padding:20px;">لا توجد تقارير</td></tr>`;
@@ -2619,13 +2821,13 @@
                 allMatchReports.forEach(r => {
                     const match = allMatches.find(m => m.id === r.matchId);
                     html += `<tr>
-                            <td>${match ? 'ضد '+match.opponent : 'غير معروف'}</td>
-                            <td>${match ? match.categoryId : '-'}</td>
-                            <td><strong>${r.score}</strong></td>
-                            <td>${r.mvp||'-'}</td>
-                            <td>${r.date ? new Date(r.date).toLocaleDateString('ar-EG') : '-'}</td>
-                            <td style="font-size:0.8rem;color:#888;">${r.notes||'-'}</td>
-                        </tr>`;
+                        <td>${match ? 'ضد '+match.opponent : 'غير معروف'}</td>
+                        <td>${match ? match.categoryId : '-'}</td>
+                        <td><strong>${r.score}</strong></td>
+                        <td>${r.mvp||'-'}</td>
+                        <td>${r.date ? new Date(r.date).toLocaleDateString('ar-EG') : '-'}</td>
+                        <td style="font-size:0.8rem;color:#888;">${r.notes||'-'}</td>
+                    </tr>`;
                 });
             }
             html += `</tbody></table></div>`;
@@ -2634,7 +2836,7 @@
         };
 
         // ================================================================
-        // 16. دوال المدربين والدورات
+        // 19. دوال المدربين والدورات
         // ================================================================
         window.showAdminCoaches = function() {
             currentViewFunction = window.showAdminCoaches;
@@ -2642,19 +2844,19 @@
             const content = document.getElementById('pageContent');
             let html = `<h2 class="page-title">🧑‍🏫 المدربون</h2><p class="page-sub">إدارة المدربين</p>`;
             html += `
-                    <div class="form-card">
-                        <h3>➕ إضافة مدرب</h3>
-                        <div class="form-grid">
-                            <div class="form-group"><label>الاسم</label><input type="text" id="coachName" /></div>
-                            <div class="form-group"><label>الفئة</label><select id="coachCategory">${categories.map(c=>`<option value="${c}">${c}</option>`).join('')}</select></div>
-                            <div class="form-group full"><button class="btn-submit" onclick="addCoach()"><i class="fas fa-save"></i> إضافة مدرب</button></div>
-                        </div>
+                <div class="form-card">
+                    <h3>➕ إضافة مدرب</h3>
+                    <div class="form-grid">
+                        <div class="form-group"><label>الاسم</label><input type="text" id="coachName" /></div>
+                        <div class="form-group"><label>الفئة</label><select id="coachCategory">${categories.map(c=>`<option value="${c}">${c}</option>`).join('')}</select></div>
+                        <div class="form-group full"><button class="btn-submit" onclick="addCoach()"><i class="fas fa-save"></i> إضافة مدرب</button></div>
                     </div>
-                    <div class="table-wrap"><table>
-                        <thead><tr><th>الاسم</th><th>الفئة</th><th>الكود</th><th>إجراءات</th></tr></thead>
-                        <tbody id="coachesTableBody"></tbody>
-                    </table></div>
-                `;
+                </div>
+                <div class="table-wrap"><table>
+                    <thead><tr><th>الاسم</th><th>الفئة</th><th>الكود</th><th>إجراءات</th></tr></thead>
+                    <tbody id="coachesTableBody"></tbody>
+                </table></div>
+            `;
             content.innerHTML = html;
             setActiveMenu(5);
             renderCoachesTable();
@@ -2671,9 +2873,9 @@
             let html = '';
             allCoaches.forEach(c => {
                 html += `<tr><td class="editable-field" onclick="editCoachField('${c.id}','name','${c.name||''}')">${c.name||''}</td>
-                        <td class="editable-field" onclick="editCoachField('${c.id}','categoryId','${c.categoryId||''}')">${c.categoryId||''}</td>
-                        <td><strong>${c.code||''}</strong></td>
-                        <td><button class="btn-sm btn-sm-danger" onclick="deleteCoach('${c.id}')"><i class="fas fa-trash"></i></button></td></tr>`;
+                    <td class="editable-field" onclick="editCoachField('${c.id}','categoryId','${c.categoryId||''}')">${c.categoryId||''}</td>
+                    <td><strong>${c.code||''}</strong></td>
+                    <td><button class="btn-sm btn-sm-danger" onclick="deleteCoach('${c.id}')"><i class="fas fa-trash"></i></button></td></tr>`;
             });
             tbody.innerHTML = html;
         }
@@ -2724,26 +2926,26 @@
             const content = document.getElementById('pageContent');
             let html = `<h2 class="page-title">🏆 الدورات</h2><p class="page-sub">إدارة الدورات</p>`;
             html += `
-                    <div class="form-card">
-                        <h3>➕ إضافة دورة</h3>
-                        <div class="form-grid">
-                            <div class="form-group"><label>العنوان</label><input type="text" id="tournamentTitle" /></div>
-                            <div class="form-group"><label>الفئة</label><select id="tournamentCategory" onchange="updateTournamentPlayers()">${categories.map(c=>`<option value="${c}">${c}</option>`).join('')}</select></div>
-                            <div class="form-group"><label>نوع الدورة</label><select id="tournamentType"><option value="ودية">ودية</option><option value="رسمية">رسمية</option><option value="تصفيات">تصفيات</option></select></div>
-                            <div class="form-group"><label>تاريخ البداية</label><input type="date" id="tournamentStart" /></div>
-                            <div class="form-group"><label>تاريخ النهاية</label><input type="date" id="tournamentEnd" /></div>
-                            <div class="form-group"><label>المكان</label><input type="text" id="tournamentLocation" /></div>
-                            <div class="form-group"><label>الجوائز</label><input type="text" id="tournamentPrize" placeholder="كأس، ميداليات..." /></div>
-                            <div class="form-group full"><label>ملاحظات</label><textarea id="tournamentNotes" rows="2"></textarea></div>
-                            <div class="form-group full">
-                                <label>اللاعبون المستدعون</label>
-                                <select id="tournamentPlayersSelect" multiple style="height:100px;"></select>
-                            </div>
-                            <div class="form-group full"><button class="btn-submit" onclick="saveTournament()"><i class="fas fa-save"></i> حفظ الدورة</button></div>
+                <div class="form-card">
+                    <h3>➕ إضافة دورة</h3>
+                    <div class="form-grid">
+                        <div class="form-group"><label>العنوان</label><input type="text" id="tournamentTitle" /></div>
+                        <div class="form-group"><label>الفئة</label><select id="tournamentCategory" onchange="updateTournamentPlayers()">${categories.map(c=>`<option value="${c}">${c}</option>`).join('')}</select></div>
+                        <div class="form-group"><label>نوع الدورة</label><select id="tournamentType"><option value="ودية">ودية</option><option value="رسمية">رسمية</option><option value="تصفيات">تصفيات</option></select></div>
+                        <div class="form-group"><label>تاريخ البداية</label><input type="date" id="tournamentStart" /></div>
+                        <div class="form-group"><label>تاريخ النهاية</label><input type="date" id="tournamentEnd" /></div>
+                        <div class="form-group"><label>المكان</label><input type="text" id="tournamentLocation" /></div>
+                        <div class="form-group"><label>الجوائز</label><input type="text" id="tournamentPrize" placeholder="كأس، ميداليات..." /></div>
+                        <div class="form-group full"><label>ملاحظات</label><textarea id="tournamentNotes" rows="2"></textarea></div>
+                        <div class="form-group full">
+                            <label>اللاعبون المستدعون</label>
+                            <select id="tournamentPlayersSelect" multiple style="height:100px;"></select>
                         </div>
+                        <div class="form-group full"><button class="btn-submit" onclick="saveTournament()"><i class="fas fa-save"></i> حفظ الدورة</button></div>
                     </div>
-                    <div id="tournamentsList"></div>
-                `;
+                </div>
+                <div id="tournamentsList"></div>
+            `;
             content.innerHTML = html;
             setActiveMenu(3);
             renderTournamentsList();
@@ -2760,21 +2962,21 @@
             let html = '';
             allTournaments.forEach(t => {
                 html += `
-                        <div class="training-card" style="background:#fff; border-radius:16px; padding:18px 24px; margin-bottom:16px; border-right:6px solid #f39c12; box-shadow:0 4px 12px rgba(0,0,0,0.04); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap;">
-                            <div style="display:flex; gap:20px; flex-wrap:wrap; align-items:center;">
-                                <span style="font-weight:800; color:var(--dark-navy); font-size:1.1rem;" class="editable-field" onclick="editTournamentField('${t.id}','title','${t.title||''}')">${t.title}</span>
-                                <span style="color:#666; font-size:0.85rem;"><i class="fas fa-tag"></i> ${t.categoryId}</span>
-                                <span style="color:#666; font-size:0.85rem;" class="editable-field" onclick="editTournamentField('${t.id}','startDate','${t.startDate||''}')"><i class="fas fa-calendar-alt"></i> ${t.startDate} - ${t.endDate}</span>
-                                <span style="color:#666; font-size:0.85rem;" class="editable-field" onclick="editTournamentField('${t.id}','location','${t.location||''}')"><i class="fas fa-map-pin"></i> ${t.location}</span>
-                                <span style="color:#666; font-size:0.85rem;"><i class="fas fa-trophy"></i> ${t.prize||'-'}</span>
-                                <span style="color:#666; font-size:0.85rem;"><i class="fas fa-users"></i> ${(t.playersList||[]).length} لاعب</span>
-                            </div>
-                            <div style="display:flex; gap:8px; flex-wrap:wrap;">
-                                <button class="btn-sm btn-sm-info" onclick="editTournamentPlayersList('${t.id}')"><i class="fas fa-users"></i> تعديل اللاعبين</button>
-                                <button class="btn-sm btn-sm-danger" onclick="deleteTournament('${t.id}')"><i class="fas fa-trash"></i></button>
-                            </div>
+                    <div class="training-card" style="background:#fff; border-radius:16px; padding:18px 24px; margin-bottom:16px; border-right:6px solid #f39c12; box-shadow:0 4px 12px rgba(0,0,0,0.04); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap;">
+                        <div style="display:flex; gap:20px; flex-wrap:wrap; align-items:center;">
+                            <span style="font-weight:800; color:var(--dark-navy); font-size:1.1rem;" class="editable-field" onclick="editTournamentField('${t.id}','title','${t.title||''}')">${t.title}</span>
+                            <span style="color:#666; font-size:0.85rem;"><i class="fas fa-tag"></i> ${t.categoryId}</span>
+                            <span style="color:#666; font-size:0.85rem;" class="editable-field" onclick="editTournamentField('${t.id}','startDate','${t.startDate||''}')"><i class="fas fa-calendar-alt"></i> ${t.startDate} - ${t.endDate}</span>
+                            <span style="color:#666; font-size:0.85rem;" class="editable-field" onclick="editTournamentField('${t.id}','location','${t.location||''}')"><i class="fas fa-map-pin"></i> ${t.location}</span>
+                            <span style="color:#666; font-size:0.85rem;"><i class="fas fa-trophy"></i> ${t.prize||'-'}</span>
+                            <span style="color:#666; font-size:0.85rem;"><i class="fas fa-users"></i> ${(t.playersList||[]).length} لاعب</span>
                         </div>
-                    `;
+                        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                            <button class="btn-sm btn-sm-info" onclick="editTournamentPlayersList('${t.id}')"><i class="fas fa-users"></i> تعديل اللاعبين</button>
+                            <button class="btn-sm btn-sm-danger" onclick="deleteTournament('${t.id}')"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </div>
+                `;
             });
             container.innerHTML = html;
         }
@@ -2805,13 +3007,13 @@
             container.style.cssText =
                 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); display:flex; align-items:center; justify-content:center; z-index:999999;';
             container.innerHTML = `
-                    <div style="background:#fff; padding:24px; border-radius:16px; max-width:400px; width:100%;">
-                        <h3>تعديل اللاعبين المستدعين</h3>
-                        <div style="max-height:300px; overflow-y:auto;">${listHtml}</div>
-                        <button class="btn-submit" onclick="saveEditedTournamentPlayers('${tournamentId}')" style="margin-top:12px;">حفظ</button>
-                        <button onclick="closeModal('editTournamentModal')" style="margin-top:8px; background:#6c757d; border:none; padding:8px 20px; border-radius:30px; color:#fff; cursor:pointer;">إلغاء</button>
-                    </div>
-                `;
+                <div style="background:#fff; padding:24px; border-radius:16px; max-width:400px; width:100%;">
+                    <h3>تعديل اللاعبين المستدعين</h3>
+                    <div style="max-height:300px; overflow-y:auto;">${listHtml}</div>
+                    <button class="btn-submit" onclick="saveEditedTournamentPlayers('${tournamentId}')" style="margin-top:12px;">حفظ</button>
+                    <button onclick="closeModal('editTournamentModal')" style="margin-top:8px; background:#6c757d; border:none; padding:8px 20px; border-radius:30px; color:#fff; cursor:pointer;">إلغاء</button>
+                </div>
+            `;
             document.body.appendChild(container);
         };
 
@@ -2885,7 +3087,7 @@
         };
 
         // ================================================================
-        // 17. صفحة ولي الأمر
+        // 20. صفحة ولي الأمر
         // ================================================================
         window.showParentHome = function() {
             currentViewFunction = window.showParentHome;
@@ -2918,13 +3120,13 @@
                         'excused';
                     const rating = (s.ratings || {})[playerId] || '';
                     sessionsHtml += `
-                            <div style="display:flex; justify-content:space-between; padding:4px 8px; border-bottom:1px solid #eee; font-size:0.8rem;">
-                                <span>${s.title || 'حصة'}</span>
-                                <span>${s.date}</span>
-                                <span class="badge-status ${statusClass}">${statusText}</span>
-                                ${rating ? `<span>⭐ ${rating}</span>` : ''}
-                            </div>
-                        `;
+                        <div style="display:flex; justify-content:space-between; padding:4px 8px; border-bottom:1px solid #eee; font-size:0.8rem;">
+                            <span>${s.title || 'حصة'}</span>
+                            <span>${s.date}</span>
+                            <span class="badge-status ${statusClass}">${statusText}</span>
+                            ${rating ? `<span>⭐ ${rating}</span>` : ''}
+                        </div>
+                    `;
                 });
             }
             sessionsHtml += '</div>';
@@ -2938,12 +3140,12 @@
                 const statusClass = data.paid ? 'paid' : 'unpaid';
                 const statusText = data.paid ? 'مدفوع' : 'غير مدفوع';
                 paymentHtml += `
-                        <div class="month-item">
-                            <div class="month-label">${m}</div>
-                            <div class="status-badge ${statusClass}">${statusText}</div>
-                            <div style="font-size:0.7rem;color:#888;">${data.amount||0} دج</div>
-                        </div>
-                    `;
+                    <div class="month-item">
+                        <div class="month-label">${m}</div>
+                        <div class="status-badge ${statusClass}">${statusText}</div>
+                        <div style="font-size:0.7rem;color:#888;">${data.amount||0} دج</div>
+                    </div>
+                `;
             });
             paymentHtml += '</div>';
 
@@ -2953,64 +3155,64 @@
             } else {
                 archive.forEach(a => {
                     archiveHtml += `
-                            <div class="archive-item">
-                                <span><strong>${a.weekStart||a.date}</strong> - ${a.data ? a.data.map(d=>d.status==='present'?'✅':'❌').join(' ') : ''}</span>
-                                <span style="color:#888;font-size:0.6rem;">${a.timestamp ? new Date(a.timestamp).toLocaleString('ar-EG') : ''}</span>
-                            </div>
-                        `;
+                        <div class="archive-item">
+                            <span><strong>${a.weekStart||a.date}</strong> - ${a.data ? a.data.map(d=>d.status==='present'?'✅':'❌').join(' ') : ''}</span>
+                            <span style="color:#888;font-size:0.6rem;">${a.timestamp ? new Date(a.timestamp).toLocaleString('ar-EG') : ''}</span>
+                        </div>
+                    `;
                 });
             }
             archiveHtml += '</div>';
 
             const content = document.getElementById('pageContent');
             content.innerHTML = `
-                    <div class="parent-dashboard">
-                        <h2 style="text-align:center; margin-bottom:12px;">👤 حالة اللاعب</h2>
-                        <div class="player-card">
-                            <img src="${imgSrc}" alt="صورة اللاعب" />
-                            <div>
-                                <h3>${player.firstName} ${player.lastName}</h3>
-                                <p>الفئة: ${player.categoryId} | تاريخ الميلاد: ${player.birthDate}</p>
-                                <p>الحالة: <span class="badge-status ${player.status==='approved'?'paid':player.status==='rejected'?'unpaid':'unpaid'}">${player.status==='approved'?'معتمد':player.status==='rejected'?'مرفوض':'قيد الانتظار'}</span></p>
-                            </div>
-                        </div>
-                        <div class="info-grid">
-                            <div class="item"><div class="label">📋 التقييم</div><div class="value">${details.rating||'لم يُقيّم'}</div></div>
-                            <div class="item"><div class="label">💳 حالة الدفع</div><div class="value">${payments.length>0?payments[0].status:'غير مدفوع'}</div></div>
-                            <div class="item"><div class="label">⚽ تدريبات</div><div class="value">${trainings.length} حصة</div></div>
-                            <div class="item"><div class="label">🏆 دورات</div><div class="value">${tournaments.length} دورة</div></div>
-                            <div class="item"><div class="label">🤝 مباريات ودية</div><div class="value">${matches.length} مباراة</div></div>
-                            <div class="item"><div class="label">📊 الأهداف</div><div class="value">${details.goals||0}</div></div>
-                            <div class="item"><div class="label">🏆 رجل المباراة</div><div class="value">${details.manOfMatch||0}</div></div>
-                            <div class="item"><div class="label">💪 الجاهزية</div><div class="value">${details.fitness||80}%</div></div>
-                        </div>
-                        <div style="margin-top:16px; background:#f8f9fa; padding:12px; border-radius:12px;">
-                            <h4>📋 سجل الجلسات</h4>
-                            ${sessionsHtml}
-                        </div>
-                        <div style="margin-top:16px; background:#f8f9fa; padding:12px; border-radius:12px;">
-                            <h4>💳 جدول الدفع الشهري (2026)</h4>
-                            ${paymentHtml}
-                        </div>
-                        <div style="margin-top:16px; background:#f8f9fa; padding:12px; border-radius:12px;">
-                            <h4>📦 أرشيف الحضور</h4>
-                            ${archiveHtml}
-                        </div>
-                        <div style="margin-top:16px; background:#f8f9fa; padding:12px; border-radius:12px;">
-                            <h4>🗓️ تفاصيل التدريبات القادمة</h4>
-                            ${trainings.length===0?'<p class="text-muted">لا توجد تدريبات</p>':trainings.filter(t=>t.status!=='منتهي').map(t=>`<p>${t.title} - ${t.date} ${t.startTime} في ${t.field}</p>`).join('')}
-                        </div>
-                        <div style="margin-top:16px; background:#f8f9fa; padding:12px; border-radius:12px;">
-                            <h4>🏟️ المباريات القادمة</h4>
-                            ${matches.length===0?'<p class="text-muted">لا توجد مباريات</p>':matches.filter(m=>m.status!=='منتهية').map(m=>`<p>ضد ${m.opponent} - ${m.date} ${m.time} في ${m.field}</p>`).join('')}
+                <div class="parent-dashboard">
+                    <h2 style="text-align:center; margin-bottom:12px;">👤 حالة اللاعب</h2>
+                    <div class="player-card">
+                        <img src="${imgSrc}" alt="صورة اللاعب" />
+                        <div>
+                            <h3>${player.firstName} ${player.lastName}</h3>
+                            <p>الفئة: ${player.categoryId} | تاريخ الميلاد: ${player.birthDate}</p>
+                            <p>الحالة: <span class="badge-status ${player.status==='approved'?'paid':player.status==='rejected'?'unpaid':'unpaid'}">${player.status==='approved'?'معتمد':player.status==='rejected'?'مرفوض':'قيد الانتظار'}</span></p>
                         </div>
                     </div>
-                `;
+                    <div class="info-grid">
+                        <div class="item"><div class="label">📋 التقييم</div><div class="value">${details.rating||'لم يُقيّم'}</div></div>
+                        <div class="item"><div class="label">💳 حالة الدفع</div><div class="value">${payments.length>0?payments[0].status:'غير مدفوع'}</div></div>
+                        <div class="item"><div class="label">⚽ تدريبات</div><div class="value">${trainings.length} حصة</div></div>
+                        <div class="item"><div class="label">🏆 دورات</div><div class="value">${tournaments.length} دورة</div></div>
+                        <div class="item"><div class="label">🤝 مباريات ودية</div><div class="value">${matches.length} مباراة</div></div>
+                        <div class="item"><div class="label">📊 الأهداف</div><div class="value">${details.goals||0}</div></div>
+                        <div class="item"><div class="label">🏆 رجل المباراة</div><div class="value">${details.manOfMatch||0}</div></div>
+                        <div class="item"><div class="label">💪 الجاهزية</div><div class="value">${details.fitness||80}%</div></div>
+                    </div>
+                    <div style="margin-top:16px; background:#f8f9fa; padding:12px; border-radius:12px;">
+                        <h4>📋 سجل الجلسات</h4>
+                        ${sessionsHtml}
+                    </div>
+                    <div style="margin-top:16px; background:#f8f9fa; padding:12px; border-radius:12px;">
+                        <h4>💳 جدول الدفع الشهري (2026)</h4>
+                        ${paymentHtml}
+                    </div>
+                    <div style="margin-top:16px; background:#f8f9fa; padding:12px; border-radius:12px;">
+                        <h4>📦 أرشيف الحضور</h4>
+                        ${archiveHtml}
+                    </div>
+                    <div style="margin-top:16px; background:#f8f9fa; padding:12px; border-radius:12px;">
+                        <h4>🗓️ تفاصيل التدريبات القادمة</h4>
+                        ${trainings.length===0?'<p class="text-muted">لا توجد تدريبات</p>':trainings.filter(t=>t.status!=='منتهي').map(t=>`<p>${t.title} - ${t.date} ${t.startTime} في ${t.field}</p>`).join('')}
+                    </div>
+                    <div style="margin-top:16px; background:#f8f9fa; padding:12px; border-radius:12px;">
+                        <h4>🏟️ المباريات القادمة</h4>
+                        ${matches.length===0?'<p class="text-muted">لا توجد مباريات</p>':matches.filter(m=>m.status!=='منتهية').map(m=>`<p>ضد ${m.opponent} - ${m.date} ${m.time} في ${m.field}</p>`).join('')}
+                    </div>
+                </div>
+            `;
             setActiveMenu(0);
         };
 
         // ================================================================
-        // 18. دوال مساعدة
+        // 21. دوال مساعدة
         // ================================================================
         function isThisWeek(dateStr) {
             const today = new Date();
@@ -3044,7 +3246,7 @@
         }
 
         // ================================================================
-        // 19. تهيئة البيانات الأولية واستمارة التسجيل
+        // 22. تهيئة البيانات الأولية واستمارة التسجيل
         // ================================================================
         function initDatabase() {
             if (!db) return;
@@ -3106,13 +3308,13 @@
                     await db.ref('academy/players').push(newPlayer);
                     hideLoading();
                     document.getElementById('confirmInfo').innerHTML = `
-                            <p><strong>الاسم:</strong> ${firstName}</p>
-                            <p><strong>اللقب:</strong> ${lastName}</p>
-                            <p><strong>الفئة:</strong> ${category}</p>
-                            <p><strong>تاريخ الميلاد:</strong> ${birthDate}</p>
-                            <p><strong>كود ولي الأمر:</strong> <strong style="color:#45B3FF;">${parentCode}</strong></p>
-                            <p style="color:#e74c3c; font-size:0.85rem;">احتفظ بهذا الكود للدخول إلى لوحة ولي الأمر</p>
-                        `;
+                        <p><strong>الاسم:</strong> ${firstName}</p>
+                        <p><strong>اللقب:</strong> ${lastName}</p>
+                        <p><strong>الفئة:</strong> ${category}</p>
+                        <p><strong>تاريخ الميلاد:</strong> ${birthDate}</p>
+                        <p><strong>كود ولي الأمر:</strong> <strong style="color:#45B3FF;">${parentCode}</strong></p>
+                        <p style="color:#e74c3c; font-size:0.85rem;">احتفظ بهذا الكود للدخول إلى لوحة ولي الأمر</p>
+                    `;
                     document.getElementById('confirmPopup').classList.add('active');
                     this.reset();
                     document.querySelectorAll('.upload-area').forEach(el => el.classList.remove('has-file'));
@@ -3139,7 +3341,7 @@
         }
 
         // ================================================================
-        // 20. باقي وظائف الموقع
+        // 23. باقي وظائف الموقع
         // ================================================================
         const galleryImages = [
             { id: 1, title: 'لاعبو الأكاديمية', url: 'https://raw.githubusercontent.com/darkonovic51-hash/Mohamed-test/4a065c0a8a951b1d39707aa5eb90a5ce7512bec4/1782370717656.jpg' },
@@ -3227,15 +3429,42 @@
         }
 
         // ================================================================
-        // 21. جعل جميع الدوال عامة للوصول من HTML
+        // 24. جعل جميع الدوال عامة للوصول من HTML
         // ================================================================
         window.openDashboard = openDashboard;
         window.loginAs = loginAs;
         window.logoutDashboard = logoutDashboard;
         window.closeConfirmPopup = closeConfirmPopup;
         window.closeModal = closeModal;
+        window.goBackToPrevious = goBackToPrevious;
+        window.showPlayerDetailPage = showPlayerDetailPage;
+        window.showAdminPlayers = showAdminPlayers;
+        window.showAdminHome = showAdminHome;
+        window.showAdminTrainingSessions = showAdminTrainingSessions;
+        window.showAdminTournaments = showAdminTournaments;
+        window.showAdminMatches = showAdminMatches;
+        window.showAdminCoaches = showAdminCoaches;
+        window.showAdminMatchReports = showAdminMatchReports;
+        window.showCoachHome = showCoachHome;
+        window.showCoachPlayers = showCoachPlayers;
+        window.showCoachTrainingSessions = showCoachTrainingSessions;
+        window.showCoachMatches = showCoachMatches;
+        window.showParentHome = showParentHome;
+        window.refreshDashboardData = refreshDashboardData;
+        window.showCreateTrainingSession = showCreateTrainingSession;
+        window.showTrainingSessionsArchive = showTrainingSessionsArchive;
+        window.openSessionDetail = openSessionDetail;
+        window.updateSessionAttendance = updateSessionAttendance;
+        window.updateSessionRating = updateSessionRating;
+        window.completeSession = completeSession;
+        window.deleteSession = deleteSession;
+        window.editSessionPlan = editSessionPlan;
+        window.editSessionObjectives = editSessionObjectives;
+        window.renderArchiveSessions = renderArchiveSessions;
+        window.updateSessionDay = updateSessionDay;
+        window.saveTrainingSession = saveTrainingSession;
 
-        console.log('✅ النظام المتكامل جاهز مع جميع التعديلات - جميع الأزرار تعمل بشكل صحيح');
+        console.log('✅ النظام المتكامل جاهز مع جميع التعديلات - صفحة تفاصيل اللاعب تعمل كصفحة كاملة');
     </script>
 </body>
 </html>
