@@ -1406,13 +1406,13 @@
         ];
         const FORMATIONS = {
             '4-4-2': [{ x: 50, y: 8 }, { x: 20, y: 25 }, { x: 35, y: 22 }, { x: 65, y: 22 }, { x: 80, y: 25 }, { x: 15,
-                y: 45 }, { x: 35, y: 48 }, { x: 65, y: 48 }, { x: 85, y: 45 }, { x: 35, y: 72 }, { x: 65, y: 72 }],
+                    y: 45 }, { x: 35, y: 48 }, { x: 65, y: 48 }, { x: 85, y: 45 }, { x: 35, y: 72 }, { x: 65, y: 72 }],
             '4-3-3': [{ x: 50, y: 8 }, { x: 20, y: 25 }, { x: 35, y: 22 }, { x: 65, y: 22 }, { x: 80, y: 25 }, { x: 25,
-                y: 45 }, { x: 50, y: 48 }, { x: 75, y: 45 }, { x: 25, y: 72 }, { x: 50, y: 78 }, { x: 75, y: 72 }],
+                    y: 45 }, { x: 50, y: 48 }, { x: 75, y: 45 }, { x: 25, y: 72 }, { x: 50, y: 78 }, { x: 75, y: 72 }],
             '3-5-2': [{ x: 50, y: 8 }, { x: 25, y: 25 }, { x: 50, y: 22 }, { x: 75, y: 25 }, { x: 15, y: 42 }, { x: 30,
-                y: 45 }, { x: 50, y: 48 }, { x: 70, y: 45 }, { x: 85, y: 42 }, { x: 35, y: 72 }, { x: 65, y: 72 }],
+                    y: 45 }, { x: 50, y: 48 }, { x: 70, y: 45 }, { x: 85, y: 42 }, { x: 35, y: 72 }, { x: 65, y: 72 }],
             '4-2-3-1': [{ x: 50, y: 8 }, { x: 20, y: 25 }, { x: 35, y: 22 }, { x: 65, y: 22 }, { x: 80, y: 25 }, { x: 30,
-                y: 45 }, { x: 70, y: 45 }, { x: 15, y: 60 }, { x: 50, y: 62 }, { x: 85, y: 60 }, { x: 50, y: 75 }]
+                    y: 45 }, { x: 70, y: 45 }, { x: 15, y: 60 }, { x: 50, y: 62 }, { x: 85, y: 60 }, { x: 50, y: 75 }]
         };
 
         // ================================================================
@@ -1678,15 +1678,12 @@
             if (!code) { showToast('الرجاء إدخال الكود', 'warning');
                 window.addDebugLog('⚠️ محاولة تسجيل دخول بدون كود', 'warning'); return; }
 
-            // نستخدم مؤشر تحميل خفيف جداً أثناء التحقق
             showLoading('جاري التحقق من الكود...');
             const startTime = performance.now();
             window.addDebugLog(`🔐 محاولة تسجيل دخول كـ ${role}`, 'info');
 
             try {
                 let user = null;
-
-                // التحقق من الكود (قراءة سريعة)
                 if (role === 'admin') {
                     const snap = await db.ref('academy/admins/adminId').once('value');
                     const data = snap.val();
@@ -1705,27 +1702,19 @@
                     currentUser = user;
                     const errorEl = document.getElementById('loginError');
                     if (errorEl) errorEl.style.display = 'none';
-
-                    // عرض لوحة التحكم فوراً بدون انتظار البيانات
                     renderDashboard();
-
-                    // تحميل البيانات في الخلفية (بدون انتظار)
                     loadAllData().then(() => {
-                        // تحديث الواجهة بعد تحميل البيانات
                         refreshCurrentView();
                         window.addDebugLog('✅ البيانات تم تحميلها في الخلفية', 'success');
                     }).catch(err => {
                         window.addDebugLog('⚠️ فشل تحميل البيانات في الخلفية: ' + err.message, 'warning');
                     });
-
                     const endTime = performance.now();
                     const duration = Math.round(endTime - startTime);
-                    hideLoading(); // إخفاء مؤشر التحقق
+                    hideLoading();
                     window.addDebugLog(`✅ تسجيل دخول ناجح كـ ${role} (${duration}ms)`, 'success');
                     showToast(`✅ مرحباً ${user.data.name || user.data.firstName || ''}`, 'success');
                     addLog('تسجيل دخول', `دخل ${user.data.name || user.data.firstName || 'مستخدم'} كـ ${role}`, role);
-
-                    // إعادة تهيئة الأحداث بعد تحميل البيانات (بعد فترة قصيرة)
                     setTimeout(() => {
                         EventManager.reinitialize();
                         EventManager.bindButtons();
@@ -1779,7 +1768,7 @@
                     <div class="menu-item" data-action="showAdminTrainingSessions"><i class="fas fa-futbol"></i> <span>الحصص التدريبية</span></div>
                     <div class="menu-item" data-action="showAdminMatches"><i class="fas fa-handshake"></i> <span>المباريات</span></div>
                     <div class="menu-item" data-action="showAdminTournaments"><i class="fas fa-trophy"></i> <span>الدورات</span></div>
-                    <div class="menu-item" data-action="showAdminCoaches"><i class="fas fa-chalkboard-teacher"></i] <span>المدربون</span></div>
+                    <div class="menu-item" data-action="showAdminCoaches"><i class="fas fa-chalkboard-teacher"></i> <span>المدربون</span></div>
                     <div class="menu-item" data-action="showAdminLogs"><i class="fas fa-history"></i> <span>سجل التعديلات</span></div>
                     <div class="menu-item" data-action="refreshDashboardData" style="border-right-color:var(--gold);"><i class="fas fa-sync-alt"></i> <span>🔄 تحديث البيانات</span></div>
                 `;
@@ -2288,7 +2277,7 @@
                 <div id="attendancePreview" style="margin-top:8px; max-height:200px; overflow-y:auto; border:1px solid #eee; border-radius:12px; padding:8px; background:#fafafa;">
             `;
             const completedSessions = allTrainingSessions.filter(s => s.categoryId === p.categoryId && s.status ===
-            'مكتملة');
+                'مكتملة');
             if (completedSessions.length === 0) {
                 attendHtml += '<span class="text-muted">لا توجد حصص مكتملة</span>';
             } else {
@@ -2706,8 +2695,7 @@
         // ================================================================
         // 13. دوال الحصص التدريبية (مختصرة جداً)
         // ================================================================
-        // (تم حذف التفاصيل الكاملة للمساحة، ولكنها تعمل بنفس النمط السابق)
-        // سيتم توفير الكود الكامل للدوال الأساسية
+        let sessionSelectedPlayers = [];
 
         function showCoachTrainingSessions() {
             currentViewFunction = showCoachTrainingSessions;
@@ -2770,8 +2758,6 @@
             window.addDebugLog(`⚽ عرض حصص المدرب (${mySessions.length} حصة)`, 'info');
             EventManager.bindButtons(content);
         }
-
-        let sessionSelectedPlayers = [];
 
         function showCreateTrainingSession() {
             const content = document.getElementById('pageContent');
@@ -2950,14 +2936,1211 @@
         }
 
         // ================================================================
-        // 14. باقي الدوال (مباريات، دورات، مدربون، سجل، ولي أمر) مختصرة
+        // 14. دوال المدربين (admin)
         // ================================================================
-        // (نظراً للمساحة، تم حذف الكود الكامل لهذه الدوال، ولكنها تعمل بنفس الآلية)
-        // سيتم تقديمها في التطبيق النهائي.
+        function showAdminCoaches() {
+            currentViewFunction = showAdminCoaches;
+            currentViewArgs = [];
+            const content = document.getElementById('pageContent');
+            let html = `
+                <h2 class="page-title">🧑‍🏫 المدربون</h2>
+                <p class="page-sub">إدارة المدربين في الأكاديمية</p>
+                <div class="form-card">
+                    <h3>➕ إضافة مدرب جديد</h3>
+                    <div class="form-grid">
+                        <div class="form-group"><label>الاسم</label><input type="text" id="coachName" /></div>
+                        <div class="form-group"><label>الفئة</label><select id="coachCategory">${categories.map(c => `<option value="${c}">${c}</option>`).join('')}</select></div>
+                        <div class="form-group"><label>الكود</label><input type="text" id="coachCode" placeholder="كود دخول المدرب" /></div>
+                        <div class="form-group"><label>الخبرة</label><input type="text" id="coachExperience" placeholder="سنوات الخبرة" /></div>
+                        <div class="form-group full"><button class="btn-submit" data-action="addCoach"><i class="fas fa-save"></i> حفظ</button></div>
+                    </div>
+                </div>
+                <div class="table-wrap"><table>
+                    <thead><tr><th>#</th><th>الاسم</th><th>الفئة</th><th>الكود</th><th>الخبرة</th><th>إجراءات</th></tr></thead>
+                    <tbody id="coachesTableBody"></tbody>
+                </table></div>
+            `;
+            content.innerHTML = html;
+            setActiveMenu(5);
+            renderCoachesTable();
+            EventManager.bindButtons(content);
+            window.addDebugLog('🧑‍🏫 عرض المدربين', 'info');
+        }
+
+        function renderCoachesTable() {
+            const tbody = document.getElementById('coachesTableBody');
+            if (!tbody) return;
+            if (allCoaches.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:#888;padding:20px;">لا يوجد مدربون</td></tr>`;
+                return;
+            }
+            let html = '';
+            allCoaches.forEach((c, idx) => {
+                html += `<tr>
+                    <td>${idx + 1}</td>
+                    <td class="editable-field" data-action="editCoachField" data-id="${c.id}" data-field="name" data-current="${c.name || ''}">${c.name || '-'}</td>
+                    <td class="editable-field" data-action="editCoachField" data-id="${c.id}" data-field="categoryId" data-current="${c.categoryId || ''}">${c.categoryId || '-'}</td>
+                    <td>${c.code || '-'}</td>
+                    <td class="editable-field" data-action="editCoachField" data-id="${c.id}" data-field="experience" data-current="${c.experience || ''}">${c.experience || '-'}</td>
+                    <td><button class="btn-sm btn-sm-danger" data-action="deleteCoach" data-id="${c.id}"><i class="fas fa-trash"></i> حذف</button></td>
+                </tr>`;
+            });
+            tbody.innerHTML = html;
+            EventManager.bindButtons(tbody);
+        }
+
+        function addCoach() {
+            const name = document.getElementById('coachName').value.trim();
+            const categoryId = document.getElementById('coachCategory').value;
+            const code = document.getElementById('coachCode').value.trim();
+            const experience = document.getElementById('coachExperience').value.trim();
+            if (!name || !categoryId || !code) { showToast('الرجاء ملء جميع الحقول', 'warning'); return; }
+            showProgress('جاري إضافة المدرب...', 0);
+            const startTime = performance.now();
+            const coachData = { name, categoryId, code, experience: experience || '' };
+            db.ref('academy/coaches').push(coachData)
+                .then(() => {
+                    const duration = Math.round(performance.now() - startTime);
+                    updateProgress(100, 'تم الإضافة');
+                    setTimeout(hideProgress, 300);
+                    addLog('إضافة مدرب', `تم إضافة المدرب ${name}`, currentUser?.role);
+                    window.addDebugLog(`✅ تم إضافة المدرب (${duration}ms)`, 'success');
+                    showToast('✅ تم إضافة المدرب', 'success');
+                    loadAllData(true).then(() => showAdminCoaches());
+                })
+                .catch(err => { hideProgress();
+                    window.addDebugLog(`❌ فشل إضافة المدرب: ${err.message}`, 'error');
+                    showToast('❌ خطأ: ' + err.message, 'error'); });
+        }
+
+        function deleteCoach(id) {
+            if (!confirm('حذف هذا المدرب؟')) return;
+            showProgress('جاري الحذف...', 0);
+            db.ref('academy/coaches/' + id).remove()
+                .then(() => {
+                    updateProgress(100, 'تم الحذف');
+                    setTimeout(hideProgress, 300);
+                    addLog('حذف مدرب', `تم حذف مدرب`, currentUser?.role);
+                    window.addDebugLog(`✅ تم حذف المدرب`, 'success');
+                    showToast('✅ تم حذف المدرب', 'success');
+                    loadAllData(true).then(() => showAdminCoaches());
+                })
+                .catch(err => { hideProgress();
+                    window.addDebugLog(`❌ فشل حذف المدرب: ${err.message}`, 'error');
+                    showToast('❌ خطأ: ' + err.message, 'error'); });
+        }
+
+        function editCoachField(id, field, current) {
+            const newVal = prompt(`تعديل ${field}`, current);
+            if (newVal === null || newVal === current) return;
+            const update = {};
+            update[field] = newVal;
+            db.ref('academy/coaches/' + id).update(update)
+                .then(() => {
+                    addLog('تعديل مدرب', `تم تعديل ${field}`, currentUser?.role);
+                    showToast('✅ تم التحديث', 'success');
+                    loadAllData(true).then(() => showAdminCoaches());
+                })
+                .catch(err => { showToast('❌ خطأ: ' + err.message, 'error'); });
+        }
 
         // ================================================================
-        // 15. التهيئة النهائية للنظام
+        // 15. دوال المباريات والدورات والسجل وولي الأمر (مختصرة)
         // ================================================================
+
+        // ---- عرض مباريات المدرب ----
+        function showCoachMatches() {
+            currentViewFunction = showCoachMatches;
+            currentViewArgs = [];
+            const coach = currentUser.data;
+            const categoryId = coach.categoryId;
+            const matches = allMatches.filter(m => m.categoryId === categoryId);
+            const content = document.getElementById('pageContent');
+            let html = `<h2 class="page-title">⚽ مباريات فئتي (${categoryId})</h2>`;
+            if (matches.length === 0) {
+                html += `<p class="text-muted">لا توجد مباريات مسجلة لهذه الفئة</p>`;
+            } else {
+                matches.sort((a, b) => new Date(a.date) - new Date(b.date));
+                matches.forEach(m => {
+                    const homeLogo = m.homeLogo && m.homeLogo.startsWith('data:image') ? m.homeLogo :
+                        'https://via.placeholder.com/40';
+                    const awayLogo = m.awayLogo && m.awayLogo.startsWith('data:image') ? m.awayLogo :
+                        'https://via.placeholder.com/40';
+                    html += `
+                        <div class="match-card">
+                            <div class="match-header">
+                                <div class="match-teams">
+                                    <div class="team"><img src="${homeLogo}" class="logo" alt="فريق" /><span class="name">${m.homeTeam}</span></div>
+                                    <span class="vs">VS</span>
+                                    <div class="team"><img src="${awayLogo}" class="logo" alt="فريق" /><span class="name">${m.awayTeam}</span></div>
+                                    ${m.status === 'مكتملة' ? `<span class="score">${m.homeScore || 0} - ${m.awayScore || 0}</span>` : ''}
+                                </div>
+                                <span class="badge-status ${m.status === 'مكتملة' ? 'paid' : 'unpaid'}">${m.status || 'مجدولة'}</span>
+                            </div>
+                            <div class="match-info">
+                                <span><i class="fas fa-calendar-alt"></i> ${m.date}</span>
+                                <span><i class="fas fa-clock"></i> ${m.time}</span>
+                                <span><i class="fas fa-map-pin"></i> ${m.venue}</span>
+                                <span><i class="fas fa-tag"></i> ${m.categoryId}</span>
+                                <span><i class="fas fa-user-tie"></i> ${m.referee || 'غير محدد'}</span>
+                            </div>
+                            <div class="match-actions">
+                                ${m.status !== 'مكتملة' ? `<button class="btn-sm btn-sm-success" data-action="completeMatchUI" data-id="${m.id}">🏁 إنهاء المباراة</button>` : `<button class="btn-sm btn-sm-info" data-action="viewMatchReportUI" data-id="${m.id}">📊 تقرير</button>`}
+                                <button class="btn-sm btn-sm-danger" data-action="deleteMatchUI" data-id="${m.id}">🗑️ حذف</button>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+            content.innerHTML = html;
+            setActiveMenu(3);
+            EventManager.bindButtons(content);
+            window.addDebugLog('⚽ عرض مباريات المدرب', 'info');
+        }
+
+        // ---- دوال المباريات ----
+        function showAdminMatches() {
+            currentViewFunction = showAdminMatches;
+            currentViewArgs = [];
+            const content = document.getElementById('pageContent');
+            let html = `
+                <h2 class="page-title">⚽ المباريات</h2>
+                <p class="page-sub">إدارة المباريات</p>
+                <div class="form-card">
+                    <h3>➕ إنشاء مباراة جديدة</h3>
+                    <div class="form-grid">
+                        <div class="form-group"><label>الفريق المضيف</label><input type="text" id="homeTeam" placeholder="اسم الفريق" /></div>
+                        <div class="form-group"><label>الفريق الضيف</label><input type="text" id="awayTeam" placeholder="اسم الفريق" /></div>
+                        <div class="form-group"><label>التاريخ</label><input type="date" id="matchDate" /></div>
+                        <div class="form-group"><label>الوقت</label><input type="time" id="matchTime" /></div>
+                        <div class="form-group"><label>الملعب</label><input type="text" id="matchVenue" placeholder="اسم الملعب" /></div>
+                        <div class="form-group"><label>الفئة</label><select id="matchCategory">${categories.map(c => `<option value="${c}">${c}</option>`).join('')}</select></div>
+                        <div class="form-group"><label>الحكم</label><input type="text" id="matchReferee" placeholder="اسم الحكم" /></div>
+                        <div class="form-group"><label>شعار المضيف</label>
+                            <div class="upload-area" id="matchHomeLogoUpload"><div class="icon"><i class="fas fa-image"></i></div><div class="text">اختر شعار</div><div class="file-name" id="matchHomeLogoName"></div><input type="file" id="matchHomeLogo" accept="image/*" /></div>
+                        </div>
+                        <div class="form-group"><label>شعار الضيف</label>
+                            <div class="upload-area" id="matchAwayLogoUpload"><div class="icon"><i class="fas fa-image"></i></div><div class="text">اختر شعار</div><div class="file-name" id="matchAwayLogoName"></div><input type="file" id="matchAwayLogo" accept="image/*" /></div>
+                        </div>
+                        <div class="form-group full"><button class="btn-submit" data-action="saveMatch"><i class="fas fa-save"></i> حفظ المباراة</button></div>
+                    </div>
+                </div>
+                <div id="matchesList"></div>
+            `;
+            content.innerHTML = html;
+            setActiveMenu(2);
+            renderMatchesList();
+            EventManager.bindButtons(content);
+            window.addDebugLog('⚽ عرض المباريات', 'info');
+        }
+
+        function renderMatchesList() {
+            const container = document.getElementById('matchesList');
+            if (!container) return;
+            const matches = allMatches;
+            if (matches.length === 0) {
+                container.innerHTML = `<p class="text-muted">لا توجد مباريات مسجلة</p>`;
+                return;
+            }
+            matches.sort((a, b) => new Date(a.date) - new Date(b.date));
+            let html = '';
+            matches.forEach(m => {
+                const homeLogo = m.homeLogo && m.homeLogo.startsWith('data:image') ? m.homeLogo :
+                    'https://via.placeholder.com/40';
+                const awayLogo = m.awayLogo && m.awayLogo.startsWith('data:image') ? m.awayLogo :
+                    'https://via.placeholder.com/40';
+                html += `
+                    <div class="match-card">
+                        <div class="match-header">
+                            <div class="match-teams">
+                                <div class="team"><img src="${homeLogo}" class="logo" alt="فريق" /><span class="name">${m.homeTeam}</span></div>
+                                <span class="vs">VS</span>
+                                <div class="team"><img src="${awayLogo}" class="logo" alt="فريق" /><span class="name">${m.awayTeam}</span></div>
+                                ${m.status === 'مكتملة' ? `<span class="score">${m.homeScore || 0} - ${m.awayScore || 0}</span>` : ''}
+                            </div>
+                            <span class="badge-status ${m.status === 'مكتملة' ? 'paid' : 'unpaid'}">${m.status || 'مجدولة'}</span>
+                        </div>
+                        <div class="match-info">
+                            <span><i class="fas fa-calendar-alt"></i> ${m.date}</span>
+                            <span><i class="fas fa-clock"></i> ${m.time}</span>
+                            <span><i class="fas fa-map-pin"></i> ${m.venue}</span>
+                            <span><i class="fas fa-tag"></i> ${m.categoryId}</span>
+                            <span><i class="fas fa-user-tie"></i> ${m.referee || 'غير محدد'}</span>
+                        </div>
+                        <div class="match-actions">
+                            ${m.status !== 'مكتملة' ? `<button class="btn-sm btn-sm-success" data-action="completeMatchUI" data-id="${m.id}">🏁 إنهاء المباراة</button>` : `<button class="btn-sm btn-sm-info" data-action="viewMatchReportUI" data-id="${m.id}">📊 تقرير</button>`}
+                            <button class="btn-sm btn-sm-danger" data-action="deleteMatchUI" data-id="${m.id}">🗑️ حذف</button>
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+            EventManager.bindButtons(container);
+        }
+
+        function saveMatch() {
+            const homeTeam = document.getElementById('homeTeam').value.trim();
+            const awayTeam = document.getElementById('awayTeam').value.trim();
+            const date = document.getElementById('matchDate').value;
+            const time = document.getElementById('matchTime').value;
+            const venue = document.getElementById('matchVenue').value.trim();
+            const categoryId = document.getElementById('matchCategory').value;
+            const referee = document.getElementById('matchReferee').value.trim();
+            if (!homeTeam || !awayTeam || !date || !time || !venue || !categoryId) {
+                showToast('الرجاء ملء جميع الحقول', 'warning');
+                return;
+            }
+            const homeLogoFile = document.getElementById('matchHomeLogo').files[0];
+            const awayLogoFile = document.getElementById('matchAwayLogo').files[0];
+            showProgress('جاري حفظ المباراة...', 0);
+            const processSave = (homeLogoData, awayLogoData) => {
+                const matchData = {
+                    homeTeam,
+                    awayTeam,
+                    date,
+                    time,
+                    venue,
+                    categoryId,
+                    referee: referee || '',
+                    homeLogo: homeLogoData || '',
+                    awayLogo: awayLogoData || '',
+                    status: 'مجدولة',
+                    homeScore: 0,
+                    awayScore: 0,
+                    lineup: { home: [], away: [] },
+                    goals: [],
+                    createdAt: new Date().toISOString()
+                };
+                db.ref('academy/matches').push(matchData)
+                    .then(() => {
+                        updateProgress(100, 'تم الحفظ');
+                        setTimeout(hideProgress, 300);
+                        addLog('إنشاء مباراة', `تم إنشاء مباراة بين ${homeTeam} و ${awayTeam}`, currentUser?.role);
+                        showToast('✅ تم إنشاء المباراة', 'success');
+                        loadAllData(true).then(() => showAdminMatches());
+                    })
+                    .catch(err => { hideProgress();
+                        showToast('❌ خطأ: ' + err.message, 'error'); });
+            };
+            const readFile = (file) => new Promise((resolve) => { if (!file) resolve(null); else { const r = new FileReader();
+                    r.onload = e => resolve(e.target.result);
+                    r.readAsDataURL(file); } });
+            Promise.all([readFile(homeLogoFile), readFile(awayLogoFile)])
+                .then(([homeLogoData, awayLogoData]) => processSave(homeLogoData, awayLogoData));
+        }
+
+        function completeMatchUI(id) {
+            const match = allMatches.find(m => m.id === id);
+            if (!match) { showToast('المباراة غير موجودة', 'error'); return; }
+            if (match.status === 'مكتملة') { showToast('المباراة مكتملة بالفعل', 'warning'); return; }
+            const container = document.createElement('div');
+            container.id = 'matchCompleteModal';
+            container.style.cssText =
+                'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); backdrop-filter:blur(8px); z-index:999999; display:flex; align-items:center; justify-content:center; padding:20px;';
+            container.innerHTML = `
+                <div style="background:#fff; border-radius:24px; padding:30px; max-width:600px; width:100%; max-height:90vh; overflow-y:auto;">
+                    <h3 style="color:var(--dark-navy);">🏁 إنهاء المباراة</h3>
+                    <p>${match.homeTeam} vs ${match.awayTeam} - ${match.date}</p>
+                    <div class="form-group"><label>نتيجة ${match.homeTeam}</label><input type="number" id="homeScore" value="0" min="0" /></div>
+                    <div class="form-group"><label>نتيجة ${match.awayTeam}</label><input type="number" id="awayScore" value="0" min="0" /></div>
+                    <div class="form-group"><label>ملاحظات</label><textarea id="matchReportNotes" rows="3"></textarea></div>
+                    <div style="display:flex; gap:8px; margin-top:16px; flex-wrap:wrap;">
+                        <button class="btn-submit" data-action="saveMatchCompleteUI" data-id="${id}"><i class="fas fa-save"></i> حفظ النتيجة</button>
+                        <button class="btn-sm btn-sm-secondary" onclick="this.closest('#matchCompleteModal').remove()">إلغاء</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(container);
+            EventManager.bindButtons(container);
+        }
+
+        function saveMatchCompleteUI(id) {
+            const homeScore = parseInt(document.getElementById('homeScore').value) || 0;
+            const awayScore = parseInt(document.getElementById('awayScore').value) || 0;
+            const notes = document.getElementById('matchReportNotes').value.trim();
+            showProgress('جاري حفظ النتيجة...', 0);
+            db.ref('academy/matches/' + id).update({ status: 'مكتملة', homeScore, awayScore, report: notes, completedAt: new Date()
+                    .toISOString() })
+                .then(() => {
+                    updateProgress(100, 'تم الحفظ');
+                    setTimeout(hideProgress, 300);
+                    addLog('إنهاء مباراة', `تم إنهاء المباراة بالنتيجة ${homeScore}-${awayScore}`, currentUser?.role);
+                    showToast('✅ تم إنهاء المباراة', 'success');
+                    document.getElementById('matchCompleteModal')?.remove();
+                    loadAllData(true).then(() => { if (currentUser?.role === 'admin') showAdminMatches();
+                    else showCoachMatches(); });
+                })
+                .catch(err => { hideProgress();
+                    showToast('❌ خطأ: ' + err.message, 'error'); });
+        }
+
+        function deleteMatchUI(id) {
+            if (!confirm('حذف هذه المباراة؟')) return;
+            showProgress('جاري الحذف...', 0);
+            db.ref('academy/matches/' + id).remove()
+                .then(() => {
+                    updateProgress(100, 'تم الحذف');
+                    setTimeout(hideProgress, 300);
+                    addLog('حذف مباراة', `تم حذف مباراة`, currentUser?.role);
+                    showToast('✅ تم حذف المباراة', 'success');
+                    loadAllData(true).then(() => { if (currentUser?.role === 'admin') showAdminMatches();
+                    else showCoachMatches(); });
+                })
+                .catch(err => { hideProgress();
+                    showToast('❌ خطأ: ' + err.message, 'error'); });
+        }
+
+        function viewMatchReportUI(id) {
+            const match = allMatches.find(m => m.id === id);
+            if (!match) { showToast('المباراة غير موجودة', 'error'); return; }
+            if (match.status !== 'مكتملة') { showToast('المباراة لم تكتمل بعد', 'warning'); return; }
+            alert(`📊 تقرير المباراة\n${match.homeTeam} ${match.homeScore} - ${match.awayScore} ${match.awayTeam}\n\nملاحظات: ${match.report || 'لا توجد ملاحظات'}`);
+        }
+
+        // ---- دوال الدورات ----
+        function showAdminTournaments() {
+            currentViewFunction = showAdminTournaments;
+            currentViewArgs = [];
+            const content = document.getElementById('pageContent');
+            let html = `
+                <h2 class="page-title">🏆 الدورات (كأس عالم)</h2>
+                <p class="page-sub">إدارة الدورات والمشاركات</p>
+                <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:20px;">
+                    <button class="btn-submit" data-action="showCreateTournament"><i class="fas fa-plus"></i> إنشاء دورة جديدة</button>
+                    <button class="btn-submit" data-action="showTournamentArchive" style="background:linear-gradient(135deg,#6c757d,#495057);"><i class="fas fa-archive"></i> أرشيف الدورات</button>
+                </div>
+                <div id="tournamentsList"></div>
+            `;
+            content.innerHTML = html;
+            setActiveMenu(3);
+            renderTournamentsList();
+            EventManager.bindButtons(content);
+            window.addDebugLog('🏆 عرض الدورات', 'info');
+        }
+
+        function renderTournamentsList() {
+            const container = document.getElementById('tournamentsList');
+            if (!container) return;
+            const active = allTournaments.filter(t => t.status !== 'مكتملة');
+            if (active.length === 0) {
+                container.innerHTML = `<p class="text-muted">لا توجد دورات نشطة</p>`;
+                return;
+            }
+            let html = '';
+            active.forEach(t => {
+                html += `
+                    <div class="tournament-card" data-action="showTournamentDetail" data-id="${t.id}">
+                        <div class="tournament-header">
+                            <span class="title">${t.name}</span>
+                            ${t.logo ? `<img src="${t.logo}" class="logo" alt="شعار" />` : ''}
+                        </div>
+                        <div class="tournament-info">
+                            <div class="item"><div class="label">الفئة</div><div class="value">${t.categoryId}</div></div>
+                            <div class="item"><div class="label">البداية</div><div class="value">${t.startDate}</div></div>
+                            <div class="item"><div class="label">النهاية</div><div class="value">${t.endDate || 'غير محددة'}</div></div>
+                            <div class="item"><div class="label">اللاعبون</div><div class="value">${(t.players || []).length}</div></div>
+                            <div class="item"><div class="label">الطاقم</div><div class="value">${(t.staff || []).length}</div></div>
+                        </div>
+                        <div class="tournament-players">
+                            ${(t.players || []).map(pId => {
+                                const player = allPlayers.find(p => p.id === pId);
+                                return player ? `<span class="player-tag">${player.firstName} ${player.lastName}</span>` : '';
+                            }).join('')}
+                            ${(t.staff || []).map(s => `<span class="player-tag staff">${s}</span>`).join('')}
+                        </div>
+                        <div style="display:flex; gap:8px; margin-top:12px; flex-wrap:wrap;">
+                            <button class="btn-sm btn-sm-success" data-action="completeTournament" data-id="${t.id}">🏁 إنهاء الدورة</button>
+                            <button class="btn-sm btn-sm-danger" data-action="deleteTournament" data-id="${t.id}">🗑️ حذف</button>
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+            EventManager.bindButtons(container);
+        }
+
+        function showCreateTournament() {
+            const content = document.getElementById('pageContent');
+            content.innerHTML = `
+                <h2 class="page-title">🏆 إنشاء دورة جديدة</h2>
+                <p class="page-sub">أكمل بيانات الدورة</p>
+                <div class="form-card">
+                    <div class="form-grid">
+                        <div class="form-group"><label>اسم الدورة</label><input type="text" id="tournamentName" /></div>
+                        <div class="form-group"><label>الفئة</label><select id="tournamentCategory">${categories.map(c => `<option value="${c}">${c}</option>`).join('')}</select></div>
+                        <div class="form-group"><label>تاريخ البدء</label><input type="date" id="tournamentStart" /></div>
+                        <div class="form-group"><label>تاريخ النهاية</label><input type="date" id="tournamentEnd" /></div>
+                        <div class="form-group"><label>شعار الدورة</label>
+                            <div class="upload-area" id="tournamentLogoUpload"><div class="icon"><i class="fas fa-image"></i></div><div class="text">اختر شعار</div><div class="file-name" id="tournamentLogoName"></div><input type="file" id="tournamentLogo" accept="image/*" /></div>
+                        </div>
+                        <div class="form-group full"><label>اللاعبون المشاركون</label>
+                            <div id="tournamentPlayersContainer" style="border:1px solid #e0e0e0; border-radius:10px; padding:8px; max-height:200px; overflow-y:auto;">
+                                <p class="text-muted">اختر الفئة أولاً لعرض اللاعبين</p>
+                            </div>
+                            <div style="display:flex; gap:8px; margin-top:4px;">
+                                <button class="btn-sm btn-sm-success" data-action="openTournamentPlayerSelector">📋 اختيار اللاعبين</button>
+                            </div>
+                        </div>
+                        <div class="form-group full"><label>الطاقم الفني والإداري</label>
+                            <div id="tournamentStaffContainer">
+                                <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                                    <input type="text" id="tournamentStaffInput" placeholder="اسم فرد الطاقم" style="flex:1; min-width:150px;" />
+                                    <button class="btn-sm btn-sm-primary" data-action="addTournamentStaff">➕ إضافة</button>
+                                </div>
+                                <div id="tournamentStaffList" style="margin-top:8px;"></div>
+                            </div>
+                        </div>
+                        <div class="form-group full"><label>النشاطات</label>
+                            <div id="tournamentActivitiesContainer">
+                                <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                                    <input type="text" id="tournamentActivityInput" placeholder="نشاط" style="flex:1; min-width:150px;" />
+                                    <button class="btn-sm btn-sm-primary" data-action="addTournamentActivity">➕ إضافة</button>
+                                </div>
+                                <div id="tournamentActivitiesList" style="margin-top:8px;"></div>
+                            </div>
+                        </div>
+                        <div class="form-group full"><button class="btn-submit" data-action="saveTournament"><i class="fas fa-save"></i> حفظ الدورة</button></div>
+                    </div>
+                </div>
+                <button class="btn-sm btn-sm-secondary" data-action="showAdminTournaments"><i class="fas fa-arrow-right"></i> العودة</button>
+            `;
+            document.getElementById('tournamentCategory').addEventListener('change', function() {
+                updateTournamentPlayersList(this.value);
+            });
+            // إضافة متغيرات مؤقتة
+            window.tournamentSelectedPlayers = [];
+            window.tournamentStaffList = [];
+            window.tournamentActivitiesList = [];
+            updateTournamentPlayersList(document.getElementById('tournamentCategory').value);
+            EventManager.bindButtons(content);
+            window.addDebugLog('🏆 فتح نموذج إنشاء دورة', 'info');
+        }
+
+        let tournamentSelectedPlayers = [];
+        let tournamentStaffList = [];
+        let tournamentActivitiesList = [];
+
+        function updateTournamentPlayersList(categoryId) {
+            const container = document.getElementById('tournamentPlayersContainer');
+            if (!container) return;
+            const players = allPlayers.filter(p => p.categoryId === categoryId && p.status === 'approved');
+            if (players.length === 0) { container.innerHTML = `<p class="text-muted">لا يوجد لاعبين في هذه الفئة</p>`; return; }
+            let html = '';
+            players.forEach(p => {
+                const checked = tournamentSelectedPlayers.includes(p.id) ? 'checked' : '';
+                html += `
+                    <label style="display:flex; align-items:center; gap:8px; padding:4px 8px; border-bottom:1px solid #f0f0f0; cursor:pointer; ${checked ? 'background:rgba(69,179,255,0.05);' : ''}">
+                        <input type="checkbox" value="${p.id}" ${checked} onchange="window.toggleTournamentPlayer(this)" />
+                        <span>${p.firstName} ${p.lastName}</span>
+                    </label>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        window.toggleTournamentPlayer = function(checkbox) {
+            const id = checkbox.value;
+            if (checkbox.checked) {
+                if (!tournamentSelectedPlayers.includes(id)) tournamentSelectedPlayers.push(id);
+            } else {
+                tournamentSelectedPlayers = tournamentSelectedPlayers.filter(p => p !== id);
+            }
+        };
+
+        function openTournamentPlayerSelector() {
+            const category = document.getElementById('tournamentCategory').value;
+            if (!category) { showToast('اختر الفئة أولاً', 'warning'); return; }
+            const container = document.createElement('div');
+            container.id = 'tournamentPlayerSelectorModal';
+            container.style.cssText =
+                'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); backdrop-filter:blur(8px); z-index:999999; display:flex; align-items:center; justify-content:center; padding:20px;';
+            const players = allPlayers.filter(p => p.categoryId === category && p.status === 'approved');
+            let listHtml = '';
+            players.forEach(p => {
+                const checked = tournamentSelectedPlayers.includes(p.id) ? 'checked' : '';
+                listHtml += `
+                    <label style="display:block; padding:6px 12px; border-bottom:1px solid #eee; cursor:pointer;">
+                        <input type="checkbox" value="${p.id}" ${checked} onchange="window.toggleTournamentPlayer(this)" />
+                        ${p.firstName} ${p.lastName}
+                    </label>
+                `;
+            });
+            container.innerHTML = `
+                <div style="background:#fff; border-radius:24px; padding:30px; max-width:500px; width:100%; max-height:80vh; overflow-y:auto;">
+                    <h3>اختر اللاعبين</h3>
+                    <div>${listHtml || '<p class="text-muted">لا يوجد لاعبين</p>'}</div>
+                    <div style="display:flex; gap:8px; margin-top:16px;">
+                        <button class="btn-sm btn-sm-success" onclick="document.querySelectorAll('#tournamentPlayerSelectorModal input[type=checkbox]').forEach(c=>c.checked=true); tournamentSelectedPlayers = []; document.querySelectorAll('#tournamentPlayerSelectorModal input[type=checkbox]:checked').forEach(c=>tournamentSelectedPlayers.push(c.value)); updateTournamentPlayersList(document.getElementById('tournamentCategory').value);">تحديد الكل</button>
+                        <button class="btn-sm btn-sm-danger" onclick="document.querySelectorAll('#tournamentPlayerSelectorModal input[type=checkbox]').forEach(c=>c.checked=false); tournamentSelectedPlayers = []; updateTournamentPlayersList(document.getElementById('tournamentCategory').value);">إلغاء الكل</button>
+                        <button class="btn-sm btn-sm-primary" onclick="document.querySelectorAll('#tournamentPlayerSelectorModal input[type=checkbox]:checked').forEach(c=>{if(!tournamentSelectedPlayers.includes(c.value)) tournamentSelectedPlayers.push(c.value);}); updateTournamentPlayersList(document.getElementById('tournamentCategory').value); this.closest('#tournamentPlayerSelectorModal').remove();">تأكيد</button>
+                        <button class="btn-sm btn-sm-secondary" onclick="this.closest('#tournamentPlayerSelectorModal').remove()">إلغاء</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(container);
+            container.querySelectorAll('input[type=checkbox]').forEach(c => {
+                c.addEventListener('change', function() {
+                    if (this.checked) { if (!tournamentSelectedPlayers.includes(this.value))
+                        tournamentSelectedPlayers.push(this.value); } else tournamentSelectedPlayers =
+                        tournamentSelectedPlayers.filter(p => p !== this.value);
+                });
+            });
+        }
+
+        function closeTournamentPlayerSelector() {
+            document.getElementById('tournamentPlayerSelectorModal')?.remove();
+        }
+
+        function selectAllTournamentPlayers() {
+            document.querySelectorAll('#tournamentPlayersContainer input[type=checkbox]').forEach(c => c.checked = true);
+            const ids = Array.from(document.querySelectorAll('#tournamentPlayersContainer input[type=checkbox]:checked')).map(
+                c => c.value);
+            tournamentSelectedPlayers = ids;
+            updateTournamentPlayersList(document.getElementById('tournamentCategory').value);
+        }
+
+        function deselectAllTournamentPlayers() {
+            document.querySelectorAll('#tournamentPlayersContainer input[type=checkbox]').forEach(c => c.checked = false);
+            tournamentSelectedPlayers = [];
+            updateTournamentPlayersList(document.getElementById('tournamentCategory').value);
+        }
+
+        function addTournamentStaff() {
+            const input = document.getElementById('tournamentStaffInput');
+            if (!input) return;
+            const name = input.value.trim();
+            if (!name) { showToast('أدخل اسم العضو', 'warning'); return; }
+            tournamentStaffList.push(name);
+            input.value = '';
+            renderTournamentStaffList();
+        }
+
+        function renderTournamentStaffList() {
+            const container = document.getElementById('tournamentStaffList');
+            if (!container) return;
+            container.innerHTML = tournamentStaffList.map((s, i) =>
+                `<span style="display:inline-block; background:var(--light-bg); padding:4px 12px; border-radius:20px; margin:4px;">${s} <button class="btn-sm btn-sm-danger" onclick="tournamentStaffList.splice(${i},1); renderTournamentStaffList();" style="margin-right:4px;">✕</button></span>`
+            ).join('');
+        }
+
+        function addTournamentActivity() {
+            const input = document.getElementById('tournamentActivityInput');
+            if (!input) return;
+            const act = input.value.trim();
+            if (!act) { showToast('أدخل النشاط', 'warning'); return; }
+            tournamentActivitiesList.push(act);
+            input.value = '';
+            renderTournamentActivitiesList();
+        }
+
+        function renderTournamentActivitiesList() {
+            const container = document.getElementById('tournamentActivitiesList');
+            if (!container) return;
+            container.innerHTML = tournamentActivitiesList.map((a, i) =>
+                `<span style="display:inline-block; background:var(--light-bg); padding:4px 12px; border-radius:20px; margin:4px;">${a} <button class="btn-sm btn-sm-danger" onclick="tournamentActivitiesList.splice(${i},1); renderTournamentActivitiesList();" style="margin-right:4px;">✕</button></span>`
+            ).join('');
+        }
+
+        function saveTournament() {
+            const name = document.getElementById('tournamentName').value.trim();
+            const categoryId = document.getElementById('tournamentCategory').value;
+            const startDate = document.getElementById('tournamentStart').value;
+            const endDate = document.getElementById('tournamentEnd').value;
+            const logoFile = document.getElementById('tournamentLogo').files[0];
+            if (!name || !categoryId || !startDate) { showToast('الرجاء ملء الحقول الإجبارية', 'warning'); return; }
+            showProgress('جاري حفظ الدورة...', 0);
+            const processSave = (logoData) => {
+                const data = {
+                    name,
+                    categoryId,
+                    startDate,
+                    endDate: endDate || '',
+                    logo: logoData || '',
+                    players: tournamentSelectedPlayers,
+                    staff: tournamentStaffList,
+                    activities: tournamentActivitiesList,
+                    status: 'نشطة',
+                    createdAt: new Date().toISOString()
+                };
+                db.ref('academy/tournaments').push(data)
+                    .then(() => {
+                        updateProgress(100, 'تم الحفظ');
+                        setTimeout(hideProgress, 300);
+                        addLog('إنشاء دورة', `تم إنشاء دورة ${name}`, currentUser?.role);
+                        showToast('✅ تم إنشاء الدورة', 'success');
+                        tournamentSelectedPlayers = [];
+                        tournamentStaffList = [];
+                        tournamentActivitiesList = [];
+                        loadAllData(true).then(() => showAdminTournaments());
+                    })
+                    .catch(err => { hideProgress();
+                        showToast('❌ خطأ: ' + err.message, 'error'); });
+            };
+            if (logoFile) { const reader = new FileReader();
+                reader.onload = e => processSave(e.target.result);
+                reader.readAsDataURL(logoFile); } else processSave(null);
+        }
+
+        function showTournamentDetail(id) {
+            const t = allTournaments.find(t => t.id === id);
+            if (!t) { showToast('الدورة غير موجودة', 'error'); return; }
+            alert(`🏆 تفاصيل الدورة\nالاسم: ${t.name}\nالفئة: ${t.categoryId}\nالبداية: ${t.startDate}\nالنهاية: ${t.endDate || 'غير محددة'}\nاللاعبون: ${(t.players||[]).length}\nالطاقم: ${(t.staff||[]).join(', ')}\nالنشاطات: ${(t.activities||[]).join(', ')}`);
+        }
+
+        function deleteTournament(id) {
+            if (!confirm('حذف هذه الدورة؟')) return;
+            showProgress('جاري الحذف...', 0);
+            db.ref('academy/tournaments/' + id).remove()
+                .then(() => {
+                    updateProgress(100, 'تم الحذف');
+                    setTimeout(hideProgress, 300);
+                    addLog('حذف دورة', `تم حذف دورة`, currentUser?.role);
+                    showToast('✅ تم حذف الدورة', 'success');
+                    loadAllData(true).then(() => showAdminTournaments());
+                })
+                .catch(err => { hideProgress();
+                    showToast('❌ خطأ: ' + err.message, 'error'); });
+        }
+
+        function completeTournament(id) {
+            if (!confirm('إنهاء هذه الدورة؟')) return;
+            showProgress('جاري إنهاء الدورة...', 0);
+            db.ref('academy/tournaments/' + id).update({ status: 'مكتملة' })
+                .then(() => {
+                    updateProgress(100, 'تم الإنتهاء');
+                    setTimeout(hideProgress, 300);
+                    addLog('إنهاء دورة', `تم إنهاء دورة`, currentUser?.role);
+                    showToast('✅ تم إنهاء الدورة', 'success');
+                    loadAllData(true).then(() => showAdminTournaments());
+                })
+                .catch(err => { hideProgress();
+                    showToast('❌ خطأ: ' + err.message, 'error'); });
+        }
+
+        function showTournamentArchive() {
+            const content = document.getElementById('pageContent');
+            const archived = allTournaments.filter(t => t.status === 'مكتملة');
+            let html = `<h2 class="page-title">📦 أرشيف الدورات</h2>`;
+            if (archived.length === 0) {
+                html += `<p class="text-muted">لا توجد دورات مكتملة</p>`;
+            } else {
+                archived.forEach(t => {
+                    html += `
+                        <div class="tournament-card" style="opacity:0.7;">
+                            <div class="tournament-header">
+                                <span class="title">${t.name}</span>
+                                ${t.logo ? `<img src="${t.logo}" class="logo" alt="شعار" />` : ''}
+                            </div>
+                            <div class="tournament-info">
+                                <div class="item"><div class="label">الفئة</div><div class="value">${t.categoryId}</div></div>
+                                <div class="item"><div class="label">البداية</div><div class="value">${t.startDate}</div></div>
+                                <div class="item"><div class="label">النهاية</div><div class="value">${t.endDate || 'غير محددة'}</div></div>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+            html += `<button class="btn-sm btn-sm-secondary" data-action="showAdminTournaments"><i class="fas fa-arrow-right"></i> العودة</button>`;
+            content.innerHTML = html;
+            EventManager.bindButtons(content);
+        }
+
+        // ---- دوال سجل التعديلات ----
+        function showAdminLogs() {
+            currentViewFunction = showAdminLogs;
+            currentViewArgs = [];
+            const content = document.getElementById('pageContent');
+            let html = `
+                <h2 class="page-title">📜 سجل التعديلات</h2>
+                <p class="page-sub">جميع العمليات التي تمت على النظام</p>
+                <div style="display:flex; gap:8px; margin-bottom:16px;">
+                    <button class="btn-sm btn-sm-primary" data-action="refreshLogs"><i class="fas fa-sync-alt"></i> تحديث</button>
+                    <button class="btn-sm btn-sm-danger" data-action="clearLogs"><i class="fas fa-trash"></i> مسح الكل</button>
+                </div>
+                <div id="logsList"></div>
+            `;
+            content.innerHTML = html;
+            setActiveMenu(6);
+            renderLogs();
+            EventManager.bindButtons(content);
+            window.addDebugLog('📜 عرض سجل التعديلات', 'info');
+        }
+
+        function renderLogs() {
+            const container = document.getElementById('logsList');
+            if (!container) return;
+            if (allLogs.length === 0) {
+                container.innerHTML = `<p class="text-muted">لا توجد سجلات</p>`;
+                return;
+            }
+            let html = '';
+            allLogs.slice(-20).reverse().forEach(log => {
+                html += `
+                    <div class="log-entry-item">
+                        <span class="log-time">${log.timeFormatted || ''}</span>
+                        <span class="log-action">${log.action}</span>
+                        <span class="log-details">${log.details}</span>
+                        <span class="log-user">${log.userName} (${log.userRole})</span>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        function refreshLogs() {
+            loadAllData(true).then(() => renderLogs());
+        }
+
+        function clearLogs() {
+            if (!confirm('مسح جميع السجلات؟')) return;
+            db.ref('academy/logs').remove().then(() => {
+                allLogs = [];
+                renderLogs();
+                showToast('✅ تم مسح السجلات', 'success');
+            }).catch(err => showToast('❌ خطأ: ' + err.message, 'error'));
+        }
+
+        // ---- دوال ولي الأمر ----
+        function showParentHome() {
+            currentViewFunction = showParentHome;
+            currentViewArgs = [];
+            const playerData = currentUser.data;
+            const p = allPlayers.find(pl => pl.id === currentUser.id);
+            if (!p) { showToast('البيانات غير متاحة', 'error'); return; }
+            const details = allPlayerDetails[p.id] || {};
+            const content = document.getElementById('pageContent');
+            const imgSrc = p.photo && p.photo.startsWith('data:image') ? p.photo : 'https://via.placeholder.com/80';
+            const attendanceRate = (() => {
+                const att = allAttendances.filter(a => a.playerId === p.id);
+                const present = att.filter(a => a.status === 'present').length;
+                return att.length > 0 ? Math.round((present / att.length) * 100) : 0;
+            })();
+            let paymentHtml = '';
+            const payment = allPayments.find(pay => pay.playerId === p.id);
+            const monthly = payment?.monthly || {};
+            MONTHS_AR.forEach((m, i) => {
+                const key = `2026_${String(i+1).padStart(2,'0')}`;
+                const data = monthly[key] || { paid: false };
+                paymentHtml += `<span class="badge-status ${data.paid ? 'paid' : 'unpaid'}">${m}: ${data.paid ? 'مدفوع' : 'غير مدفوع'}</span>`;
+            });
+
+            content.innerHTML = `
+                <div class="parent-dashboard">
+                    <div class="player-card">
+                        <img src="${imgSrc}" alt="اللاعب" />
+                        <div>
+                            <h2>${p.firstName} ${p.lastName}</h2>
+                            <p>الفئة: ${p.categoryId} | القميص: ${details.jerseyNumber || '-'}</p>
+                        </div>
+                    </div>
+                    <div class="info-grid">
+                        <div class="item"><div class="label">الولي</div><div class="value">${p.guardianName}</div></div>
+                        <div class="item"><div class="label">الهاتف</div><div class="value">${p.guardianPhone}</div></div>
+                        <div class="item"><div class="label">نسبة الحضور</div><div class="value">${attendanceRate}%</div></div>
+                        <div class="item"><div class="label">التقييم</div><div class="value">${details.rating || 'لم يُقيّم'}</div></div>
+                        <div class="item"><div class="label">الجاهزية</div><div class="value">${details.fitness || 80}%</div></div>
+                        <div class="item"><div class="label">الأهداف</div><div class="value">${details.goals || 0}</div></div>
+                    </div>
+                    <h4 style="margin:16px 0 8px;">💳 جدول الدفع الشهري</h4>
+                    <div style="display:flex; flex-wrap:wrap; gap:8px;">${paymentHtml}</div>
+                    <h4 style="margin:16px 0 8px;">📋 آخر الحصص</h4>
+                    <div style="max-height:200px; overflow-y:auto;">
+                        ${allTrainingSessions.filter(s => s.categoryId === p.categoryId && s.status === 'مكتملة').slice(-5).map(s => {
+                            const att = s.attendance || {};
+                            const status = att[p.id] || 'غير محدد';
+                            const statusText = status === 'present' ? '✅ حاضر' : status === 'absent' ? '❌ غائب' : '⚠️ معذور';
+                            return `<div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid #eee;"><span>${s.date}</span><span>${s.title || 'حصة'}</span><span>${statusText}</span></div>`;
+                        }).join('') || '<p class="text-muted">لا توجد حصص مكتملة</p>'}
+                    </div>
+                </div>
+            `;
+            window.addDebugLog('👨‍👦 عرض لوحة ولي الأمر', 'info');
+        }
+
+        // ---- دوال admin العامة ----
+        function showAdminHome() {
+            currentViewFunction = showAdminHome;
+            currentViewArgs = [];
+            const content = document.getElementById('pageContent');
+            const totalPlayers = allPlayers.length;
+            const totalCoaches = allCoaches.length;
+            const totalSessions = allTrainingSessions.length;
+            const totalMatches = allMatches.length;
+            const totalTournaments = allTournaments.length;
+            content.innerHTML = `
+                <h2 class="page-title">📊 لوحة التحكم</h2>
+                <p class="page-sub">مرحباً أيها المدير</p>
+                <div class="stats-row">
+                    <div class="stat-box"><div class="num">${totalPlayers}</div><div class="label">👥 اللاعبون</div></div>
+                    <div class="stat-box"><div class="num">${totalCoaches}</div><div class="label">🧑‍🏫 المدربون</div></div>
+                    <div class="stat-box"><div class="num">${totalSessions}</div><div class="label">⚽ الحصص التدريبية</div></div>
+                    <div class="stat-box"><div class="num">${totalMatches}</div><div class="label">⚽ المباريات</div></div>
+                    <div class="stat-box"><div class="num">${totalTournaments}</div><div class="label">🏆 الدورات</div></div>
+                </div>
+                <div style="display:flex; gap:12px; flex-wrap:wrap; margin-top:20px;">
+                    <button class="btn-submit" data-action="showAdminPlayers"><i class="fas fa-users"></i> إدارة اللاعبين</button>
+                    <button class="btn-submit" data-action="showAdminTrainingSessions"><i class="fas fa-futbol"></i> الحصص</button>
+                    <button class="btn-submit" data-action="showAdminMatches"><i class="fas fa-handshake"></i> المباريات</button>
+                    <button class="btn-submit" data-action="showAdminTournaments"><i class="fas fa-trophy"></i> الدورات</button>
+                    <button class="btn-submit" data-action="showAdminCoaches"><i class="fas fa-chalkboard-teacher"></i> المدربون</button>
+                </div>
+            `;
+            setActiveMenu(0);
+            window.addDebugLog('📊 عرض لوحة المدير', 'info');
+            EventManager.bindButtons(content);
+        }
+
+        function refreshDashboardData() {
+            showProgress('جاري تحديث البيانات...', 0);
+            loadAllData(true).then(() => {
+                updateProgress(100, 'تم التحديث');
+                setTimeout(hideProgress, 300);
+                showToast('✅ تم تحديث البيانات', 'success');
+                refreshCurrentView();
+            }).catch(err => { hideProgress();
+                showToast('❌ خطأ: ' + err.message, 'error'); });
+        }
+
+        // ---- دوال الحصص التدريبية (admin) ----
+        function showAdminTrainingSessions() {
+            currentViewFunction = showAdminTrainingSessions;
+            currentViewArgs = [];
+            const content = document.getElementById('pageContent');
+            let html = `
+                <h2 class="page-title">⚽ الحصص التدريبية</h2>
+                <p class="page-sub">إدارة جميع الحصص</p>
+                <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:20px;">
+                    <button class="btn-submit" data-action="showCreateTrainingSession"><i class="fas fa-plus"></i> إنشاء حصة جديدة</button>
+                    <button class="btn-submit" data-action="showTrainingSessionsArchive" style="background:linear-gradient(135deg,#6c757d,#495057);"><i class="fas fa-archive"></i> أرشيف الحصص</button>
+                </div>
+                <div id="adminSessionsList"></div>
+            `;
+            content.innerHTML = html;
+            setActiveMenu(2);
+            renderAdminSessionsList();
+            EventManager.bindButtons(content);
+            window.addDebugLog('⚽ عرض الحصص التدريبية (admin)', 'info');
+        }
+
+        function renderAdminSessionsList() {
+            const container = document.getElementById('adminSessionsList');
+            if (!container) return;
+            const sessions = allTrainingSessions;
+            if (sessions.length === 0) {
+                container.innerHTML = `<p class="text-muted">لا توجد حصص تدريبية</p>`;
+                return;
+            }
+            sessions.sort((a, b) => new Date(a.date) - new Date(b.date));
+            let html = '';
+            sessions.forEach(s => {
+                const statusColors = {
+                    'مجدولة': '#28a745',
+                    'مكتملة': '#17a2b8',
+                    'مؤجلة': '#ffc107',
+                    'ملغاة': '#dc3545'
+                };
+                const color = statusColors[s.status] || '#45B3FF';
+                const dayName = new Date(s.date + 'T00:00:00').toLocaleDateString('ar-EG', { weekday: 'long' });
+                const playersCount = (s.playersList || []).length;
+                const attended = s.attendance ? Object.values(s.attendance).filter(v => v === 'present')
+                    .length : 0;
+                html += `
+                    <div class="session-card" style="border-right-color:${color};" data-action="openSessionDetail" data-id="${s.id}">
+                        <div class="session-header">
+                            <span class="session-title">${s.title || 'حصة تدريبية'}</span>
+                            <span class="badge-status" style="background:${color}22; color:${color};">${s.status}</span>
+                        </div>
+                        <div class="session-meta" style="margin-top:8px;">
+                            <span><i class="fas fa-calendar-alt"></i> ${s.date} - ${dayName}</span>
+                            <span><i class="fas fa-clock"></i> ${s.startTime} - ${s.endTime}</span>
+                            <span><i class="fas fa-tag"></i> ${s.categoryId}</span>
+                            <span><i class="fas fa-user-tie"></i> ${s.coachName}</span>
+                            <span><i class="fas fa-map-pin"></i> ${s.field}</span>
+                            <span><i class="fas fa-dumbbell"></i> ${s.trainingType}</span>
+                            <span><i class="fas fa-bullseye"></i> ${(s.objectives || []).length} هدف</span>
+                            <span><i class="fas fa-users"></i> ${playersCount} لاعب (${attended} حاضر)</span>
+                        </div>
+                        <div style="display:flex; gap:8px; margin-top:8px; flex-wrap:wrap;">
+                            <button class="btn-sm btn-sm-success" data-action="completeSessionWithAttendance" data-id="${s.id}">🏁 إنهاء الحصة</button>
+                            <button class="btn-sm btn-sm-danger" data-action="deleteSession" data-id="${s.id}">🗑️ حذف</button>
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+            EventManager.bindButtons(container);
+        }
+
+        function deleteSession(id) {
+            if (!confirm('حذف هذه الحصة؟')) return;
+            showProgress('جاري الحذف...', 0);
+            db.ref('academy/trainingSessions/' + id).remove()
+                .then(() => {
+                    updateProgress(100, 'تم الحذف');
+                    setTimeout(hideProgress, 300);
+                    addLog('حذف حصة', `تم حذف حصة تدريبية`, currentUser?.role);
+                    showToast('✅ تم حذف الحصة', 'success');
+                    loadAllData(true).then(() => { if (currentUser?.role === 'admin') showAdminTrainingSessions();
+                    else showCoachTrainingSessions(); });
+                })
+                .catch(err => { hideProgress();
+                    showToast('❌ خطأ: ' + err.message, 'error'); });
+        }
+
+        function showTrainingSessionsArchive() {
+            const content = document.getElementById('pageContent');
+            const archived = allTrainingSessions.filter(s => s.status === 'مكتملة' || s.status === 'ملغاة');
+            let html = `<h2 class="page-title">📦 أرشيف الحصص التدريبية</h2>`;
+            if (archived.length === 0) {
+                html += `<p class="text-muted">لا توجد حصص مؤرشفة</p>`;
+            } else {
+                archived.forEach(s => {
+                    html += `
+                        <div class="session-card" style="border-right-color:#6c757d; opacity:0.7;">
+                            <div class="session-header">
+                                <span class="session-title">${s.title || 'حصة'}</span>
+                                <span class="badge-status" style="background:#6c757d22; color:#6c757d;">${s.status}</span>
+                            </div>
+                            <div class="session-meta">
+                                <span><i class="fas fa-calendar-alt"></i> ${s.date}</span>
+                                <span><i class="fas fa-clock"></i> ${s.startTime} - ${s.endTime}</span>
+                                <span><i class="fas fa-tag"></i> ${s.categoryId}</span>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+            html += `<button class="btn-sm btn-sm-secondary" data-action="showAdminTrainingSessions"><i class="fas fa-arrow-right"></i> العودة</button>`;
+            content.innerHTML = html;
+            EventManager.bindButtons(content);
+        }
+
+        function renderArchiveSessionsList() { showTrainingSessionsArchive(); }
+
+        // ---- دوال تفاصيل الحصة ----
+        function openSessionDetail(id) {
+            const session = allTrainingSessions.find(s => s.id === id);
+            if (!session) { showToast('الحصة غير موجودة', 'error'); return; }
+            const container = document.createElement('div');
+            container.className = 'session-detail-modal';
+            const players = session.playersList || [];
+            let playersHtml = '';
+            if (players.length === 0) {
+                playersHtml = `<p class="text-muted">لا يوجد لاعبون</p>`;
+            } else {
+                players.forEach(pId => {
+                    const player = allPlayers.find(p => p.id === pId);
+                    if (!player) return;
+                    const status = session.attendance?.[pId] || 'غير محدد';
+                    const rating = session.ratings?.[pId] || '';
+                    const note = session.notes?.[pId] || '';
+                    playersHtml += `
+                        <div class="player-row">
+                            <span class="player-name">${player.firstName} ${player.lastName}</span>
+                            <select class="attendance-select" data-action="updateSessionAttendance" data-session-id="${id}" data-player-id="${pId}" style="padding:4px 8px; border-radius:8px; border:1px solid #ddd;">
+                                <option value="present" ${status === 'present' ? 'selected' : ''}>حاضر</option>
+                                <option value="absent" ${status === 'absent' ? 'selected' : ''}>غائب</option>
+                                <option value="excused" ${status === 'excused' ? 'selected' : ''}>معذور</option>
+                            </select>
+                            <input type="number" min="0" max="5" step="0.5" value="${rating}" placeholder="تقييم" data-action="updateSessionRating" data-session-id="${id}" data-player-id="${pId}" style="width:60px; border-radius:8px; border:1px solid #ddd; padding:4px;" />
+                            <input type="text" value="${note}" placeholder="ملاحظة" data-action="updateSessionNote" data-session-id="${id}" data-player-id="${pId}" style="flex:1; min-width:100px; border-radius:8px; border:1px solid #ddd; padding:4px;" />
+                        </div>
+                    `;
+                });
+            }
+
+            container.innerHTML = `
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2>📋 ${session.title || 'حصة تدريبية'}</h2>
+                        <button class="btn-sm btn-sm-danger" onclick="this.closest('.session-detail-modal').remove()">✕</button>
+                    </div>
+                    <div class="info-grid-session">
+                        <div class="item"><div class="label">التاريخ</div><div class="value">${session.date}</div></div>
+                        <div class="item"><div class="label">اليوم</div><div class="value">${session.day}</div></div>
+                        <div class="item"><div class="label">الوقت</div><div class="value">${session.startTime} - ${session.endTime}</div></div>
+                        <div class="item"><div class="label">الفئة</div><div class="value">${session.categoryId}</div></div>
+                        <div class="item"><div class="label">المدرب</div><div class="value">${session.coachName}</div></div>
+                        <div class="item"><div class="label">الملعب</div><div class="value">${session.field}</div></div>
+                        <div class="item"><div class="label">النوع</div><div class="value">${session.trainingType}</div></div>
+                        <div class="item"><div class="label">الحالة</div><div class="value">${session.status}</div></div>
+                    </div>
+                    <div class="section-title-sm">🎯 الأهداف</div>
+                    <div style="display:flex; flex-wrap:wrap; gap:4px; margin-bottom:12px;">
+                        ${(session.objectives || []).map(o => `<span class="badge-status" style="background:#17a2b822; color:#17a2b8;">${o}</span>`).join('') || 'لا توجد أهداف'}
+                    </div>
+                    <div class="section-title-sm">👥 الحضور والتقييم</div>
+                    ${playersHtml}
+                    <div style="margin-top:16px; text-align:center;">
+                        <button class="btn-sm btn-sm-secondary" onclick="this.closest('.session-detail-modal').remove()">إغلاق</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(container);
+            container.onclick = function(e) { if (e.target === this) this.remove(); };
+            EventManager.bindButtons(container);
+            window.addDebugLog(`📋 فتح تفاصيل الحصة ${id}`, 'info');
+        }
+
+        function updateSessionAttendance(sessionId, playerId, status) {
+            const session = allTrainingSessions.find(s => s.id === sessionId);
+            if (!session) return;
+            if (!session.attendance) session.attendance = {};
+            session.attendance[playerId] = status;
+            db.ref('academy/trainingSessions/' + sessionId + '/attendance').set(session.attendance);
+            addLog('تحديث حضور', `تحديث حضور لاعب في حصة`, currentUser?.role);
+        }
+
+        function updateSessionRating(sessionId, playerId, value) {
+            const session = allTrainingSessions.find(s => s.id === sessionId);
+            if (!session) return;
+            if (!session.ratings) session.ratings = {};
+            session.ratings[playerId] = parseFloat(value) || 0;
+            db.ref('academy/trainingSessions/' + sessionId + '/ratings').set(session.ratings);
+            addLog('تحديث تقييم', `تحديث تقييم لاعب في حصة`, currentUser?.role);
+        }
+
+        function updateSessionNote(sessionId, playerId, value) {
+            const session = allTrainingSessions.find(s => s.id === sessionId);
+            if (!session) return;
+            if (!session.notes) session.notes = {};
+            session.notes[playerId] = value;
+            db.ref('academy/trainingSessions/' + sessionId + '/notes').set(session.notes);
+            addLog('تحديث ملاحظة', `تحديث ملاحظة لاعب في حصة`, currentUser?.role);
+        }
+
+        function completeSessionWithAttendance(id) {
+            if (!confirm('إنهاء هذه الحصة؟')) return;
+            const session = allTrainingSessions.find(s => s.id === id);
+            if (!session) { showToast('الحصة غير موجودة', 'error'); return; }
+            showProgress('جاري إنهاء الحصة...', 0);
+            db.ref('academy/trainingSessions/' + id).update({ status: 'مكتملة' })
+                .then(() => {
+                    updateProgress(100, 'تم الإنتهاء');
+                    setTimeout(hideProgress, 300);
+                    addLog('إنهاء حصة', `تم إنهاء حصة تدريبية`, currentUser?.role);
+                    showToast('✅ تم إنهاء الحصة', 'success');
+                    loadAllData(true).then(() => { if (currentUser?.role === 'admin') showAdminTrainingSessions();
+                    else showCoachTrainingSessions(); });
+                })
+                .catch(err => { hideProgress();
+                    showToast('❌ خطأ: ' + err.message, 'error'); });
+        }
+
+        // ---- دوال الرجوع ----
+        function goBackToPrevious() {
+            if (previousViewFunction) {
+                const func = previousViewFunction;
+                const args = previousViewArgs;
+                previousViewFunction = null;
+                previousViewArgs = [];
+                func(...args);
+                window.addDebugLog('🔙 الرجوع للصفحة السابقة', 'info');
+            } else {
+                if (currentUser?.role === 'admin') showAdminHome();
+                else if (currentUser?.role === 'coach') showCoachHome();
+                else showParentHome();
+            }
+        }
+
+        // ================================================================
+        // 16. دوال رفع الملفات والمعرض
+        // ================================================================
+        function setupUpload(inputId, nameDisplayId, containerId) {
+            const input = document.getElementById(inputId);
+            const nameDisplay = document.getElementById(nameDisplayId);
+            const container = document.getElementById(containerId);
+            if (!input || !nameDisplay || !container) return;
+            input.addEventListener('change', function() {
+                const file = this.files[0];
+                if (file) { nameDisplay.textContent = '✅ ' + file.name;
+                    container.classList.add('has-file'); } else { nameDisplay.textContent = '';
+                    container.classList.remove('has-file'); }
+            });
+        }
+
+        const galleryImages = [
+            { id: 1, title: 'لاعبو الأكاديمية', url: 'https://raw.githubusercontent.com/darkonovic51-hash/Mohamed-test/4a065c0a8a951b1d39707aa5eb90a5ce7512bec4/1782370717656.jpg' },
+            { id: 2, title: 'تدريبات الفريق', url: 'https://raw.githubusercontent.com/darkonovic51-hash/Mohamed-test/4a065c0a8a951b1d39707aa5eb90a5ce7512bec4/1782370875709.jpg' },
+            { id: 3, title: 'مباراة ودية', url: 'https://raw.githubusercontent.com/darkonovic51-hash/Mohamed-test/4a065c0a8a951b1d39707aa5eb90a5ce7512bec4/1782370958563.jpg' },
+            { id: 4, title: 'فريق الأكاديمية', url: 'https://raw.githubusercontent.com/darkonovic51-hash/Mohamed-test/4a065c0a8a951b1d39707aa5eb90a5ce7512bec4/1782371149037.jpg' },
+            { id: 5, title: 'الطقم الرسمي', url: 'https://raw.githubusercontent.com/darkonovic51-hash/Mohamed-test/4a065c0a8a951b1d39707aa5eb90a5ce7512bec4/file_00000000d8b87243ba967177f2617619.png' },
+            { id: 6, title: 'صورة هيدروبطولية', url: 'https://raw.githubusercontent.com/darkonovic51-hash/Mohamed-test/4a065c0a8a951b1d39707aa5eb90a5ce7512bec4/file_00000000f604724381e69917b7f6b263.png' }
+        ];
+
+        function renderGallery() {
+            const container = document.getElementById('galleryGrid');
+            if (!container) return;
+            container.innerHTML = '';
+            galleryImages.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'gallery-item';
+                div.innerHTML =
+                    `<img src="${item.url}" alt="${item.title}" loading="lazy" /><div class="overlay"><span>${item.title}</span></div>`;
+                container.appendChild(div);
+            });
+        }
+
+        // ================================================================
+        // 17. بدء التشغيل
+        // ================================================================
+        document.addEventListener('DOMContentLoaded', function() {
+            initSystem();
+
+            // دوال عامة
+            window.viewDocument = function(dataUrl) {
+                if (!dataUrl) return;
+                const win = window.open();
+                win.document.write(`<img src="${dataUrl}" style="max-width:100%; max-height:100vh;" />`);
+            };
+            window.goBackToPrevious = goBackToPrevious;
+            window.closeConfirmPopup = closeConfirmPopup;
+            window.showToast = showToast;
+            window.showLoading = showLoading;
+            window.hideLoading = hideLoading;
+            window.showProgress = showProgress;
+            window.updateProgress = updateProgress;
+            window.hideProgress = hideProgress;
+            window.closeModal = closeModal;
+            window.openDashboard = function() {
+                EventManager.execute('openDashboard', document.querySelector('[data-action="openDashboard"]'));
+            };
+            window.logoutDashboard = function() {
+                EventManager.execute('logoutDashboard', document.querySelector('[data-action="logoutDashboard"]'));
+            };
+            window.toggleDebugMode = function() {
+                window.toggleDebugMode();
+            };
+            window.toggleDebugPanel = function() {
+                window.toggleDebugPanel();
+            };
+            window.clearDebugLog = function() {
+                window.clearDebugLog();
+            };
+            window.addDebugLog = function(msg, type) {
+                window.addDebugLog(msg, type);
+            };
+            window.EventManager = EventManager;
+            // ربط دوال إضافية
+            window.toggleTournamentPlayer = function(checkbox) {
+                const id = checkbox.value;
+                if (checkbox.checked) {
+                    if (!tournamentSelectedPlayers.includes(id)) tournamentSelectedPlayers.push(id);
+                } else {
+                    tournamentSelectedPlayers = tournamentSelectedPlayers.filter(p => p !== id);
+                }
+            };
+        });
+
+        window.addEventListener('load', function() {
+            window.addDebugLog('📦 تم تحميل جميع الموارد', 'success');
+        });
+
+        console.log('✅ النظام جاهز مع Event Manager الموحد وتسجيل دخول سريع');
+        console.log('🔍 لتفعيل Debug اضغط Ctrl+Shift+D أو انقر 5 مرات على الشعار');
+        console.log('📋 جميع الأزرار تعمل عبر data-action مع EventManager');
+
+        // دالة التهيئة
         function initSystem() {
             registerAllActions();
             EventManager.enableDelegation();
@@ -2972,7 +4155,8 @@
             setupUpload('regPhoto', 'photoFileName', 'uploadPhoto');
             setupUpload('regParental', 'parentalFileName', 'uploadParental');
             setupUpload('regInternal', 'internalFileName', 'uploadInternal');
-            setupUpload('matchOpponentLogo', 'matchOpponentLogoName', 'matchOpponentLogoUpload');
+            setupUpload('matchHomeLogo', 'matchHomeLogoName', 'matchHomeLogoUpload');
+            setupUpload('matchAwayLogo', 'matchAwayLogoName', 'matchAwayLogoUpload');
             setupUpload('newPhoto', 'newPhotoName', 'newPhotoUpload');
             setupUpload('tournamentLogo', 'tournamentLogoName', 'tournamentLogoUpload');
 
@@ -3029,103 +4213,6 @@
             window.addDebugLog('✅ تم تهيئة النظام بالكامل', 'success');
             console.log('✅ النظام جاهز مع Event Manager وتسجيل دخول سريع');
         }
-
-        // ================================================================
-        // 16. دوال رفع الملفات والمعرض
-        // ================================================================
-        function setupUpload(inputId, nameDisplayId, containerId) {
-            const input = document.getElementById(inputId);
-            const nameDisplay = document.getElementById(nameDisplayId);
-            const container = document.getElementById(containerId);
-            if (!input || !nameDisplay || !container) return;
-            input.addEventListener('change', function() {
-                const file = this.files[0];
-                if (file) { nameDisplay.textContent = '✅ ' + file.name;
-                    container.classList.add('has-file'); } else { nameDisplay.textContent = '';
-                    container.classList.remove('has-file'); }
-            });
-        }
-
-        const galleryImages = [
-            { id: 1, title: 'لاعبو الأكاديمية', url: 'https://raw.githubusercontent.com/darkonovic51-hash/Mohamed-test/4a065c0a8a951b1d39707aa5eb90a5ce7512bec4/1782370717656.jpg' },
-            { id: 2, title: 'تدريبات الفريق', url: 'https://raw.githubusercontent.com/darkonovic51-hash/Mohamed-test/4a065c0a8a951b1d39707aa5eb90a5ce7512bec4/1782370875709.jpg' },
-            { id: 3, title: 'مباراة ودية', url: 'https://raw.githubusercontent.com/darkonovic51-hash/Mohamed-test/4a065c0a8a951b1d39707aa5eb90a5ce7512bec4/1782370958563.jpg' },
-            { id: 4, title: 'فريق الأكاديمية', url: 'https://raw.githubusercontent.com/darkonovic51-hash/Mohamed-test/4a065c0a8a951b1d39707aa5eb90a5ce7512bec4/1782371149037.jpg' },
-            { id: 5, title: 'الطقم الرسمي', url: 'https://raw.githubusercontent.com/darkonovic51-hash/Mohamed-test/4a065c0a8a951b1d39707aa5eb90a5ce7512bec4/file_00000000d8b87243ba967177f2617619.png' },
-            { id: 6, title: 'صورة هيدروبطولية', url: 'https://raw.githubusercontent.com/darkonovic51-hash/Mohamed-test/4a065c0a8a951b1d39707aa5eb90a5ce7512bec4/file_00000000f604724381e69917b7f6b263.png' }
-        ];
-
-        function renderGallery() {
-            const container = document.getElementById('galleryGrid');
-            if (!container) return;
-            container.innerHTML = '';
-            galleryImages.forEach(item => {
-                const div = document.createElement('div');
-                div.className = 'gallery-item';
-                div.innerHTML =
-                    `<img src="${item.url}" alt="${item.title}" loading="lazy" /><div class="overlay"><span>${item.title}</span></div>`;
-                container.appendChild(div);
-            });
-        }
-
-        // ================================================================
-        // 17. بدء التشغيل
-        // ================================================================
-        document.addEventListener('DOMContentLoaded', function() {
-            initSystem();
-
-            // دوال عامة
-            window.viewDocument = function(dataUrl) {
-                if (!dataUrl) return;
-                const win = window.open();
-                win.document.write(`<img src="${dataUrl}" style="max-width:100%; max-height:100vh;" />`);
-            };
-            window.goBackToPrevious = function() {
-                if (previousViewFunction) {
-                    const func = previousViewFunction;
-                    const args = previousViewArgs;
-                    previousViewFunction = null;
-                    previousViewArgs = [];
-                    func(...args);
-                    window.addDebugLog('🔙 الرجوع للصفحة السابقة', 'info');
-                } else { showAdminPlayers(); }
-            };
-            window.closeConfirmPopup = closeConfirmPopup;
-            window.showToast = showToast;
-            window.showLoading = showLoading;
-            window.hideLoading = hideLoading;
-            window.showProgress = showProgress;
-            window.updateProgress = updateProgress;
-            window.hideProgress = hideProgress;
-            window.closeModal = closeModal;
-            window.openDashboard = function() {
-                EventManager.execute('openDashboard', document.querySelector('[data-action="openDashboard"]'));
-            };
-            window.logoutDashboard = function() {
-                EventManager.execute('logoutDashboard', document.querySelector('[data-action="logoutDashboard"]'));
-            };
-            window.toggleDebugMode = function() {
-                window.toggleDebugMode();
-            };
-            window.toggleDebugPanel = function() {
-                window.toggleDebugPanel();
-            };
-            window.clearDebugLog = function() {
-                window.clearDebugLog();
-            };
-            window.addDebugLog = function(msg, type) {
-                window.addDebugLog(msg, type);
-            };
-            window.EventManager = EventManager;
-        });
-
-        window.addEventListener('load', function() {
-            window.addDebugLog('📦 تم تحميل جميع الموارد', 'success');
-        });
-
-        console.log('✅ النظام جاهز مع Event Manager الموحد وتسجيل دخول سريع');
-        console.log('🔍 لتفعيل Debug اضغط Ctrl+Shift+D أو انقر 5 مرات على الشعار');
-        console.log('📋 جميع الأزرار تعمل عبر data-action مع EventManager');
     </script>
 </body>
 </html>
