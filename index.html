@@ -10,7 +10,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
-        /* ===== جميع الأنماط السابقة كما هي ===== */
+        /* ===== جميع الأنماط السابقة كما هي (تم الاحتفاظ بها) ===== */
         :root {
             --primary-blue: #45B3FF;
             --secondary-blue: #2196F3;
@@ -642,7 +642,7 @@
 </head>
 <body>
 
-    <!-- ===== LOADING OVERLAY ===== -->
+    <!-- ===== LOADING OVERLAY ===== (يُستخدم فقط للعمليات الثقيلة، نادراً) -->
     <div class="loading-overlay" id="loadingOverlay">
         <img src="https://raw.githubusercontent.com/darkonovic51-hash/Mohamed-test/4a065c0a8a951b1d39707aa5eb90a5ce7512bec4/1000015625-removebg-preview.png" alt="ASSARU" class="logo" />
         <div class="spinner"></div>
@@ -650,7 +650,7 @@
         <div class="sub">أكاديمية ASSARU لكرة القدم</div>
     </div>
 
-    <!-- ===== PROGRESS OVERLAY ===== -->
+    <!-- ===== PROGRESS OVERLAY ===== (شريط تقدم خفيف) -->
     <div class="progress-overlay" id="progressOverlay">
         <div class="progress-container">
             <div class="progress-bar" id="progressBar"><span class="progress-text" id="progressText">0%</span></div>
@@ -957,11 +957,11 @@
     </div>
 
     <!-- ============================================================ -->
-    <!--  جافا سكريبت – النظام المتكامل مع تسجيل دخول سريع              -->
+    <!--  جافا سكريبت – النظام المتكامل مع تسجيل دخول سريع ومباشر      -->
     <!-- ============================================================ -->
     <script>
         // ================================================================
-        // 0. نظام Debug والتحميل المتقدم
+        // 0. نظام Debug والتحميل المتقدم (محدث)
         // ================================================================
         (function() {
             window.DEBUG_MODE = false;
@@ -1138,9 +1138,6 @@
                     }
                     this.processingButtons.add(btn);
                     btn.disabled = true;
-                    if (window.DEBUG_MODE) {
-                        window.addDebugLog(`🔒 تعطيل الزر: ${actionName}`, 'info');
-                    }
                 }
                 try {
                     const result = action.handler(context, event);
@@ -1149,18 +1146,12 @@
                             if (btn && btn.tagName === 'BUTTON') {
                                 this.processingButtons.delete(btn);
                                 btn.disabled = false;
-                                if (window.DEBUG_MODE) {
-                                    window.addDebugLog(`🔓 تفعيل الزر: ${actionName}`, 'info');
-                                }
                             }
                         });
                     } else {
                         if (btn && btn.tagName === 'BUTTON') {
                             this.processingButtons.delete(btn);
                             btn.disabled = false;
-                            if (window.DEBUG_MODE) {
-                                window.addDebugLog(`🔓 تفعيل الزر: ${actionName}`, 'info');
-                            }
                         }
                     }
                 } catch (error) {
@@ -1169,9 +1160,6 @@
                     if (btn && btn.tagName === 'BUTTON') {
                         this.processingButtons.delete(btn);
                         btn.disabled = false;
-                        if (window.DEBUG_MODE) {
-                            window.addDebugLog(`🔓 تفعيل الزر (خطأ): ${actionName}`, 'info');
-                        }
                     }
                     showToast(`خطأ في ${actionName}`, 'error');
                 }
@@ -1188,11 +1176,6 @@
                         btn.addEventListener('click', handler);
                         if (!btn._eventManagerHandlers) btn._eventManagerHandlers = [];
                         btn._eventManagerHandlers.push({ actionName, handler });
-                        if (window.DEBUG_MODE) {
-                            window.addDebugLog(`🔗 ربط الزر: ${actionName}`, 'info');
-                        }
-                    } else if (window.DEBUG_MODE) {
-                        window.addDebugLog(`⚠️ زر بدون دالة مسجلة: ${actionName}`, 'warning');
                     }
                 });
             },
@@ -1422,6 +1405,7 @@
             if (dataLoaded && !forceReload) return Promise.resolve();
             if (isLoadingData) return dataLoadPromise;
             isLoadingData = true;
+            // نستخدم progress خفيف جداً
             showProgress('جاري تحميل البيانات...', 0);
             window.addDebugLog('📦 بدء تحميل البيانات' + (forceReload ? ' (إعادة تحميل)' : ''), 'info');
 
@@ -1522,7 +1506,7 @@
                     closeModal('matchPlayerSelectorModal');
                     closeModal('matchCompleteModal');
                     closeModal('tournamentPlayerSelectorModal');
-                    window.addLog('تسجيل خروج', `تسجيل خروج المستخدم`, 'unknown');
+                    addLog('تسجيل خروج', `تسجيل خروج المستخدم`, 'unknown');
                     window.addDebugLog('🚪 تم تسجيل الخروج', 'info');
                     showToast('✅ تم تسجيل الخروج', 'success');
                 }
@@ -1583,6 +1567,7 @@
             EventManager.register('renderArchiveSessions', function() { renderArchiveSessionsList(); });
 
             // دوال المباريات
+            EventManager.register('showAdminMatches', function() { showAdminMatches(); });
             EventManager.register('saveMatch', function() { saveMatch(); });
             EventManager.register('completeMatchUI', function(context) { completeMatchUI(context.dataset.id); });
             EventManager.register('deleteMatchUI', function(context) { deleteMatchUI(context.dataset.id); });
@@ -1668,7 +1653,7 @@
         }
 
         // ================================================================
-        // 6. دوال تسجيل الدخول (سريع ومباشر)
+        // 6. دوال تسجيل الدخول (سريع ومباشر بدون دوران تحميل ثقيل)
         // ================================================================
         async function loginAs(role) {
             const codeInput = document.getElementById('loginCode');
@@ -1678,7 +1663,7 @@
             if (!code) { showToast('الرجاء إدخال الكود', 'warning');
                 window.addDebugLog('⚠️ محاولة تسجيل دخول بدون كود', 'warning'); return; }
 
-            showLoading('جاري التحقق من الكود...');
+            // لا نستخدم loading overlay ثقيل، فقط نعرض رسالة في الخلفية
             const startTime = performance.now();
             window.addDebugLog(`🔐 محاولة تسجيل دخول كـ ${role}`, 'info');
 
@@ -1702,7 +1687,9 @@
                     currentUser = user;
                     const errorEl = document.getElementById('loginError');
                     if (errorEl) errorEl.style.display = 'none';
+                    // نفتح لوحة التحكم فوراً
                     renderDashboard();
+                    // تحميل البيانات في الخلفية (بدون انتظار)
                     loadAllData().then(() => {
                         refreshCurrentView();
                         window.addDebugLog('✅ البيانات تم تحميلها في الخلفية', 'success');
@@ -1711,10 +1698,10 @@
                     });
                     const endTime = performance.now();
                     const duration = Math.round(endTime - startTime);
-                    hideLoading();
                     window.addDebugLog(`✅ تسجيل دخول ناجح كـ ${role} (${duration}ms)`, 'success');
                     showToast(`✅ مرحباً ${user.data.name || user.data.firstName || ''}`, 'success');
                     addLog('تسجيل دخول', `دخل ${user.data.name || user.data.firstName || 'مستخدم'} كـ ${role}`, role);
+                    // إعادة تهيئة الأحداث بعد تحميل البيانات
                     setTimeout(() => {
                         EventManager.reinitialize();
                         EventManager.bindButtons();
@@ -1722,13 +1709,11 @@
                 } else {
                     const errorEl = document.getElementById('loginError');
                     if (errorEl) errorEl.style.display = 'block';
-                    hideLoading();
                     window.addDebugLog(`❌ فشل تسجيل الدخول كـ ${role}: كود غير صحيح`, 'error');
                     showToast('❌ كود غير صحيح', 'error');
                 }
             } catch (e) {
                 console.error(e);
-                hideLoading();
                 window.addDebugLog(`❌ خطأ في تسجيل الدخول: ${e.message}`, 'error');
                 showToast('❌ خطأ في الاتصال بقاعدة البيانات', 'error');
             }
