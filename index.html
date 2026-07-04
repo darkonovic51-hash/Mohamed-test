@@ -321,14 +321,38 @@
         .dashboard-sidebar .logo { text-align: center; padding:10px 0 20px; border-bottom: 1px solid rgba(255,255,255,0.05); }
         .dashboard-sidebar .logo img { height:50px; width:auto; }
         .dashboard-sidebar .logo h2 { font-size:1.1rem; margin-top:6px; color: var(--primary-blue); }
-        .dashboard-sidebar .menu-item { display: block; padding: 14px 24px; color: rgba(255,255,255,0.7); text-decoration: none; font-weight: 600; font-size: 0.95rem; transition: var(--transition); border-right: 3px solid transparent; cursor: pointer; }
+        .dashboard-sidebar .menu-item { display: block; padding: 14px 24px; color: rgba(255,255,255,0.7); text-decoration: none; font-weight: 600; font-size: 0.95rem; transition: background 0.2s ease, border-color 0.2s ease, padding-right 0.2s ease; border-right: 3px solid transparent; cursor: pointer; }
         .dashboard-sidebar .menu-item:hover, .dashboard-sidebar .menu-item.active { background: rgba(69,179,255,0.1); color: #fff; border-right-color: var(--primary-blue); }
+        .dashboard-sidebar .menu-item:active { background: rgba(69,179,255,0.2) !important; }
         .dashboard-sidebar .menu-item i { margin-left: 12px; width:20px; text-align: center; }
         .dashboard-sidebar .logout-btn { position: absolute; bottom:20px; left:0; width:100%; text-align: center; padding:12px; background: rgba(231,76,60,0.2); color: #e74c3c; border: none; font-weight:700; cursor: pointer; transition: var(--transition); font-size:0.9rem; }
         .dashboard-sidebar .logout-btn:hover { background: rgba(231,76,60,0.3); }
         .dashboard-content { flex:1; padding:20px 30px; overflow-y: auto; height:100vh; background:#f0f2f5; }
         .dashboard-content .page-title { font-size: 1.8rem; font-weight: 800; color: var(--dark-navy); margin-bottom:6px; }
         .dashboard-content .page-sub { color: #888; margin-bottom:20px; }
+
+        .dashboard-content #pageContent {
+            animation: pageFadeIn 0.25s ease;
+        }
+        @keyframes pageFadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        button, .btn-sm, .btn-submit, .btn-submit-reg {
+            transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+        }
+        button:active:not(:disabled), .btn-sm:active:not(:disabled) {
+            transform: scale(0.96);
+        }
+        button:disabled, .btn-sm:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+        .btn-sm.active {
+            box-shadow: 0 0 0 3px rgba(69,179,255,0.3);
+        }
 
         .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap:16px; margin-bottom:24px; }
         .stat-box { background: #fff; border-radius: 16px; padding: 16px 14px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.04); border: 1px solid #e8ecf1; }
@@ -348,7 +372,7 @@
         .badge-status.absent { background: #f8d7da; color: #721c24; }
         .badge-status.excused { background: #fff3cd; color: #856404; }
 
-        .btn-sm { padding: 4px 12px; border-radius: 30px; border: none; font-weight:600; cursor: pointer; transition: var(--transition); font-size:0.7rem; margin:2px; }
+        .btn-sm { padding: 4px 12px; border-radius: 30px; border: none; font-weight:600; cursor: pointer; transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease; font-size:0.7rem; margin:2px; }
         .btn-sm-primary { background: var(--primary-blue); color:#fff; }
         .btn-sm-primary:hover { background: var(--secondary-blue); }
         .btn-sm-success { background: #28a745; color:#fff; }
@@ -365,7 +389,7 @@
         .form-group label { font-weight:600; font-size:0.85rem; color:#333; }
         .form-group input, .form-group select, .form-group textarea { padding:8px 12px; border-radius:10px; border:2px solid #e0e0e0; font-family:'Cairo', sans-serif; font-size:0.9rem; transition:var(--transition); background:#fafafa; }
         .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--primary-blue); outline: none; box-shadow: 0 0 0 3px rgba(69,179,255,0.1); }
-        .btn-submit { background: linear-gradient(135deg, var(--primary-blue), var(--secondary-blue)); border: none; padding: 12px 30px; border-radius: 60px; font-weight: 700; color: #fff; cursor: pointer; transition: var(--transition); font-size:0.95rem; display: inline-flex; align-items: center; gap:8px; }
+        .btn-submit { background: linear-gradient(135deg, var(--primary-blue), var(--secondary-blue)); border: none; padding: 12px 30px; border-radius: 60px; font-weight: 700; color: #fff; cursor: pointer; transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease; font-size:0.95rem; display: inline-flex; align-items: center; gap:8px; }
         .btn-submit:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(69,179,255,0.3); }
 
         .parent-dashboard { max-width: 900px; margin:0 auto; background:#fff; border-radius:20px; padding:30px; box-shadow:var(--shadow); }
@@ -1005,14 +1029,12 @@
                 }
                 const btn = event?.currentTarget || context;
                 if (btn && btn.tagName === 'BUTTON' && btn.dataset.action === actionName) {
-                    if (this.processingButtons.has(btn)) {
-                        console.warn(`[EventManager] الزر مشغول: ${actionName}`);
-                        return;
-                    }
+                    if (this.processingButtons.has(btn)) return;
                     this.processingButtons.add(btn);
                     btn.disabled = true;
-                    if (window.DEBUG_MODE) {
-                        window.addDebugLog(`🔒 تعطيل الزر: ${actionName}`, 'info');
+                    btn.dataset.originalHtml = btn.innerHTML;
+                    if (!['closeModal','loginAs_admin','loginAs_coach','loginAs_parent'].includes(actionName)) {
+                        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
                     }
                 }
                 try {
@@ -1020,6 +1042,7 @@
                     if (result && typeof result.then === 'function') {
                         result.finally(() => {
                             if (btn && btn.tagName === 'BUTTON') {
+                                if (btn.dataset.originalHtml) { btn.innerHTML = btn.dataset.originalHtml; delete btn.dataset.originalHtml; }
                                 this.processingButtons.delete(btn);
                                 btn.disabled = false;
                                 if (window.DEBUG_MODE) {
@@ -1029,6 +1052,7 @@
                         });
                     } else {
                         if (btn && btn.tagName === 'BUTTON') {
+                            if (btn.dataset.originalHtml) { btn.innerHTML = btn.dataset.originalHtml; delete btn.dataset.originalHtml; }
                             this.processingButtons.delete(btn);
                             btn.disabled = false;
                             if (window.DEBUG_MODE) {
@@ -1040,6 +1064,7 @@
                     console.error(`[EventManager] خطأ في ${actionName}:`, error);
                     window.logError(actionName, error, 'EventManager');
                     if (btn && btn.tagName === 'BUTTON') {
+                        if (btn.dataset.originalHtml) { btn.innerHTML = btn.dataset.originalHtml; delete btn.dataset.originalHtml; }
                         this.processingButtons.delete(btn);
                         btn.disabled = false;
                         if (window.DEBUG_MODE) {
@@ -1204,6 +1229,8 @@
         function setActiveMenu(index) {
             const items = document.querySelectorAll('#sidebarMenu .menu-item');
             items.forEach((el, i) => { el.classList.toggle('active', i === index); });
+            const contentEl = document.getElementById('dashboardContent');
+            if (contentEl) contentEl.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
         function closeModal(id) {
@@ -1270,6 +1297,16 @@
         let dataLoaded = false;
         let isLoadingData = false;
         let dataLoadPromise = null;
+
+        function requireRole(...roles) {
+            if (!currentUser || !roles.includes(currentUser.role)) {
+                showToast('❌ ليس لديك صلاحية لهذا الإجراء', 'error');
+                window.addDebugLog('🚫 محاولة وصول غير مصرح: ' + roles.join(','), 'warning');
+                return false;
+            }
+            return true;
+        }
+
         const categories = ['U07', 'U09', 'U11', 'U13'];
         const MONTHS_AR = ['جانفي', 'فيفري', 'مارس', 'أبريل', 'ماي', 'جوان', 'جويلية', 'أوت', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
         const TRAINING_TYPES = ['بدني', 'تقني', 'تكتيكي', 'تدريب حراس', 'مباراة تطبيقية', 'استشفاء', 'تدريب خاص'];
@@ -1917,6 +1954,7 @@
         }
 
         function approvePlayer(id) {
+            if (!requireRole('admin')) return;
             if (!confirm('قبول هذا اللاعب؟')) return;
             showProgress('جاري قبول اللاعب...', 0);
             const startTime = performance.now();
@@ -1940,6 +1978,7 @@
         }
 
         function rejectPlayer(id) {
+            if (!requireRole('admin')) return;
             if (!confirm('رفض هذا اللاعب؟')) return;
             showProgress('جاري رفض اللاعب...', 0);
             const startTime = performance.now();
@@ -1962,7 +2001,31 @@
                     showToast('❌ خطأ: ' + err.message, 'error'); });
         }
 
+        function deletePlayer(id) {
+            if (!requireRole('admin')) return;
+            if (!confirm('حذف هذا اللاعب؟')) return;
+            showProgress('جاري الحذف...', 0);
+            const startTime = performance.now();
+            window.addDebugLog(`🗑️ حذف لاعب ${id}`, 'info');
+            db.ref('academy/players/' + id).remove()
+                .then(() => {
+                    const index = allPlayers.findIndex(p => p.id === id);
+                    if (index !== -1) allPlayers.splice(index, 1);
+                    const duration = Math.round(performance.now() - startTime);
+                    updateProgress(100, 'تم الحذف');
+                    setTimeout(hideProgress, 300);
+                    addLog('حذف لاعب', `تم حذف اللاعب`, currentUser?.role);
+                    window.addDebugLog(`✅ تم حذف اللاعب (${duration}ms)`, 'success');
+                    showToast('✅ تم حذف اللاعب', 'success');
+                    applyPlayerFilters();
+                })
+                .catch(err => { hideProgress();
+                    window.addDebugLog(`❌ فشل حذف اللاعب: ${err.message}`, 'error');
+                    showToast('❌ خطأ: ' + err.message, 'error'); });
+        }
+
         function addPlayerWithPhoto() {
+            if (!requireRole('admin')) return;
             const firstName = document.getElementById('newFirstName').value.trim();
             const lastName = document.getElementById('newLastName').value.trim();
             const categoryId = document.getElementById('newCategory').value;
@@ -1983,7 +2046,8 @@
             window.addDebugLog(`➕ إضافة لاعب: ${firstName} ${lastName}`, 'info');
 
             const processAdd = (photoData) => {
-                const parentCode = `${firstName}${lastName}${categoryId}${new Date(birthDate).getFullYear()}`;
+                const randomSuffix = Math.random().toString(36).substring(2, 6).toUpperCase();
+                const parentCode = `${firstName}${lastName}${categoryId}${new Date(birthDate).getFullYear()}${randomSuffix}`;
                 const newPlayer = {
                     firstName,
                     lastName,
@@ -2045,28 +2109,6 @@
             if (photoFile) { const reader = new FileReader();
                 reader.onload = function(e) { processAdd(e.target.result); };
                 reader.readAsDataURL(photoFile); } else { processAdd(null); }
-        }
-
-        function deletePlayer(id) {
-            if (!confirm('حذف هذا اللاعب؟')) return;
-            showProgress('جاري الحذف...', 0);
-            const startTime = performance.now();
-            window.addDebugLog(`🗑️ حذف لاعب ${id}`, 'info');
-            db.ref('academy/players/' + id).remove()
-                .then(() => {
-                    const index = allPlayers.findIndex(p => p.id === id);
-                    if (index !== -1) allPlayers.splice(index, 1);
-                    const duration = Math.round(performance.now() - startTime);
-                    updateProgress(100, 'تم الحذف');
-                    setTimeout(hideProgress, 300);
-                    addLog('حذف لاعب', `تم حذف اللاعب`, currentUser?.role);
-                    window.addDebugLog(`✅ تم حذف اللاعب (${duration}ms)`, 'success');
-                    showToast('✅ تم حذف اللاعب', 'success');
-                    applyPlayerFilters();
-                })
-                .catch(err => { hideProgress();
-                    window.addDebugLog(`❌ فشل حذف اللاعب: ${err.message}`, 'error');
-                    showToast('❌ خطأ: ' + err.message, 'error'); });
         }
 
         function showPlayerDetailPage(playerId) {
@@ -2320,6 +2362,7 @@
         }
 
         function toggleMonthPaymentSimple(playerId, monthKey) {
+            if (!requireRole('admin','coach')) return;
             if (currentUser?.role === 'parent') { showToast('ليس لديك صلاحية للتعديل', 'warning'); return; }
             const payment = allPayments.find(p => p.playerId === playerId);
             const monthly = payment?.monthly || {};
@@ -2350,6 +2393,7 @@
         }
 
         function editPlayerField(playerId, field, currentValue, label) {
+            if (!requireRole('admin','coach')) return;
             if (currentUser?.role === 'parent') { showToast('ليس لديك صلاحية للتعديل', 'warning'); return; }
             const newVal = prompt(`تعديل ${label}`, currentValue);
             if (newVal === null || newVal === currentValue) return;
@@ -2398,6 +2442,7 @@
         }
 
         function editPlayerStat(playerId, key, currentValue, label) {
+            if (!requireRole('admin','coach')) return;
             if (currentUser?.role === 'parent') { showToast('ليس لديك صلاحية للتعديل', 'warning'); return; }
             const newVal = prompt(`تعديل ${label}`, currentValue);
             if (newVal === null || newVal === currentValue) return;
@@ -2492,6 +2537,7 @@
         }
 
         function coachRatePlayer(playerId) {
+            if (!requireRole('admin','coach')) return;
             const current = allPlayerDetails[playerId] || { rating: 0, notes: '' };
             const newRating = prompt('أدخل التقييم (0-5):', current.rating);
             if (newRating === null) return;
@@ -2692,6 +2738,7 @@
         }
 
         function saveTrainingSession() {
+            if (!requireRole('admin','coach')) return;
             const title = document.getElementById('sessionTitle').value.trim();
             const date = document.getElementById('sessionDate').value;
             const startTime = document.getElementById('sessionStartTime').value;
@@ -2865,6 +2912,7 @@
         }
 
         function updateSessionAttendance(sessionId, playerId, status) {
+            if (!requireRole('admin','coach')) return;
             const idx = allTrainingSessions.findIndex(s => s.id === sessionId);
             if (idx === -1) return;
             const attendance = { ...(allTrainingSessions[idx].attendance || {}) };
@@ -2879,6 +2927,7 @@
         }
 
         function updateSessionRating(sessionId, playerId, value) {
+            if (!requireRole('admin','coach')) return;
             const idx = allTrainingSessions.findIndex(s => s.id === sessionId);
             if (idx === -1) return;
             const ratings = { ...(allTrainingSessions[idx].ratings || {}) };
@@ -2890,6 +2939,7 @@
         }
 
         function updateSessionNote(sessionId, playerId, value) {
+            if (!requireRole('admin','coach')) return;
             const idx = allTrainingSessions.findIndex(s => s.id === sessionId);
             if (idx === -1) return;
             const notesObj = { ...(allTrainingSessions[idx].notes || {}) };
@@ -2900,6 +2950,7 @@
         }
 
         function completeSessionWithAttendance(sessionId) {
+            if (!requireRole('admin','coach')) return;
             if (!confirm('إنهاء هذه الحصة؟')) return;
             const idx = allTrainingSessions.findIndex(s => s.id === sessionId);
             if (idx === -1) return;
@@ -2921,6 +2972,7 @@
         }
 
         function deleteSession(sessionId) {
+            if (!requireRole('admin','coach')) return;
             if (!confirm('حذف هذه الحصة؟')) return;
             db.ref('academy/trainingSessions/' + sessionId).remove()
                 .then(() => {
@@ -3023,6 +3075,7 @@
         }
 
         function saveMatch() {
+            if (!requireRole('admin')) return;
             const categoryId = document.getElementById('matchCategory').value;
             const opponent = document.getElementById('matchOpponent').value.trim();
             const date = document.getElementById('matchDate').value;
@@ -3040,6 +3093,7 @@
         }
 
         function completeMatchUI(matchId) {
+            if (!requireRole('admin','coach')) return;
             const scoreHome = prompt('نتيجة الأكاديمية:', '0');
             if (scoreHome === null) return;
             const scoreAway = prompt('نتيجة الخصم:', '0');
@@ -3060,6 +3114,7 @@
         }
 
         function deleteMatchUI(matchId) {
+            if (!requireRole('admin')) return;
             if (!confirm('حذف هذه المباراة؟')) return;
             db.ref('academy/matches/' + matchId).remove()
                 .then(() => { allMatches = allMatches.filter(m => m.id !== matchId); showToast('✅ تم الحذف', 'success'); refreshCurrentView(); })
@@ -3139,6 +3194,7 @@
         function showCreateTournament() { showAdminTournaments(); }
 
         function saveTournament() {
+            if (!requireRole('admin')) return;
             const name = document.getElementById('tournamentName').value.trim();
             const categoryId = document.getElementById('tournamentCategory').value;
             const startDate = document.getElementById('tournamentStartDate').value;
@@ -3153,6 +3209,7 @@
         }
 
         function deleteTournament(id) {
+            if (!requireRole('admin')) return;
             if (!confirm('حذف هذه الدورة؟')) return;
             db.ref('academy/tournaments/' + id).remove()
                 .then(() => { allTournaments = allTournaments.filter(t => t.id !== id); showToast('✅ تم الحذف', 'success'); refreshCurrentView(); })
@@ -3160,6 +3217,7 @@
         }
 
         function completeTournament(id) {
+            if (!requireRole('admin')) return;
             if (!confirm('إنهاء هذه الدورة؟')) return;
             db.ref('academy/tournaments/' + id).update({ status: 'مكتملة' })
                 .then(() => { const idx = allTournaments.findIndex(t => t.id === id); if (idx !== -1) allTournaments[idx].status = 'مكتملة'; showToast('✅ تم إنهاء الدورة', 'success'); refreshCurrentView(); })
@@ -3243,6 +3301,7 @@
         }
 
         function addCoach() {
+            if (!requireRole('admin')) return;
             const name = document.getElementById('newCoachName').value.trim();
             const categoryId = document.getElementById('newCoachCategory').value;
             const code = document.getElementById('newCoachCode').value.trim();
@@ -3260,6 +3319,7 @@
         }
 
         function deleteCoach(id) {
+            if (!requireRole('admin')) return;
             if (!confirm('حذف هذا المدرب؟')) return;
             db.ref('academy/coaches/' + id).remove()
                 .then(() => { allCoaches = allCoaches.filter(c => c.id !== id); showToast('✅ تم الحذف', 'success'); showAdminCoaches(); })
@@ -3267,6 +3327,7 @@
         }
 
         function editCoachField(id, field, currentValue) {
+            if (!requireRole('admin')) return;
             const newVal = prompt('تعديل القيمة', currentValue);
             if (newVal === null || newVal === currentValue) return;
             const update = {};
@@ -3331,6 +3392,7 @@
         }
 
         function clearLogs() {
+            if (!requireRole('admin')) return;
             if (!confirm('مسح كل سجل التعديلات؟ لا يمكن التراجع.')) return;
             db.ref('academy/logs').remove()
                 .then(() => { allLogs = []; renderLogsList(); showToast('✅ تم مسح السجل', 'success'); })
@@ -3359,7 +3421,11 @@
                 previousViewArgs = [];
                 func(...args);
                 window.addDebugLog('🔙 الرجوع للصفحة السابقة', 'info');
-            } else { showAdminHome(); }
+                return;
+            }
+            if (currentUser?.role === 'admin') showAdminHome();
+            else if (currentUser?.role === 'coach') showCoachHome();
+            else if (currentUser?.role === 'parent') showParentHome();
         }
 
         function setupUpload(inputId, nameDisplayId, containerId) {
@@ -3412,6 +3478,61 @@
             setupUpload('matchOpponentLogo', 'matchOpponentLogoName', 'matchOpponentLogoUpload');
             setupUpload('newPhoto', 'newPhotoName', 'newPhotoUpload');
             setupUpload('tournamentLogo', 'tournamentLogoName', 'tournamentLogoUpload');
+
+            const regForm = document.getElementById('registrationForm');
+            if (regForm) {
+                regForm.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    const firstName = document.getElementById('regFirstName').value.trim();
+                    const lastName = document.getElementById('regLastName').value.trim();
+                    const categoryId = document.getElementById('regCategory').value;
+                    const birthDate = document.getElementById('regBirthDate').value;
+                    const birthPlace = document.getElementById('regBirthPlace').value.trim();
+                    const studyLevel = document.getElementById('regStudyLevel').value.trim();
+                    const health = document.getElementById('regHealth').value.trim();
+                    const bloodType = document.getElementById('regBloodType').value.trim();
+                    const guardianName = document.getElementById('regGuardianName').value.trim();
+                    const guardianPhone = document.getElementById('regGuardianPhone').value.trim();
+                    const photoFile = document.getElementById('regPhoto').files[0];
+                    const parentalFile = document.getElementById('regParental').files[0];
+                    const internalFile = document.getElementById('regInternal').files[0];
+
+                    if (!firstName || !lastName || !categoryId || !birthDate || !birthPlace || !studyLevel || !guardianName || !guardianPhone || !photoFile || !parentalFile || !internalFile) {
+                        showToast('⚠️ الرجاء ملء جميع الحقول الإجبارية', 'warning');
+                        return;
+                    }
+                    if (!db) { showToast('❌ لا يوجد اتصال بقاعدة البيانات', 'error'); return; }
+
+                    showLoading('جاري إرسال طلب التسجيل...');
+                    try {
+                        const [photoData, parentalData, internalData] = await Promise.all([
+                            readFileAsBase64(photoFile), readFileAsBase64(parentalFile), readFileAsBase64(internalFile)
+                        ]);
+                        const randomSuffix = Math.random().toString(36).substring(2, 6).toUpperCase();
+                        const parentCode = `${firstName}${lastName}${categoryId}${new Date(birthDate).getFullYear()}${randomSuffix}`;
+                        const newPlayer = {
+                            firstName, lastName, categoryId, birthDate, birthPlace, studyLevel,
+                            health: health || 'سليم', bloodType, guardianName, guardianPhone,
+                            parentCode, status: 'pending', registrationDate: new Date().toISOString(),
+                            photo: photoData, parentalDoc: parentalData, internalDoc: internalData
+                        };
+                        await db.ref('academy/players').push(newPlayer);
+                        hideLoading();
+                        regForm.reset();
+                        document.querySelectorAll('.upload-area').forEach(el => el.classList.remove('has-file'));
+                        document.getElementById('confirmInfo').innerHTML = `
+                            <p><strong>الاسم:</strong> ${firstName} ${lastName}</p>
+                            <p><strong>الفئة:</strong> ${categoryId}</p>
+                            <p><strong>كود ولي الأمر:</strong> ${parentCode}</p>
+                            <p style="color:#e74c3c;">احتفظ بالكود لمتابعة حالة طلب ابنك</p>
+                        `;
+                        document.getElementById('confirmPopup').classList.add('active');
+                    } catch (err) {
+                        hideLoading();
+                        showToast('❌ خطأ أثناء الإرسال: ' + err.message, 'error');
+                    }
+                });
+            }
 
             renderGallery();
 
