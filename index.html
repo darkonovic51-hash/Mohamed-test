@@ -28,6 +28,7 @@
         body { font-family: 'Cairo', sans-serif; background: var(--white); color: #1a1a2e; overflow-x: hidden; direction: rtl; }
         .container { max-width: 1300px; margin: 0 auto; padding: 0 20px; }
 
+        /* ===== LOADING & PROGRESS ===== */
         .loading-overlay, .progress-overlay {
             display: none;
             position: fixed;
@@ -55,6 +56,7 @@
         @keyframes spin { to { transform: rotate(360deg); } }
         @keyframes pulseLogo { 0%,100% { transform: scale(1); } 50% { transform: scale(1.08); } }
 
+        /* ===== TOAST ===== */
         .toast-container { position: fixed; bottom: var(--toast-bottom); right: 20px; z-index: 999999; display: flex; flex-direction: column; gap: 8px; direction: rtl; }
         .toast { padding: 12px 24px; border-radius: 8px; color: #fff; font-family: 'Cairo', sans-serif; font-weight: 600; box-shadow: 0 4px 15px rgba(0,0,0,0.2); animation: slideUp 0.3s ease; min-width: 200px; }
         .toast-success { background: #28a745; }
@@ -63,6 +65,7 @@
         .toast-warning { background: #ffc107; color: #212529; }
         @keyframes slideUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
 
+        /* ===== DEBUG PANEL ===== */
         #debugPanel {
             position: fixed; bottom: 80px; right: 10px; z-index: 999997;
             background: rgba(0,0,0,0.92); color: #0f0; font-family: 'Courier New', monospace;
@@ -118,12 +121,74 @@
             #debugToggleBtn { bottom: 70px; left: 3px; width: 34px; height: 34px; font-size: 13px; }
         }
 
-        .btn-primary { background: linear-gradient(135deg, var(--primary-blue), var(--secondary-blue)); border: none; padding: 14px 40px; border-radius: 60px; font-weight: 700; color: #fff; cursor: pointer; transition: var(--transition); display: inline-block; text-decoration: none; box-shadow: 0 4px 15px rgba(69,179,255,0.3); }
-        .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(69,179,255,0.4); }
-        .btn-outline { background: transparent; border: 2px solid var(--primary-blue); padding: 12px 36px; border-radius: 60px; font-weight: 700; color: var(--primary-blue); cursor: pointer; transition: var(--transition); display: inline-block; text-decoration: none; }
-        .btn-outline:hover { background: var(--primary-blue); color: #fff; }
-        .btn-gold { background: linear-gradient(135deg, var(--gold), #b8860b); border: none; padding: 14px 40px; border-radius: 60px; font-weight: 700; color: #fff; cursor: pointer; transition: var(--transition); display: inline-block; text-decoration: none; }
-        .btn-gold:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(212,160,23,0.3); }
+        /* ===== BUTTONS – تصميم احترافي ===== */
+        .btn-primary, .btn-outline, .btn-gold {
+            display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+            cursor: pointer; text-decoration: none; font-weight: 700; font-family: 'Cairo', sans-serif;
+            transition: transform 0.2s cubic-bezier(0.2,0.9,0.4,1), box-shadow 0.2s ease, background 0.2s ease;
+            -webkit-tap-highlight-color: transparent; user-select: none;
+        }
+        .btn-primary { background: linear-gradient(135deg, var(--primary-blue), var(--secondary-blue)); border: none; padding: 14px 40px; border-radius: 60px; color: #fff; box-shadow: 0 4px 15px rgba(69,179,255,0.3); }
+        .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 12px 32px rgba(69,179,255,0.4); }
+        .btn-primary:active { transform: translateY(0) scale(0.97); }
+        .btn-outline { background: transparent; border: 2px solid var(--primary-blue); padding: 12px 36px; border-radius: 60px; color: var(--primary-blue); }
+        .btn-outline:hover { background: var(--primary-blue); color: #fff; transform: translateY(-2px); }
+        .btn-outline:active { transform: translateY(0) scale(0.97); }
+        .btn-gold { background: linear-gradient(135deg, var(--gold), #b8860b); border: none; padding: 14px 40px; border-radius: 60px; color: #fff; box-shadow: 0 4px 15px rgba(212,160,23,0.3); }
+        .btn-gold:hover { transform: translateY(-3px); box-shadow: 0 12px 32px rgba(212,160,23,0.4); }
+        .btn-gold:active { transform: translateY(0) scale(0.97); }
+        .btn-primary:focus-visible, .btn-outline:focus-visible, .btn-gold:focus-visible { outline: 3px solid rgba(69,179,255,0.5); outline-offset: 2px; }
+
+        .btn-sm {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 7px 16px; border-radius: 30px; border: none;
+            font-weight: 700; font-family: 'Cairo', sans-serif; cursor: pointer;
+            font-size: 0.75rem; margin: 2px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+        }
+        .btn-sm:hover { transform: translateY(-2px); filter: brightness(1.08); box-shadow: 0 6px 16px rgba(0,0,0,0.15); }
+        .btn-sm:active { transform: translateY(0) scale(0.95); }
+        .btn-sm:disabled { opacity: 0.5; cursor: not-allowed; transform: none; filter: none; box-shadow: none; }
+        .btn-sm-primary { background: linear-gradient(135deg, var(--primary-blue), var(--secondary-blue)); color:#fff; }
+        .btn-sm-success { background: linear-gradient(135deg, #28a745, #20c997); color:#fff; }
+        .btn-sm-danger { background: linear-gradient(135deg, #dc3545, #c0392b); color:#fff; }
+        .btn-sm-warning { background: linear-gradient(135deg, #ffc107, #e0a800); color:#212529; }
+        .btn-sm-info { background: linear-gradient(135deg, #17a2b8, #117a8b); color:#fff; }
+        .btn-sm-secondary { background: linear-gradient(135deg, #6c757d, #545b62); color:#fff; }
+
+        .btn-submit {
+            background: linear-gradient(135deg, var(--primary-blue), var(--secondary-blue));
+            border: none; padding: 12px 30px; border-radius: 60px;
+            font-weight: 700; color: #fff; cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            font-size: 0.95rem; display: inline-flex; align-items: center; gap: 8px;
+            box-shadow: 0 4px 12px rgba(69,179,255,0.25);
+            font-family: 'Cairo', sans-serif;
+        }
+        .btn-submit:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(69,179,255,0.35); }
+        .btn-submit:active { transform: translateY(0) scale(0.97); }
+        .btn-submit:disabled { opacity:0.6; cursor:not-allowed; transform:none; box-shadow:none; }
+
+        .btn-submit-reg { background: linear-gradient(135deg, var(--primary-blue), var(--secondary-blue)); border: none; padding: 16px; border-radius: 60px; font-weight: 700; font-size: 1.1rem; color: #fff; cursor: pointer; transition: var(--transition); width:100%; margin-top:8px; display: flex; align-items: center; justify-content: center; gap:10px; }
+        .btn-submit-reg:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(69,179,255,0.3); }
+        .btn-submit-reg:active { transform: scale(0.98); }
+
+        .icon-close-btn {
+            background: rgba(0,0,0,0.5); border: none; border-radius: 50%;
+            width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;
+            color: #fff; font-size: 1.2rem; cursor: pointer;
+            transition: background 0.2s, transform 0.2s;
+            backdrop-filter: blur(4px);
+            -webkit-tap-highlight-color: transparent;
+        }
+        .icon-close-btn:hover { background: rgba(0,0,0,0.75); transform: scale(1.1); }
+        .icon-close-btn:active { transform: scale(0.92); }
+        .icon-close-btn.on-dark { background: rgba(255,255,255,0.15); }
+        .icon-close-btn.on-dark:hover { background: rgba(255,255,255,0.3); }
+        .icon-close-btn.abs-top-right { position: absolute; top: 12px; left: 12px; z-index: 10; }
+        .icon-close-btn.abs-top-right.on-dark { color: #fff; }
+
+        /* ===== باقي الأنماط ===== */
         .section-title { font-size: 2.6rem; font-weight: 800; text-align: center; margin-bottom: 12px; color: var(--dark-navy); }
         .section-title span { color: var(--primary-blue); }
         .section-title::after { content: ''; display: block; width: 80px; height: 4px; background: linear-gradient(90deg, var(--primary-blue), var(--secondary-blue)); margin: 12px auto 0; border-radius: 5px; }
@@ -265,9 +330,6 @@
         .upload-area .file-name { font-size: 0.8rem; color: #2ecc71; margin-top: 4px; display: none; }
         .upload-area.has-file .file-name { display: block; }
         .upload-area.has-file .text { display: none; }
-        .btn-submit-reg { background: linear-gradient(135deg, var(--primary-blue), var(--secondary-blue)); border: none; padding: 16px; border-radius: 60px; font-weight: 700; font-size: 1.1rem; color: #fff; cursor: pointer; transition: var(--transition); width:100%; margin-top:8px; display: flex; align-items: center; justify-content: center; gap:10px; }
-        .btn-submit-reg:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(69,179,255,0.3); }
-        .btn-submit-reg:active { transform: scale(0.98); }
 
         .testimonials-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:25px; }
         .testimonial-card { background: #fff; border-radius: var(--radius); padding: 28px 24px; box-shadow: var(--shadow); border: 1px solid rgba(0,0,0,0.04); transition: var(--transition); animation: testimonialFloat 4.5s ease-in-out infinite; }
@@ -315,6 +377,7 @@
         .admin-toggle { position: fixed; bottom: 24px; left: 24px; z-index: 9998; background: var(--dark-navy); border: none; color: #fff; padding: 10px 20px; border-radius: 60px; cursor: pointer; font-weight: 700; font-size: 0.85rem; box-shadow: 0 4px 20px rgba(0,0,0,0.2); transition: var(--transition); display: flex; align-items: center; gap:8px; }
         .admin-toggle:hover { background: var(--primary-blue); transform: translateY(-3px); }
 
+        /* ===== DASHBOARD ===== */
         .dashboard-wrapper { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: #f0f2f5; z-index:99999; overflow: hidden; font-family: 'Cairo', sans-serif; direction: rtl; }
         .dashboard-wrapper.active { display: flex; }
         .dashboard-sidebar { width: var(--sidebar-width); height:100%; background: var(--dark-navy); color:#fff; padding: 20px 0; overflow-y: auto; flex-shrink:0; box-shadow: 2px 0 15px rgba(0,0,0,0.1); position: relative; }
@@ -327,7 +390,8 @@
         .dashboard-sidebar .menu-item i { margin-left: 12px; width:20px; text-align: center; }
         .dashboard-sidebar .logout-btn { position: absolute; bottom:20px; left:0; width:100%; text-align: center; padding:12px; background: rgba(231,76,60,0.2); color: #e74c3c; border: none; font-weight:700; cursor: pointer; transition: var(--transition); font-size:0.9rem; }
         .dashboard-sidebar .logout-btn:hover { background: rgba(231,76,60,0.3); }
-        .dashboard-content { flex:1; padding:20px 30px; overflow-y: auto; height:100vh; background:#f0f2f5; }
+
+        .dashboard-content { flex:1; padding:20px 30px; overflow-y: auto; height:100vh; background:#f0f2f5; position:relative; }
         .dashboard-content .page-title { font-size: 1.8rem; font-weight: 800; color: var(--dark-navy); margin-bottom:6px; }
         .dashboard-content .page-sub { color: #888; margin-bottom:20px; }
 
@@ -339,21 +403,30 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        button, .btn-sm, .btn-submit, .btn-submit-reg {
-            transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+        .dashboard-action-bar {
+            display: flex; align-items: center; gap: 8px; margin-bottom: 16px;
+            flex-wrap: wrap;
         }
-        button:active:not(:disabled), .btn-sm:active:not(:disabled) {
-            transform: scale(0.96);
+        .dashboard-action-bar .nav-btn {
+            background: transparent; border: none;
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 8px 16px; border-radius: 30px;
+            font-weight: 600; font-size: 0.85rem; cursor: pointer;
+            transition: background 0.2s, transform 0.15s;
+            font-family: 'Cairo', sans-serif;
+            color: var(--dark-navy);
+            background: #fff;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
         }
-        button:disabled, .btn-sm:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            transform: none !important;
+        .dashboard-action-bar .nav-btn:hover { background: #f0f2f5; transform: translateY(-1px); }
+        .dashboard-action-bar .nav-btn:active { transform: scale(0.95); }
+        .dashboard-action-bar .nav-btn.exit-btn {
+            color: #e74c3c;
+            background: rgba(231,76,60,0.08);
         }
-        .btn-sm.active {
-            box-shadow: 0 0 0 3px rgba(69,179,255,0.3);
-        }
+        .dashboard-action-bar .nav-btn.exit-btn:hover { background: rgba(231,76,60,0.18); }
 
+        /* ===== باقي الأنماط (المكررة من السابق) ===== */
         .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap:16px; margin-bottom:24px; }
         .stat-box { background: #fff; border-radius: 16px; padding: 16px 14px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.04); border: 1px solid #e8ecf1; }
         .stat-box .num { font-size: 2rem; font-weight: 800; color: var(--primary-blue); }
@@ -372,15 +445,6 @@
         .badge-status.absent { background: #f8d7da; color: #721c24; }
         .badge-status.excused { background: #fff3cd; color: #856404; }
 
-        .btn-sm { padding: 4px 12px; border-radius: 30px; border: none; font-weight:600; cursor: pointer; transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease; font-size:0.7rem; margin:2px; }
-        .btn-sm-primary { background: var(--primary-blue); color:#fff; }
-        .btn-sm-primary:hover { background: var(--secondary-blue); }
-        .btn-sm-success { background: #28a745; color:#fff; }
-        .btn-sm-danger { background: #dc3545; color:#fff; }
-        .btn-sm-warning { background: #ffc107; color:#212529; }
-        .btn-sm-info { background: #17a2b8; color:#fff; }
-        .btn-sm-secondary { background: #6c757d; color:#fff; }
-
         .form-card { background: #fff; border-radius: 16px; padding:24px; box-shadow: 0 2px 12px rgba(0,0,0,0.04); border: 1px solid #e8ecf1; margin-bottom:24px; }
         .form-card h3 { font-size: 1.2rem; margin-bottom:16px; color: var(--dark-navy); }
         .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:14px; }
@@ -389,8 +453,6 @@
         .form-group label { font-weight:600; font-size:0.85rem; color:#333; }
         .form-group input, .form-group select, .form-group textarea { padding:8px 12px; border-radius:10px; border:2px solid #e0e0e0; font-family:'Cairo', sans-serif; font-size:0.9rem; transition:var(--transition); background:#fafafa; }
         .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--primary-blue); outline: none; box-shadow: 0 0 0 3px rgba(69,179,255,0.1); }
-        .btn-submit { background: linear-gradient(135deg, var(--primary-blue), var(--secondary-blue)); border: none; padding: 12px 30px; border-radius: 60px; font-weight: 700; color: #fff; cursor: pointer; transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease; font-size:0.95rem; display: inline-flex; align-items: center; gap:8px; }
-        .btn-submit:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(69,179,255,0.3); }
 
         .parent-dashboard { max-width: 900px; margin:0 auto; background:#fff; border-radius:20px; padding:30px; box-shadow:var(--shadow); }
         .parent-dashboard .player-card { display: flex; align-items: center; gap:20px; border-bottom:1px solid #eee; padding-bottom:16px; margin-bottom:16px; }
@@ -408,14 +470,6 @@
         .text-muted { color: #888; font-size:0.85rem; }
         .w-100 { width:100%; }
 
-        .payment-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap:8px; margin:10px 0; }
-        .payment-grid .month-item { background: var(--light-bg); border-radius:10px; padding:8px 6px; text-align:center; border:1px solid #e0e0e0; transition:var(--transition); cursor:pointer; }
-        .payment-grid .month-item:hover { background: rgba(69,179,255,0.05); }
-        .payment-grid .month-item .month-label { font-size:0.7rem; color:#888; font-weight:600; }
-        .payment-grid .month-item .status-badge { display: inline-block; padding:2px 8px; border-radius:20px; font-size:0.6rem; font-weight:700; }
-        .payment-grid .month-item .status-badge.paid { background: #d4edda; color: #155724; }
-        .payment-grid .month-item .status-badge.unpaid { background: #f8d7da; color: #721c24; }
-
         .editable-field { cursor: pointer; border-bottom: 1px dashed var(--primary-blue); padding:0 4px; transition:var(--transition); }
         .editable-field:hover { background: rgba(69,179,255,0.1); }
 
@@ -427,7 +481,7 @@
         .session-card .session-meta i { margin-left:4px; color:var(--primary-blue); }
 
         .session-detail-modal { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); backdrop-filter:blur(8px); z-index:999999; display:flex; align-items:center; justify-content:center; padding:20px; overflow-y:auto; }
-        .session-detail-modal .modal-content { background:#fff; border-radius:24px; padding:30px; max-width:1000px; width:100%; max-height:90vh; overflow-y:auto; animation:popupIn 0.4s ease; }
+        .session-detail-modal .modal-content { background:#fff; border-radius:24px; padding:30px; max-width:1000px; width:100%; max-height:90vh; overflow-y:auto; animation:popupIn 0.4s ease; position:relative; }
         .session-detail-modal .modal-header { display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #f0f0f0; padding-bottom:16px; margin-bottom:20px; flex-wrap:wrap; }
         .session-detail-modal .modal-header h2 { color:var(--dark-navy); font-weight:800; }
         .session-detail-modal .info-grid-session { display:grid; grid-template-columns:repeat(auto-fit, minmax(180px,1fr)); gap:12px; background:var(--light-bg); padding:16px; border-radius:12px; margin-bottom:20px; }
@@ -459,6 +513,33 @@
         .player-detail-page .stat-cards .stat-item .number { font-size:1.4rem; font-weight:800; color:var(--primary-blue); cursor:pointer; }
         .player-detail-page .stat-cards .stat-item .number:hover { background:rgba(69,179,255,0.1); }
         .player-detail-page .stat-cards .stat-item .label { font-size:0.7rem; color:#888; }
+
+        /* ===== PAYMENT CARDS ===== */
+        .payment-summary { display:flex; gap:14px; flex-wrap:wrap; margin:14px 0; }
+        .payment-summary-item { flex:1; min-width:120px; background:#fff; border:2px solid #e8ecf1; border-radius:16px; padding:14px; text-align:center; }
+        .payment-summary-item i { font-size:1.4rem; margin-bottom:4px; display:block; }
+        .payment-summary-item span { display:block; font-size:1.6rem; font-weight:800; color:var(--dark-navy); }
+        .payment-summary-item label { font-size:0.75rem; color:#888; }
+        .payment-summary-item.paid i, .payment-summary-item.paid span { color:#28a745; }
+        .payment-summary-item.unpaid i, .payment-summary-item.unpaid span { color:#dc3545; }
+        .payment-summary-item.total i, .payment-summary-item.total span { color:var(--primary-blue); }
+
+        .payment-card-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(150px, 1fr)); gap:14px; margin:10px 0; }
+        .payment-card { background:#fff; border-radius:16px; padding:16px 14px; text-align:center; border:2px solid #e8ecf1; transition:var(--transition); position:relative; overflow:hidden; }
+        .payment-card::before { content:''; position:absolute; top:0; right:0; width:100%; height:4px; }
+        .payment-card.is-paid::before { background:linear-gradient(90deg, #28a745, #20c997); }
+        .payment-card.is-unpaid::before { background:linear-gradient(90deg, #dc3545, #e57373); }
+        .payment-card:hover { transform:translateY(-4px); box-shadow:0 10px 25px rgba(0,0,0,0.08); }
+        .payment-card-month { font-weight:800; color:var(--dark-navy); font-size:1rem; margin-bottom:8px; }
+        .payment-card-status { display:inline-flex; align-items:center; gap:6px; font-size:0.8rem; font-weight:700; padding:4px 12px; border-radius:20px; margin-bottom:6px; }
+        .payment-card.is-paid .payment-card-status { background:#d4edda; color:#155724; }
+        .payment-card.is-unpaid .payment-card-status { background:#f8d7da; color:#721c24; }
+        .payment-card-date { font-size:0.7rem; color:#aaa; margin-bottom:10px; }
+        .payment-card-toggle { width:100%; border:none; padding:8px; border-radius:10px; font-weight:700; font-size:0.75rem; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px; transition:var(--transition); font-family:'Cairo', sans-serif; margin-top:8px; }
+        .payment-card.is-paid .payment-card-toggle { background:#fce8e8; color:#dc3545; }
+        .payment-card.is-paid .payment-card-toggle:hover { background:#dc3545; color:#fff; }
+        .payment-card.is-unpaid .payment-card-toggle { background:#e6f7ec; color:#28a745; }
+        .payment-card.is-unpaid .payment-card-toggle:hover { background:#28a745; color:#fff; }
 
         .pitch-container { background:#2d8a4e; border-radius:16px; padding:20px; position:relative; min-height:500px; background-image: linear-gradient(#3ca55c 1px, transparent 1px), linear-gradient(90deg, #3ca55c 1px, transparent 1px); background-size:40px 40px; border:3px solid #fff; box-shadow:0 0 0 3px #2d8a4e; margin:10px 0; }
         .pitch-container .pitch-markings { position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; border:2px solid rgba(255,255,255,0.2); border-radius:8px; }
@@ -540,7 +621,7 @@
             .dashboard-content { padding:16px; }
             .form-grid { grid-template-columns:1fr; }
             .parent-dashboard .info-grid { grid-template-columns:1fr; }
-            .payment-grid { grid-template-columns:repeat(3, 1fr); }
+            .payment-card-grid { grid-template-columns:repeat(3, 1fr); }
             .session-detail-modal .modal-content { padding:16px; }
             .player-detail-page .player-header { flex-direction:column; text-align:center; }
             .player-detail-page .info-grid-detail { grid-template-columns:1fr 1fr; }
@@ -556,7 +637,7 @@
             .dashboard-sidebar .menu-item { padding:14px 10px; text-align:center; }
             .dashboard-sidebar .menu-item i { margin:0; font-size:1.2rem; }
             .dashboard-content { padding:12px; }
-            .payment-grid { grid-template-columns:repeat(2, 1fr); }
+            .payment-card-grid { grid-template-columns:repeat(2, 1fr); }
             .session-detail-modal .info-grid-session { grid-template-columns:1fr 1fr; }
             .player-detail-page .info-grid-detail { grid-template-columns:1fr; }
             .player-detail-page .stat-cards { grid-template-columns:repeat(2, 1fr); }
@@ -568,6 +649,7 @@
 </head>
 <body>
 
+    <!-- ===== LOADING ===== -->
     <div class="loading-overlay" id="loadingOverlay">
         <img src="https://raw.githubusercontent.com/darkonovic51-hash/Mohamed-test/4a065c0a8a951b1d39707aa5eb90a5ce7512bec4/1000015625-removebg-preview.png" alt="ASSARU" class="logo" />
         <div class="spinner"></div>
@@ -607,6 +689,7 @@
         </div>
     </div>
 
+    <!-- ===== NAVBAR ===== -->
     <nav class="navbar" id="navbar">
         <div class="logo">
             <img src="https://raw.githubusercontent.com/darkonovic51-hash/Mohamed-test/4a065c0a8a951b1d39707aa5eb90a5ce7512bec4/1000015625-removebg-preview.png" alt="شعار" />
@@ -626,6 +709,7 @@
         </ul>
     </nav>
 
+    <!-- ===== HERO ===== -->
     <section id="home" class="hero">
         <div class="hero-bg"></div>
         <div class="hero-overlay"></div>
@@ -646,6 +730,7 @@
         </div>
     </section>
 
+    <!-- ===== STATS ===== -->
     <section id="stats" class="section-light">
         <div class="container">
             <h2 class="section-title">أرقام <span>الأكاديمية</span></h2>
@@ -660,6 +745,7 @@
         </div>
     </section>
 
+    <!-- ===== ABOUT ===== -->
     <section id="about" class="section-white">
         <div class="container">
             <div class="about-grid">
@@ -675,6 +761,7 @@
         </div>
     </section>
 
+    <!-- ===== PLAYERS ===== -->
     <section id="players" class="section-light">
         <div class="container">
             <h2 class="section-title">نماذج <span>لاعبي الأكاديمية</span></h2>
@@ -696,6 +783,7 @@
         </div>
     </section>
 
+    <!-- ===== GALLERY ===== -->
     <section id="gallery" class="section-dark">
         <div class="container">
             <h2 class="section-title">معرض <span>الصور</span></h2>
@@ -704,6 +792,7 @@
         </div>
     </section>
 
+    <!-- ===== VIDEO ===== -->
     <section id="video-section" class="section-light">
         <div class="container">
             <h2 class="section-title">فيديو <span>تعريفي</span></h2>
@@ -716,6 +805,7 @@
         </div>
     </section>
 
+    <!-- ===== STAFF ===== -->
     <section id="staff" class="section-white">
         <div class="container">
             <h2 class="section-title">الطاقم <span>الفني والإداري</span></h2>
@@ -742,6 +832,7 @@
         </div>
     </section>
 
+    <!-- ===== REGISTRATION ===== -->
     <section id="registration" class="section-light">
         <div class="container">
             <div class="registration-wrapper">
@@ -777,6 +868,7 @@
         </div>
     </section>
 
+    <!-- ===== TESTIMONIALS ===== -->
     <section id="testimonials" class="section-white">
         <div class="container">
             <h2 class="section-title">آراء <span>أولياء الأمور</span></h2>
@@ -789,6 +881,7 @@
         </div>
     </section>
 
+    <!-- ===== CONTACT ===== -->
     <section id="contact" class="section-light">
         <div class="container">
             <h2 class="section-title">تواصل <span>معنا</span></h2>
@@ -819,6 +912,7 @@
         </div>
     </section>
 
+    <!-- ===== FOOTER ===== -->
     <footer class="footer">
         <div class="footer-grid">
             <div class="footer-col">
@@ -834,6 +928,7 @@
         <div class="footer-bottom">&copy; 2026 أكاديمية ASSARU – جميع الحقوق محفوظة</div>
     </footer>
 
+    <!-- ===== POPUPS ===== -->
     <div class="popup-overlay" id="confirmPopup">
         <div class="popup-box">
             <div class="icon"><i class="fas fa-check-circle"></i></div>
@@ -848,6 +943,7 @@
         <i class="fas fa-cog"></i> الإدارة
     </button>
 
+    <!-- ===== DASHBOARD ===== -->
     <div class="dashboard-wrapper" id="dashboardWrapper">
         <aside class="dashboard-sidebar" id="dashboardSidebar">
             <div class="logo">
@@ -858,11 +954,25 @@
             <button class="logout-btn" onclick="window.logoutDashboard()"><i class="fas fa-sign-out-alt"></i> تسجيل الخروج</button>
         </aside>
         <main class="dashboard-content" id="dashboardContent">
+            <div class="dashboard-action-bar">
+                <button class="nav-btn" id="dashboardBackBtn" data-action="goBackToPrevious" style="display:none;">
+                    <i class="fas fa-arrow-right"></i> رجوع
+                </button>
+                <button class="nav-btn exit-btn" data-action="closeDashboardPanel">
+                    <i class="fas fa-times"></i> إغلاق اللوحة
+                </button>
+            </div>
             <div id="pageContent"></div>
         </main>
     </div>
 
+    <!-- ============================================================ -->
+    <!--  جافا سكريبت – النظام المتكامل مع تسجيل دخول سريع              -->
+    <!-- ============================================================ -->
     <script>
+        // ================================================================
+        // 0. نظام Debug والتحميل المتقدم
+        // ================================================================
         (function() {
             window.DEBUG_MODE = false;
             window.debugLogs = [];
@@ -1001,6 +1111,9 @@
             window.addDebugLog('🚀 تم تشغيل النظام', 'success');
         })();
 
+        // ================================================================
+        // 1. Event Manager
+        // ================================================================
         const EventManager = {
             initialized: false,
             actions: {},
@@ -1033,7 +1146,7 @@
                     this.processingButtons.add(btn);
                     btn.disabled = true;
                     btn.dataset.originalHtml = btn.innerHTML;
-                    if (!['closeModal','loginAs_admin','loginAs_coach','loginAs_parent'].includes(actionName)) {
+                    if (!['closeModal','loginAs_admin','loginAs_coach','loginAs_parent','closeDashboardPanel'].includes(actionName)) {
                         btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
                     }
                 }
@@ -1141,6 +1254,9 @@
             }
         };
 
+        // ================================================================
+        // 2. دوال مساعدة عامة
+        // ================================================================
         function showToast(message, type = 'info') {
             const container = document.getElementById('toastContainer');
             if (!container) return;
@@ -1231,6 +1347,17 @@
             items.forEach((el, i) => { el.classList.toggle('active', i === index); });
             const contentEl = document.getElementById('dashboardContent');
             if (contentEl) contentEl.scrollTo({ top: 0, behavior: 'smooth' });
+            updateDashboardActionBar();
+        }
+
+        function isHomeView() {
+            return currentViewFunction === showAdminHome || currentViewFunction === showCoachHome || currentViewFunction === showParentHome;
+        }
+
+        function updateDashboardActionBar() {
+            const backBtn = document.getElementById('dashboardBackBtn');
+            if (!backBtn) return;
+            backBtn.style.display = (currentViewFunction && !isHomeView()) ? 'inline-flex' : 'none';
         }
 
         function closeModal(id) {
@@ -1253,6 +1380,9 @@
             document.getElementById('confirmPopup').classList.remove('active');
         }
 
+        // ================================================================
+        // 3. Firebase وبيانات النظام
+        // ================================================================
         const firebaseConfig = {
             apiKey: "AIzaSyCDrCtY7weMKAfWQq1k3Hx9hx1PPWa4XAE",
             authDomain: "academy-al.firebaseapp.com",
@@ -1276,6 +1406,9 @@
             window.addDebugLog('❌ فشل الاتصال بـ Firebase: ' + e.message, 'error');
         }
 
+        // ================================================================
+        // 4. المتغيرات العامة
+        // ================================================================
         let allPlayers = [];
         let allCoaches = [];
         let allTrainings = [];
@@ -1298,6 +1431,9 @@
         let isLoadingData = false;
         let dataLoadPromise = null;
 
+        // ================================================================
+        // 5. دالة حماية الصلاحيات
+        // ================================================================
         function requireRole(...roles) {
             if (!currentUser || !roles.includes(currentUser.role)) {
                 showToast('❌ ليس لديك صلاحية لهذا الإجراء', 'error');
@@ -1307,6 +1443,9 @@
             return true;
         }
 
+        // ================================================================
+        // 6. الثوابت
+        // ================================================================
         const categories = ['U07', 'U09', 'U11', 'U13'];
         const MONTHS_AR = ['جانفي', 'فيفري', 'مارس', 'أبريل', 'ماي', 'جوان', 'جويلية', 'أوت', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
         const TRAINING_TYPES = ['بدني', 'تقني', 'تكتيكي', 'تدريب حراس', 'مباراة تطبيقية', 'استشفاء', 'تدريب خاص'];
@@ -1328,6 +1467,9 @@
                 y: 45 }, { x: 70, y: 45 }, { x: 15, y: 60 }, { x: 50, y: 62 }, { x: 85, y: 60 }, { x: 50, y: 75 }]
         };
 
+        // ================================================================
+        // 7. تحميل البيانات
+        // ================================================================
         function loadAllData(forceReload = false) {
             if (dataLoaded && !forceReload) return Promise.resolve();
             if (isLoadingData) return dataLoadPromise;
@@ -1411,12 +1553,38 @@
 
         function refreshCurrentView() { if (currentViewFunction) currentViewFunction(...currentViewArgs); }
 
+        // ================================================================
+        // 8. سجل التعديلات
+        // ================================================================
+        function addLog(action, details, userRole) {
+            const logEntry = {
+                action,
+                details,
+                userRole: userRole || currentUser?.role || 'unknown',
+                userName: currentUser?.data?.name || currentUser?.data?.firstName || 'مستخدم',
+                timestamp: new Date().toISOString(),
+                timeFormatted: new Date().toLocaleTimeString('fr-FR', { hour12: false })
+            };
+            if (db) {
+                db.ref('academy/logs').push(logEntry).catch(err => console.error('فشل تسجيل السجل:', err));
+            }
+            allLogs.push({ id: Date.now(), ...logEntry });
+        }
+
+        // ================================================================
+        // 9. تسجيل جميع الإجراءات (Actions)
+        // ================================================================
         function registerAllActions() {
             EventManager.register('openDashboard', function() {
                 const wrapper = document.getElementById('dashboardWrapper');
                 if (wrapper) wrapper.classList.add('active');
                 showLoginScreen();
                 window.addDebugLog('📂 فتح لوحة التحكم', 'info');
+            });
+
+            EventManager.register('closeDashboardPanel', function() {
+                document.getElementById('dashboardWrapper').classList.remove('active');
+                window.addDebugLog('👋 تم إغلاق اللوحة (بدون تسجيل خروج)', 'info');
             });
 
             EventManager.register('logoutDashboard', function() {
@@ -1547,6 +1715,9 @@
             window.addDebugLog('📝 تم تسجيل جميع الإجراءات', 'success');
         }
 
+        // ================================================================
+        // 10. دوال تسجيل الدخول
+        // ================================================================
         async function loginAs(role) {
             const codeInput = document.getElementById('loginCode');
             if (!codeInput) { showToast('حدث خطأ في تحميل الصفحة', 'error');
@@ -1617,6 +1788,8 @@
         }
 
         function showLoginScreen() {
+            currentViewFunction = null;
+            currentViewArgs = [];
             const content = document.getElementById('pageContent');
             if (!content) return;
             content.innerHTML = `
@@ -1638,6 +1811,7 @@
             const sidebar = document.getElementById('sidebarMenu');
             if (sidebar) sidebar.innerHTML = `<div class="menu-item" style="opacity:0.5; cursor:default;"><i class="fas fa-user"></i> <span>تسجيل الدخول</span></div>`;
             EventManager.bindButtons(content);
+            updateDashboardActionBar();
         }
 
         function renderDashboard() {
@@ -1677,21 +1851,9 @@
             EventManager.bindButtons(sidebar);
         }
 
-        function addLog(action, details, userRole) {
-            const logEntry = {
-                action,
-                details,
-                userRole: userRole || currentUser?.role || 'unknown',
-                userName: currentUser?.data?.name || currentUser?.data?.firstName || 'مستخدم',
-                timestamp: new Date().toISOString(),
-                timeFormatted: new Date().toLocaleTimeString('fr-FR', { hour12: false })
-            };
-            if (db) {
-                db.ref('academy/logs').push(logEntry).catch(err => console.error('فشل تسجيل السجل:', err));
-            }
-            allLogs.push({ id: Date.now(), ...logEntry });
-        }
-
+        // ================================================================
+        // 11. دوال اللاعبين الأساسية (مع حماية الصلاحيات)
+        // ================================================================
         function showAdminPlayers() {
             currentViewFunction = showAdminPlayers;
             currentViewArgs = [];
@@ -1953,6 +2115,9 @@
             window.addDebugLog(`🔍 تصفية اللاعبين حسب ${key}`, 'info');
         }
 
+        // ================================================================
+        // 12. دوال إدارة اللاعبين (مع حماية الصلاحيات)
+        // ================================================================
         function approvePlayer(id) {
             if (!requireRole('admin')) return;
             if (!confirm('قبول هذا اللاعب؟')) return;
@@ -2111,6 +2276,9 @@
                 reader.readAsDataURL(photoFile); } else { processAdd(null); }
         }
 
+        // ================================================================
+        // 13. دوال تفاصيل اللاعب مع بطاقات الدفع الجديدة
+        // ================================================================
         function showPlayerDetailPage(playerId) {
             previousViewFunction = currentViewFunction;
             previousViewArgs = currentViewArgs;
@@ -2128,23 +2296,42 @@
             const presentSessions = playerAttendances.filter(a => a.status === 'present').length;
             const attendanceRate = totalSessions > 0 ? Math.round((presentSessions / totalSessions) * 100) : 0;
 
+            // ===== بطاقات الدفع الجديدة =====
             const paymentData = allPayments.find(pay => pay.playerId === playerId) || {};
             const monthly = paymentData.monthly || {};
-            let paymentHtml = '<div class="payment-grid">';
+            const paidCount = MONTHS_AR.filter((m, i) => monthly[`2026_${String(i + 1).padStart(2, '0')}`]?.paid).length;
+            const unpaidCount = MONTHS_AR.length - paidCount;
+
+            let paymentHtml = `
+                <div class="payment-summary">
+                    <div class="payment-summary-item paid"><i class="fas fa-check-circle"></i><span>${paidCount}</span><label>أشهر مدفوعة</label></div>
+                    <div class="payment-summary-item unpaid"><i class="fas fa-times-circle"></i><span>${unpaidCount}</span><label>أشهر غير مدفوعة</label></div>
+                    <div class="payment-summary-item total"><i class="fas fa-calendar-alt"></i><span>${MONTHS_AR.length}</span><label>إجمالي الأشهر</label></div>
+                </div>
+                <div class="payment-card-grid">
+            `;
             MONTHS_AR.forEach((m, i) => {
                 const monthKey = `2026_${String(i + 1).padStart(2, '0')}`;
                 const data = monthly[monthKey] || { paid: false };
-                const statusClass = data.paid ? 'paid' : 'unpaid';
-                const statusText = data.paid ? '✅ مدفوع' : '❌ غير مدفوع';
+                const isPaid = !!data.paid;
                 paymentHtml += `
-                    <div class="month-item" data-action="toggleMonthPaymentSimple" data-player-id="${playerId}" data-month-key="${monthKey}">
-                        <div class="month-label">${m}</div>
-                        <div class="status-badge ${statusClass}" style="font-size:0.8rem; padding:4px 12px;">${statusText}</div>
+                    <div class="payment-card ${isPaid ? 'is-paid' : 'is-unpaid'}">
+                        <div class="payment-card-month">${m}</div>
+                        <div class="payment-card-status">
+                            <i class="fas ${isPaid ? 'fa-circle-check' : 'fa-circle-xmark'}"></i> ${isPaid ? 'مدفوع' : 'غير مدفوع'}
+                        </div>
+                        ${isPaid && data.date ? `<div class="payment-card-date">${new Date(data.date).toLocaleDateString('ar-EG')}</div>` : ''}
+                        ${canEdit ? `
+                            <button class="payment-card-toggle" data-action="toggleMonthPaymentSimple" data-player-id="${playerId}" data-month-key="${monthKey}">
+                                <i class="fas ${isPaid ? 'fa-rotate-left' : 'fa-check'}"></i> ${isPaid ? 'إلغاء الدفع' : 'تسجيل الدفع'}
+                            </button>
+                        ` : ''}
                     </div>
                 `;
             });
             paymentHtml += '</div>';
 
+            // ===== باقي المحتوى =====
             let attendHtml = `
                 <button class="btn-sm btn-sm-info" data-action="showAttendanceFull" data-id="${playerId}">
                     <i class="fas fa-eye"></i> الاطلاع على سجل الحضور
@@ -2266,14 +2453,20 @@
             `;
             window.addDebugLog(`👤 عرض تفاصيل اللاعب ${p.firstName} ${p.lastName}`, 'info');
             EventManager.bindButtons(content);
+            updateDashboardActionBar();
         }
 
+        // ================================================================
+        // 14. دوال مساعدة (showFullImage, showStatsCard, showAttendanceFull) مع أزرار إغلاق محسّنة
+        // ================================================================
         function showFullImage(src) {
             if (!src) return;
             const container = document.createElement('div');
-            container.style.cssText =
-                'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:999999; display:flex; align-items:center; justify-content:center; padding:20px; cursor:pointer;';
-            container.innerHTML = `<img src="${src}" style="max-width:90%; max-height:90%; border-radius:12px; box-shadow:0 10px 40px rgba(0,0,0,0.5);" />`;
+            container.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:999999; display:flex; align-items:center; justify-content:center; padding:20px; cursor:pointer;';
+            container.innerHTML = `
+                <button class="icon-close-btn on-dark" style="position:fixed; top:20px; left:20px;" title="إغلاق"><i class="fas fa-times"></i></button>
+                <img src="${src}" style="max-width:90%; max-height:90%; border-radius:12px; box-shadow:0 10px 40px rgba(0,0,0,0.5);" />
+            `;
             container.onclick = function() { this.remove(); };
             document.body.appendChild(container);
         }
@@ -2287,6 +2480,7 @@
             container.className = 'stats-card-modal';
             container.innerHTML = `
                 <div class="stats-card">
+                    <button class="icon-close-btn abs-top-right on-dark" onclick="this.closest('.stats-card-modal').remove()" title="إغلاق"><i class="fas fa-times"></i></button>
                     <div class="card-header">
                         <div class="avatar"><img src="${imgSrc}" alt="${p.firstName}" /></div>
                         <div class="name">${p.firstName} ${p.lastName}</div>
@@ -2319,14 +2513,12 @@
             if (!p) { showToast('اللاعب غير موجود', 'error'); return; }
             const sessions = allTrainingSessions.filter(s => s.categoryId === p.categoryId && s.status === 'مكتملة');
             const container = document.createElement('div');
-            container.style.cssText =
-                'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); backdrop-filter:blur(8px); z-index:999999; display:flex; align-items:center; justify-content:center; padding:20px;';
+            container.id = 'attendanceFullModal';
+            container.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); backdrop-filter:blur(8px); z-index:999999; display:flex; align-items:center; justify-content:center; padding:20px;';
             let html = `
-                <div style="background:#fff; border-radius:24px; padding:30px; max-width:800px; width:100%; max-height:90vh; overflow-y:auto;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
-                        <h3 style="color:var(--dark-navy);">📋 سجل حضور ${p.firstName} ${p.lastName}</h3>
-                        <button class="btn-sm btn-sm-danger" onclick="this.closest('div[style]').remove()"><i class="fas fa-times"></i></button>
-                    </div>
+                <div style="background:#fff; border-radius:24px; padding:30px; max-width:800px; width:100%; max-height:90vh; overflow-y:auto; position:relative;">
+                    <button class="icon-close-btn abs-top-right" onclick="document.getElementById('attendanceFullModal').remove()" title="إغلاق"><i class="fas fa-times"></i></button>
+                    <h3 style="color:var(--dark-navy); margin-bottom:16px; padding-left:44px;">📋 سجل حضور ${p.firstName} ${p.lastName}</h3>
                     <div style="border:1px solid #eee; border-radius:12px; overflow:hidden;">
                         <table style="width:100%; border-collapse:collapse; font-size:0.85rem;">
                             <thead><tr style="background:var(--dark-navy); color:#fff;"><th style="padding:8px 12px; text-align:center;">التاريخ</th><th style="padding:8px 12px; text-align:center;">الحصة</th><th style="padding:8px 12px; text-align:center;">الحالة</th><th style="padding:8px 12px; text-align:center;">التقييم</th></tr></thead>
@@ -2354,20 +2546,27 @@
                 });
             }
             html += `</tbody></table></div>
-                    <div style="margin-top:12px; text-align:center;"><button class="btn-sm btn-sm-secondary" onclick="this.closest('div[style]').remove()">إغلاق</button></div>
+                    <div style="margin-top:12px; text-align:center;">
+                        <button class="btn-sm btn-sm-secondary" onclick="document.getElementById('attendanceFullModal').remove()">إغلاق</button>
+                    </div>
                 </div>
             `;
             container.innerHTML = html;
             document.body.appendChild(container);
+            container.addEventListener('click', function(e) { if (e.target === this) this.remove(); });
         }
 
+        // ================================================================
+        // 15. دوال تحديث الدفع مع تخزين التاريخ
+        // ================================================================
         function toggleMonthPaymentSimple(playerId, monthKey) {
             if (!requireRole('admin','coach')) return;
-            if (currentUser?.role === 'parent') { showToast('ليس لديك صلاحية للتعديل', 'warning'); return; }
             const payment = allPayments.find(p => p.playerId === playerId);
             const monthly = payment?.monthly || {};
             const current = monthly[monthKey] || { paid: false };
             current.paid = !current.paid;
+            current.date = current.paid ? new Date().toISOString() : null;
+
             showProgress('جاري تحديث الدفع...', 0);
             const startTime = performance.now();
             const ref = payment ? db.ref('academy/payments/' + payment.id) : db.ref('academy/payments').push();
@@ -2392,9 +2591,40 @@
                     showToast('❌ خطأ: ' + err.message, 'error'); });
         }
 
+        // ================================================================
+        // 16. دوال المدرب (مع حماية الصلاحيات)
+        // ================================================================
+        function coachRatePlayer(playerId) {
+            if (!requireRole('admin','coach')) return;
+            const current = allPlayerDetails[playerId] || { rating: 0, notes: '' };
+            const newRating = prompt('أدخل التقييم (0-5):', current.rating);
+            if (newRating === null) return;
+            const rating = parseFloat(newRating);
+            if (isNaN(rating) || rating < 0 || rating > 5) { showToast('القيمة بين 0 و 5', 'warning'); return; }
+            const notes = prompt('ملاحظات:', current.notes || '');
+            showProgress('جاري حفظ التقييم...', 0);
+            const startTime = performance.now();
+            db.ref('academy/playerDetails/' + playerId).set({ rating, notes: notes || '' })
+                .then(() => {
+                    if (!allPlayerDetails[playerId]) allPlayerDetails[playerId] = {};
+                    allPlayerDetails[playerId].rating = rating;
+                    allPlayerDetails[playerId].notes = notes || '';
+                    const duration = Math.round(performance.now() - startTime);
+                    updateProgress(100, 'تم الحفظ');
+                    setTimeout(hideProgress, 300);
+                    addLog('تقييم لاعب', `تم تقييم اللاعب ${allPlayers.find(p=>p.id===playerId)?.firstName || ''} بـ ${rating}`,
+                        currentUser?.role);
+                    window.addDebugLog(`✅ تم حفظ التقييم (${duration}ms)`, 'success');
+                    showToast('✅ تم حفظ التقييم', 'success');
+                    showCoachPlayers();
+                })
+                .catch(err => { hideProgress();
+                    window.addDebugLog(`❌ فشل حفظ التقييم: ${err.message}`, 'error');
+                    showToast('❌ خطأ: ' + err.message, 'error'); });
+        }
+
         function editPlayerField(playerId, field, currentValue, label) {
             if (!requireRole('admin','coach')) return;
-            if (currentUser?.role === 'parent') { showToast('ليس لديك صلاحية للتعديل', 'warning'); return; }
             const newVal = prompt(`تعديل ${label}`, currentValue);
             if (newVal === null || newVal === currentValue) return;
             showProgress('جاري التحديث...', 0);
@@ -2443,7 +2673,6 @@
 
         function editPlayerStat(playerId, key, currentValue, label) {
             if (!requireRole('admin','coach')) return;
-            if (currentUser?.role === 'parent') { showToast('ليس لديك صلاحية للتعديل', 'warning'); return; }
             const newVal = prompt(`تعديل ${label}`, currentValue);
             if (newVal === null || newVal === currentValue) return;
             showProgress('جاري التحديث...', 0);
@@ -2470,6 +2699,9 @@
                     showToast('❌ خطأ: ' + err.message, 'error'); });
         }
 
+        // ================================================================
+        // 17. دوال المدرب الرئيسية
+        // ================================================================
         function showCoachHome() {
             currentViewFunction = showCoachHome;
             currentViewArgs = [];
@@ -2536,35 +2768,9 @@
             EventManager.bindButtons(content);
         }
 
-        function coachRatePlayer(playerId) {
-            if (!requireRole('admin','coach')) return;
-            const current = allPlayerDetails[playerId] || { rating: 0, notes: '' };
-            const newRating = prompt('أدخل التقييم (0-5):', current.rating);
-            if (newRating === null) return;
-            const rating = parseFloat(newRating);
-            if (isNaN(rating) || rating < 0 || rating > 5) { showToast('القيمة بين 0 و 5', 'warning'); return; }
-            const notes = prompt('ملاحظات:', current.notes || '');
-            showProgress('جاري حفظ التقييم...', 0);
-            const startTime = performance.now();
-            db.ref('academy/playerDetails/' + playerId).set({ rating, notes: notes || '' })
-                .then(() => {
-                    if (!allPlayerDetails[playerId]) allPlayerDetails[playerId] = {};
-                    allPlayerDetails[playerId].rating = rating;
-                    allPlayerDetails[playerId].notes = notes || '';
-                    const duration = Math.round(performance.now() - startTime);
-                    updateProgress(100, 'تم الحفظ');
-                    setTimeout(hideProgress, 300);
-                    addLog('تقييم لاعب', `تم تقييم اللاعب ${allPlayers.find(p=>p.id===playerId)?.firstName || ''} بـ ${rating}`,
-                        currentUser?.role);
-                    window.addDebugLog(`✅ تم حفظ التقييم (${duration}ms)`, 'success');
-                    showToast('✅ تم حفظ التقييم', 'success');
-                    showCoachPlayers();
-                })
-                .catch(err => { hideProgress();
-                    window.addDebugLog(`❌ فشل حفظ التقييم: ${err.message}`, 'error');
-                    showToast('❌ خطأ: ' + err.message, 'error'); });
-        }
-
+        // ================================================================
+        // 18. دوال الحصص التدريبية (مع حماية الصلاحيات)
+        // ================================================================
         let sessionSelectedPlayers = [];
 
         function showCoachTrainingSessions() {
@@ -2628,6 +2834,8 @@
         }
 
         function showCreateTrainingSession() {
+            currentViewFunction = showCreateTrainingSession;
+            currentViewArgs = [];
             const content = document.getElementById('pageContent');
             const coachCategory = currentUser?.role === 'coach' ? currentUser.data.categoryId : '';
             content.innerHTML = `
@@ -2685,6 +2893,7 @@
                     updateSessionPlayersListUI(coachCategory); }, 100); }
             window.addDebugLog('📝 فتح نموذج إنشاء حصة تدريبية', 'info');
             EventManager.bindButtons(content);
+            updateDashboardActionBar();
         }
 
         function updateSessionPlayersListUI(categoryId) {
@@ -2804,6 +3013,9 @@
                     showToast('❌ خطأ: ' + err.message, 'error'); });
         }
 
+        // ================================================================
+        // 19. دوال المدير للحصص والمباريات والدورات
+        // ================================================================
         function showAdminHome() {
             currentViewFunction = showAdminHome;
             currentViewArgs = [];
@@ -2884,9 +3096,9 @@
             }
             container.innerHTML = `
                 <div class="modal-content">
+                    <button class="icon-close-btn abs-top-right" data-action="closeModal" data-id="sessionDetailModal" title="إغلاق"><i class="fas fa-times"></i></button>
                     <div class="modal-header">
                         <h2>${s.title || 'حصة تدريبية'}</h2>
-                        <button class="btn-sm btn-sm-danger" data-action="closeModal" data-id="sessionDetailModal"><i class="fas fa-times"></i></button>
                     </div>
                     <div class="info-grid-session">
                         <div class="item"><div class="label">التاريخ</div><div class="value">${s.date}</div></div>
@@ -2911,6 +3123,7 @@
             EventManager.bindButtons(container);
         }
 
+        // دوال الحضور والتقييم مع حماية الصلاحيات
         function updateSessionAttendance(sessionId, playerId, status) {
             if (!requireRole('admin','coach')) return;
             const idx = allTrainingSessions.findIndex(s => s.id === sessionId);
@@ -3000,10 +3213,14 @@
             renderSessionsList(document.getElementById('archiveSessionsList'), completedList);
             window.addDebugLog(`🗄️ عرض أرشيف الحصص (${completedList.length})`, 'info');
             EventManager.bindButtons(content);
+            updateDashboardActionBar();
         }
 
         function renderArchiveSessionsList() { showTrainingSessionsArchive(); }
 
+        // ================================================================
+        // 20. دوال المباريات (مع حماية الصلاحيات)
+        // ================================================================
         function renderMatchesList(container, matches) {
             if (!container) return;
             if (matches.length === 0) { container.innerHTML = `<p class="text-muted text-center">لا توجد مباريات</p>`; return; }
@@ -3127,6 +3344,9 @@
             showToast(`النتيجة: ${m.scoreHome ?? '-'} - ${m.scoreAway ?? '-'} ضد ${m.opponent}`, 'info');
         }
 
+        // ================================================================
+        // 21. دوال الدورات (مع حماية الصلاحيات)
+        // ================================================================
         function renderTournamentsList() {
             const container = document.getElementById('tournamentsList');
             if (!container) return;
@@ -3252,8 +3472,12 @@
             }
             window.addDebugLog(`🗄️ عرض أرشيف الدورات (${completedList.length})`, 'info');
             EventManager.bindButtons(content);
+            updateDashboardActionBar();
         }
 
+        // ================================================================
+        // 22. دوال المدربين (مع حماية الصلاحيات)
+        // ================================================================
         function renderCoachesTable() {
             const tbody = document.getElementById('coachesTableBody');
             if (!tbody) return;
@@ -3342,6 +3566,9 @@
                 .catch(err => showToast('❌ خطأ: ' + err.message, 'error'));
         }
 
+        // ================================================================
+        // 23. دوال سجل التعديلات (مع حماية الصلاحيات)
+        // ================================================================
         function renderLogsList() {
             const container = document.getElementById('logsListContainer');
             if (!container) return;
@@ -3399,6 +3626,9 @@
                 .catch(err => showToast('❌ خطأ: ' + err.message, 'error'));
         }
 
+        // ================================================================
+        // 24. دوال تحديث البيانات وولي الأمر والرجوع
+        // ================================================================
         function refreshDashboardData() {
             showProgress('جاري تحديث البيانات...', 0);
             loadAllData(true).then(() => {
@@ -3421,13 +3651,15 @@
                 previousViewArgs = [];
                 func(...args);
                 window.addDebugLog('🔙 الرجوع للصفحة السابقة', 'info');
-                return;
-            }
-            if (currentUser?.role === 'admin') showAdminHome();
+            } else if (currentUser?.role === 'admin') showAdminHome();
             else if (currentUser?.role === 'coach') showCoachHome();
             else if (currentUser?.role === 'parent') showParentHome();
+            updateDashboardActionBar();
         }
 
+        // ================================================================
+        // 25. دوال رفع الملفات والمعرض
+        // ================================================================
         function setupUpload(inputId, nameDisplayId, containerId) {
             const input = document.getElementById(inputId);
             const nameDisplay = document.getElementById(nameDisplayId);
@@ -3463,6 +3695,9 @@
             });
         }
 
+        // ================================================================
+        // 26. تهيئة النظام
+        // ================================================================
         function initSystem() {
             registerAllActions();
             EventManager.enableDelegation();
@@ -3479,6 +3714,7 @@
             setupUpload('newPhoto', 'newPhotoName', 'newPhotoUpload');
             setupUpload('tournamentLogo', 'tournamentLogoName', 'tournamentLogoUpload');
 
+            // ربط استمارة التسجيل العامة
             const regForm = document.getElementById('registrationForm');
             if (regForm) {
                 regForm.addEventListener('submit', async function(e) {
@@ -3536,10 +3772,12 @@
 
             renderGallery();
 
+            // ===== تأثير النافبار =====
             const navbar = document.getElementById('navbar');
             window.addEventListener('scroll', () => { if (navbar) navbar.classList.toggle('scrolled', window.scrollY >
                     60); });
 
+            // ===== زر القائمة في الهواتف =====
             const menuBtn = document.getElementById('menuBtn');
             if (menuBtn) {
                 menuBtn.addEventListener('click', () => {
@@ -3548,6 +3786,7 @@
                 });
             }
 
+            // ===== روابط التنقل السلس =====
             document.querySelectorAll('a[href^="#"]').forEach(anchor => {
                 anchor.addEventListener('click', function(e) {
                     e.preventDefault();
@@ -3560,6 +3799,7 @@
                 });
             });
 
+            // ===== النص المتحرك =====
             const words = ['الرائد', 'النخبة', 'الأبطال', 'المستقبل'];
             let wordIndex = 0,
                 charIndex = 0,
@@ -3579,6 +3819,7 @@
             }
             typeEffect();
 
+            // ===== إغلاق البوب أب =====
             const confirmPopup = document.getElementById('confirmPopup');
             if (confirmPopup) {
                 confirmPopup.addEventListener('click', function(e) { if (e.target === this) closeConfirmPopup(); });
@@ -3588,6 +3829,9 @@
             console.log('✅ النظام جاهز مع Event Manager وتسجيل دخول سريع');
         }
 
+        // ================================================================
+        // 27. بدء التشغيل
+        // ================================================================
         document.addEventListener('DOMContentLoaded', function() {
             initSystem();
 
