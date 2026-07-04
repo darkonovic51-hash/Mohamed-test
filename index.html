@@ -1256,54 +1256,17 @@
             if (overlay) overlay.classList.remove('active');
         }
 
+        // تم تعطيل شريط التحميل المرئي لتسريع تنفيذ الأوامر
         function showProgress(label, initialValue = 0) {
-            const overlay = document.getElementById('progressOverlay');
-            const bar = document.getElementById('progressBar');
-            const text = document.getElementById('progressText');
-            const lbl = document.getElementById('progressLabel');
-            if (!overlay) return;
-            window.progressValue = initialValue;
-            overlay.classList.add('active');
-            bar.style.width = initialValue + '%';
-            text.textContent = initialValue + '%';
-            lbl.textContent = label || 'جاري التحميل...';
-            if (window.progressInterval) clearInterval(window.progressInterval);
-            window.progressInterval = setInterval(() => {
-                if (window.progressValue < 80) {
-                    window.progressValue += 1 + Math.random() * 3;
-                    if (window.progressValue > 80) window.progressValue = 80;
-                    bar.style.width = window.progressValue + '%';
-                    text.textContent = Math.round(window.progressValue) + '%';
-                }
-            }, 200);
+            return;
         }
 
         function updateProgress(value, label) {
-            const bar = document.getElementById('progressBar');
-            const text = document.getElementById('progressText');
-            const lbl = document.getElementById('progressLabel');
-            if (!bar) return;
-            window.progressValue = Math.min(value, 100);
-            bar.style.width = window.progressValue + '%';
-            text.textContent = Math.round(window.progressValue) + '%';
-            if (label) lbl.textContent = label;
+            return;
         }
 
         function hideProgress() {
-            const overlay = document.getElementById('progressOverlay');
-            if (!overlay) return;
-            const bar = document.getElementById('progressBar');
-            const text = document.getElementById('progressText');
-            window.progressValue = 100;
-            bar.style.width = '100%';
-            text.textContent = '100%';
-            if (window.progressInterval) { clearInterval(window.progressInterval);
-                window.progressInterval = null; }
-            setTimeout(() => {
-                overlay.classList.remove('active');
-                bar.style.width = '0%';
-                text.textContent = '0%';
-            }, 400);
+            return;
         }
 
         function isThisWeek(dateStr) {
@@ -1859,7 +1822,7 @@
                     <div class="menu-item active" data-action="showCoachHome"><i class="fas fa-tachometer-alt"></i> <span>الرئيسية</span></div>
                     <div class="menu-item" data-action="showCoachPlayers"><i class="fas fa-users"></i> <span>لاعبي فئتي</span></div>
                     <div class="menu-item" data-action="showCoachTrainingSessions"><i class="fas fa-futbol"></i> <span>حصصي التدريبية</span></div>
-                    <div class="menu-item" data-action="showCoachMatches"><i class="fas fa-handshake"></i> <span>مبارياتي</span></div>
+                    <div class="menu-item" data-action="showCoachMatches"><i class="fas fa-handshake"></i] <span>مبارياتي</span></div>
                     <div class="menu-item" data-action="refreshDashboardData" style="border-right-color:var(--gold);"><i class="fas fa-sync-alt"></i> <span>🔄 تحديث البيانات</span></div>
                 `;
                 showCoachHome();
@@ -2145,71 +2108,50 @@
         function approvePlayer(id) {
             if (!requireRole('admin')) return;
             if (!confirm('قبول هذا اللاعب؟')) return;
-            showProgress('جاري قبول اللاعب...', 0);
-            const startTime = performance.now();
-            window.addDebugLog(`✅ قبول اللاعب ${id}`, 'info');
             db.ref('academy/players/' + id).update({ status: 'approved' })
                 .then(() => {
                     const index = allPlayers.findIndex(p => p.id === id);
                     if (index !== -1) allPlayers[index].status = 'approved';
-                    const duration = Math.round(performance.now() - startTime);
-                    updateProgress(100, 'تم القبول');
-                    setTimeout(hideProgress, 300);
                     addLog('قبول لاعب', `تم قبول اللاعب ${allPlayers[index]?.firstName || ''} ${allPlayers[index]?.lastName || ''}`,
                         'admin');
-                    window.addDebugLog(`✅ تم قبول اللاعب (${duration}ms)`, 'success');
+                    window.addDebugLog(`✅ تم قبول اللاعب`, 'success');
                     showToast('✅ تم قبول اللاعب', 'success');
                     applyPlayerFilters();
                 })
-                .catch(err => { hideProgress();
-                    window.addDebugLog(`❌ فشل قبول اللاعب: ${err.message}`, 'error');
+                .catch(err => { window.addDebugLog(`❌ فشل قبول اللاعب: ${err.message}`, 'error');
                     showToast('❌ خطأ: ' + err.message, 'error'); });
         }
 
         function rejectPlayer(id) {
             if (!requireRole('admin')) return;
             if (!confirm('رفض هذا اللاعب؟')) return;
-            showProgress('جاري رفض اللاعب...', 0);
-            const startTime = performance.now();
-            window.addDebugLog(`❌ رفض اللاعب ${id}`, 'info');
             db.ref('academy/players/' + id).update({ status: 'rejected' })
                 .then(() => {
                     const index = allPlayers.findIndex(p => p.id === id);
                     if (index !== -1) allPlayers[index].status = 'rejected';
-                    const duration = Math.round(performance.now() - startTime);
-                    updateProgress(100, 'تم الرفض');
-                    setTimeout(hideProgress, 300);
                     addLog('رفض لاعب', `تم رفض اللاعب ${allPlayers[index]?.firstName || ''} ${allPlayers[index]?.lastName || ''}`,
                         'admin');
-                    window.addDebugLog(`✅ تم رفض اللاعب (${duration}ms)`, 'success');
+                    window.addDebugLog(`✅ تم رفض اللاعب`, 'success');
                     showToast('✅ تم رفض اللاعب', 'success');
                     applyPlayerFilters();
                 })
-                .catch(err => { hideProgress();
-                    window.addDebugLog(`❌ فشل رفض اللاعب: ${err.message}`, 'error');
+                .catch(err => { window.addDebugLog(`❌ فشل رفض اللاعب: ${err.message}`, 'error');
                     showToast('❌ خطأ: ' + err.message, 'error'); });
         }
 
         function deletePlayer(id) {
             if (!requireRole('admin')) return;
             if (!confirm('حذف هذا اللاعب؟')) return;
-            showProgress('جاري الحذف...', 0);
-            const startTime = performance.now();
-            window.addDebugLog(`🗑️ حذف لاعب ${id}`, 'info');
             db.ref('academy/players/' + id).remove()
                 .then(() => {
                     const index = allPlayers.findIndex(p => p.id === id);
                     if (index !== -1) allPlayers.splice(index, 1);
-                    const duration = Math.round(performance.now() - startTime);
-                    updateProgress(100, 'تم الحذف');
-                    setTimeout(hideProgress, 300);
                     addLog('حذف لاعب', `تم حذف اللاعب`, currentUser?.role);
-                    window.addDebugLog(`✅ تم حذف اللاعب (${duration}ms)`, 'success');
+                    window.addDebugLog(`✅ تم حذف اللاعب`, 'success');
                     showToast('✅ تم حذف اللاعب', 'success');
                     applyPlayerFilters();
                 })
-                .catch(err => { hideProgress();
-                    window.addDebugLog(`❌ فشل حذف اللاعب: ${err.message}`, 'error');
+                .catch(err => { window.addDebugLog(`❌ فشل حذف اللاعب: ${err.message}`, 'error');
                     showToast('❌ خطأ: ' + err.message, 'error'); });
         }
 
@@ -2230,8 +2172,6 @@
                 return;
             }
             const photoFile = document.getElementById('newPhoto').files[0];
-            showProgress('جاري إضافة اللاعب...', 0);
-            const startTime = performance.now();
             window.addDebugLog(`➕ إضافة لاعب: ${firstName} ${lastName}`, 'info');
 
             const processAdd = (photoData) => {
@@ -2271,11 +2211,8 @@
                             allPlayerDetails[playerId].jerseyNumber = jerseyNumber;
                             allPlayerDetails[playerId].position = position;
                             allPlayerDetails[playerId].fitness = fitness;
-                            const duration = Math.round(performance.now() - startTime);
-                            updateProgress(100, 'تم الإضافة');
-                            setTimeout(hideProgress, 300);
                             addLog('إضافة لاعب', `تم إضافة اللاعب ${firstName} ${lastName}`, currentUser?.role);
-                            window.addDebugLog(`✅ تم إضافة اللاعب (${duration}ms)`, 'success');
+                            window.addDebugLog(`✅ تم إضافة اللاعب`, 'success');
                             showToast('✅ تم إضافة اللاعب', 'success');
                             document.getElementById('newFirstName').value = '';
                             document.getElementById('newLastName').value = '';
@@ -2290,8 +2227,7 @@
                             showAdminPlayers();
                         });
                     })
-                    .catch(err => { hideProgress();
-                        window.addDebugLog(`❌ فشل إضافة اللاعب: ${err.message}`, 'error');
+                    .catch(err => { window.addDebugLog(`❌ فشل إضافة اللاعب: ${err.message}`, 'error');
                         showToast('❌ خطأ: ' + err.message, 'error'); });
             };
 
@@ -2589,8 +2525,6 @@
             current.paid = !current.paid;
             current.date = current.paid ? new Date().toISOString() : null;
 
-            showProgress('جاري تحديث الدفع...', 0);
-            const startTime = performance.now();
             const ref = payment ? db.ref('academy/payments/' + payment.id) : db.ref('academy/payments').push();
             const data = { playerId, monthly: { ...monthly, [monthKey]: current }, status: 'active',
                 date: new Date().toISOString() };
@@ -2599,17 +2533,13 @@
                     const pIndex = allPayments.findIndex(p => p.playerId === playerId);
                     if (pIndex !== -1) allPayments[pIndex].monthly = { ...monthly, [monthKey]: current };
                     else allPayments.push({ playerId, monthly: { ...monthly, [monthKey]: current }, status: 'active' });
-                    const duration = Math.round(performance.now() - startTime);
-                    updateProgress(100, 'تم التحديث');
-                    setTimeout(hideProgress, 300);
                     addLog('تحديث دفع', `تم تحديث دفع شهر ${monthKey} للاعب ${allPlayers.find(p=>p.id===playerId)?.firstName || ''}`,
                         currentUser?.role);
-                    window.addDebugLog(`✅ تم تحديث الدفع (${duration}ms)`, 'success');
+                    window.addDebugLog(`✅ تم تحديث الدفع`, 'success');
                     showToast('✅ تم تحديث الدفع', 'success');
                     showPlayerDetailPage(playerId);
                 })
-                .catch(err => { hideProgress();
-                    window.addDebugLog(`❌ فشل تحديث الدفع: ${err.message}`, 'error');
+                .catch(err => { window.addDebugLog(`❌ فشل تحديث الدفع: ${err.message}`, 'error');
                     showToast('❌ خطأ: ' + err.message, 'error'); });
         }
 
@@ -2624,24 +2554,18 @@
             const rating = parseFloat(newRating);
             if (isNaN(rating) || rating < 0 || rating > 5) { showToast('القيمة بين 0 و 5', 'warning'); return; }
             const notes = prompt('ملاحظات:', current.notes || '');
-            showProgress('جاري حفظ التقييم...', 0);
-            const startTime = performance.now();
             db.ref('academy/playerDetails/' + playerId).set({ rating, notes: notes || '' })
                 .then(() => {
                     if (!allPlayerDetails[playerId]) allPlayerDetails[playerId] = {};
                     allPlayerDetails[playerId].rating = rating;
                     allPlayerDetails[playerId].notes = notes || '';
-                    const duration = Math.round(performance.now() - startTime);
-                    updateProgress(100, 'تم الحفظ');
-                    setTimeout(hideProgress, 300);
                     addLog('تقييم لاعب', `تم تقييم اللاعب ${allPlayers.find(p=>p.id===playerId)?.firstName || ''} بـ ${rating}`,
                         currentUser?.role);
-                    window.addDebugLog(`✅ تم حفظ التقييم (${duration}ms)`, 'success');
+                    window.addDebugLog(`✅ تم حفظ التقييم`, 'success');
                     showToast('✅ تم حفظ التقييم', 'success');
                     showCoachPlayers();
                 })
-                .catch(err => { hideProgress();
-                    window.addDebugLog(`❌ فشل حفظ التقييم: ${err.message}`, 'error');
+                .catch(err => { window.addDebugLog(`❌ فشل حفظ التقييم: ${err.message}`, 'error');
                     showToast('❌ خطأ: ' + err.message, 'error'); });
         }
 
@@ -2649,8 +2573,6 @@
             if (!requireRole('admin','coach')) return;
             const newVal = prompt(`تعديل ${label}`, currentValue);
             if (newVal === null || newVal === currentValue) return;
-            showProgress('جاري التحديث...', 0);
-            const startTime = performance.now();
             window.addDebugLog(`📝 تعديل ${label} للاعب ${playerId}`, 'info');
 
             const isPlayerField = ['categoryId', 'birthDate', 'birthPlace', 'studyLevel', 'health', 'bloodType',
@@ -2678,27 +2600,20 @@
                         if (!allPlayerDetails[playerId]) allPlayerDetails[playerId] = {};
                         allPlayerDetails[playerId][field] = field === 'fitness' || field === 'jerseyNumber' ?
                             parseInt(newVal) : field === 'rating' ? parseFloat(newVal) : newVal; }
-                    const duration = Math.round(performance.now() - startTime);
-                    updateProgress(100, 'تم التحديث');
-                    setTimeout(hideProgress, 300);
                     addLog('تعديل لاعب', `تم تعديل ${label} للاعب ${allPlayers.find(p=>p.id===playerId)?.firstName || ''}`,
                         currentUser?.role);
-                    window.addDebugLog(`✅ تم تعديل ${label} (${duration}ms)`, 'success');
+                    window.addDebugLog(`✅ تم تعديل ${label}`, 'success');
                     showToast('✅ تم التحديث', 'success');
                     showPlayerDetailPage(playerId);
-                }).catch(err => { hideProgress();
-                    window.addDebugLog(`❌ فشل تعديل ${label}: ${err.message}`, 'error');
+                }).catch(err => { window.addDebugLog(`❌ فشل تعديل ${label}: ${err.message}`, 'error');
                     showToast('❌ خطأ: ' + err.message, 'error'); });
-            } else { hideProgress();
-                showToast('حقل غير معروف', 'warning'); }
+            } else { showToast('حقل غير معروف', 'warning'); }
         }
 
         function editPlayerStat(playerId, key, currentValue, label) {
             if (!requireRole('admin','coach')) return;
             const newVal = prompt(`تعديل ${label}`, currentValue);
             if (newVal === null || newVal === currentValue) return;
-            showProgress('جاري التحديث...', 0);
-            const startTime = performance.now();
             window.addDebugLog(`📊 تعديل ${label} للاعب ${playerId}`, 'info');
 
             const update = {};
@@ -2707,17 +2622,13 @@
                 .then(() => {
                     if (!allPlayerDetails[playerId]) allPlayerDetails[playerId] = {};
                     allPlayerDetails[playerId][key] = parseInt(newVal) || 0;
-                    const duration = Math.round(performance.now() - startTime);
-                    updateProgress(100, 'تم التحديث');
-                    setTimeout(hideProgress, 300);
                     addLog('تعديل إحصائية', `تم تعديل ${label} للاعب ${allPlayers.find(p=>p.id===playerId)?.firstName || ''}`,
                         currentUser?.role);
-                    window.addDebugLog(`✅ تم تعديل ${label} (${duration}ms)`, 'success');
+                    window.addDebugLog(`✅ تم تعديل ${label}`, 'success');
                     showToast('✅ تم التحديث', 'success');
                     showPlayerDetailPage(playerId);
                 })
-                .catch(err => { hideProgress();
-                    window.addDebugLog(`❌ فشل تعديل ${label}: ${err.message}`, 'error');
+                .catch(err => { window.addDebugLog(`❌ فشل تعديل ${label}: ${err.message}`, 'error');
                     showToast('❌ خطأ: ' + err.message, 'error'); });
         }
 
@@ -3014,24 +2925,18 @@
                 report: null,
                 stats: { present: 0, absent: 0, excused: 0, total: 0 }
             };
-            showProgress('جاري حفظ الحصة...', 0);
-            const startTime2 = performance.now();
             window.addDebugLog(`💾 حفظ حصة تدريبية: ${title || 'بدون عنوان'}`, 'info');
 
             db.ref('academy/trainingSessions').push(sessionData)
                 .then(() => {
-                    const duration = Math.round(performance.now() - startTime2);
-                    updateProgress(100, 'تم الحفظ');
-                    setTimeout(hideProgress, 300);
                     addLog('إنشاء حصة', `تم إنشاء حصة تدريبية ${title || 'بدون عنوان'} للفئة ${categoryId}`, currentUser?.role);
-                    window.addDebugLog(`✅ تم حفظ الحصة (${duration}ms)`, 'success');
+                    window.addDebugLog(`✅ تم حفظ الحصة`, 'success');
                     showToast('✅ تم إنشاء الحصة التدريبية بنجاح', 'success');
                     sessionSelectedPlayers = [];
                     if (currentUser?.role === 'coach') showCoachTrainingSessions();
                     else showAdminTrainingSessions();
                 })
-                .catch(err => { hideProgress();
-                    window.addDebugLog(`❌ فشل حفظ الحصة: ${err.message}`, 'error');
+                .catch(err => { window.addDebugLog(`❌ فشل حفظ الحصة: ${err.message}`, 'error');
                     showToast('❌ خطأ: ' + err.message, 'error'); });
         }
 
