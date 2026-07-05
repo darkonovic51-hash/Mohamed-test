@@ -1330,17 +1330,17 @@
         let currentMatchTab = 'info';
 
         // ================================================================
-        // 7. تحميل البيانات (مع شريط تقدم حقيقي)
+        // 7. تحميل البيانات (مع شريط تقدم حقيقي ودعم التحميل الصامت)
         // ================================================================
-        function loadAllData(forceReload = false) {
+        function loadAllData(forceReload = false, silent = false) {
             if (dataLoaded && !forceReload) return Promise.resolve();
             if (isLoadingData) return dataLoadPromise;
             isLoadingData = true;
-            showProgress('جاري تحميل البيانات...', 0);
-            window.addDebugLog('📦 بدء تحميل البيانات' + (forceReload ? ' (إعادة تحميل)' : ''), 'info');
+            if (!silent) showProgress('جاري تحميل البيانات...', 0);
+            window.addDebugLog('📦 بدء تحميل البيانات' + (forceReload ? ' (إعادة تحميل)' : '') + (silent ? ' (صامت)' : ''), 'info');
 
             dataLoadPromise = new Promise((resolve, reject) => {
-                if (!db) { isLoadingData = false; hideProgress();
+                if (!db) { isLoadingData = false; if (!silent) hideProgress();
                     window.addDebugLog('❌ Firebase غير متصل', 'error');
                     reject('Firebase غير متصل'); return; }
 
@@ -1371,7 +1371,7 @@
                         results[item.key] = snap.val();
                         completed++;
                         const pct = Math.round((completed / total) * 95);
-                        updateProgress(pct, `جاري تحميل ${item.label}... (${completed}/${total})`);
+                        if (!silent) updateProgress(pct, `جاري تحميل ${item.label}... (${completed}/${total})`);
                     })
                 )).then(() => {
                     allPlayers = toArray(results.players);
@@ -1391,15 +1391,14 @@
                     const duration = Math.round(performance.now() - startTime);
                     dataLoaded = true;
                     isLoadingData = false;
-                    updateProgress(100, 'تم التحميل بنجاح ✅');
-                    hideProgress();
+                    if (!silent) { updateProgress(100, 'تم التحميل بنجاح ✅'); hideProgress(); }
                     window.addDebugLog(
                         `✅ تم تحميل ${allPlayers.length} لاعب، ${allCoaches.length} مدرب، ${allTrainingSessions.length} حصة (${duration}ms)`,
                         'success');
                     resolve();
                 }).catch(err => {
                     isLoadingData = false;
-                    hideProgress();
+                    if (!silent) hideProgress();
                     window.addDebugLog('❌ فشل تحميل البيانات: ' + err.message, 'error');
                     reject(err);
                 });
@@ -4284,7 +4283,7 @@
         // ================================================================
         function refreshDashboardData() {
             showProgress('جاري تحديث البيانات...', 0);
-            loadAllData(true).then(() => {
+            loadAllData(true, false).then(() => {
                 showToast('✅ تم تحديث البيانات', 'success');
                 refreshCurrentView();
             }).catch(err => { hideProgress(); showToast('❌ خطأ: ' + err.message, 'error'); });
@@ -4357,7 +4356,7 @@
             EventManager.bindButtons();
 
             if (db) {
-                loadAllData().catch(() => {});
+                loadAllData(false, true).catch(() => {}); // تحميل صامت في الخلفية بدون شريط تقدم
             }
 
             setupUpload('regPhoto', 'photoFileName', 'uploadPhoto');
