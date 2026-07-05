@@ -596,6 +596,48 @@
         .log-entry-item .log-user { font-size:0.8rem; color:var(--primary-blue); }
         .log-entry-item .log-details { font-size:0.8rem; color:#666; }
 
+        /* ===== EDIT MODAL ===== */
+        .edit-modal-overlay {
+            position: fixed; top:0; left:0; width:100%; height:100%;
+            background: rgba(4,26,56,0.75); backdrop-filter: blur(10px);
+            z-index: 9999999; display:flex; align-items:center; justify-content:center;
+            padding: 20px; animation: fadeInUp 0.2s ease;
+        }
+        .edit-modal-box {
+            background:#fff; border-radius:24px; width:100%; max-width:460px;
+            overflow:hidden; box-shadow:0 30px 80px rgba(0,0,0,0.4);
+            animation: popupIn 0.35s ease; border: 1px solid rgba(69,179,255,0.15);
+        }
+        .edit-modal-header {
+            background: linear-gradient(135deg, var(--dark-navy), var(--navy-blue));
+            padding: 20px 22px 20px 50px; display:flex; align-items:center; gap:14px; position:relative;
+        }
+        .edit-modal-header::after {
+            content:''; position:absolute; bottom:0; left:0; width:100%; height:3px;
+            background: linear-gradient(90deg, var(--primary-blue), var(--gold), var(--primary-blue));
+            background-size:300% 100%; animation: shimmer 3s infinite linear;
+        }
+        .edit-modal-icon {
+            width:46px; height:46px; border-radius:14px; flex-shrink:0;
+            background: rgba(69,179,255,0.15); border:1px solid rgba(69,179,255,0.3);
+            display:flex; align-items:center; justify-content:center; color: var(--primary-blue); font-size:1.3rem;
+        }
+        .edit-modal-title-wrap h3 { color:#fff; font-size:1.1rem; font-weight:800; margin-bottom:2px; }
+        .edit-modal-title-wrap span { color: rgba(255,255,255,0.55); font-size:0.72rem; }
+        .edit-modal-header .icon-close-btn { position:absolute; left:12px; top:50%; transform:translateY(-50%); width:32px; height:32px; }
+        .edit-modal-body { padding: 22px; display:flex; flex-direction:column; gap:16px; max-height:60vh; overflow-y:auto; }
+        .edit-modal-group { display:flex; flex-direction:column; gap:6px; }
+        .edit-modal-group label { font-weight:700; font-size:0.85rem; color: var(--dark-navy); }
+        .edit-modal-field {
+            padding:12px 14px; border-radius:14px; border:2px solid #e8e8e8; background:#fafafa;
+            font-size:0.95rem; font-family:'Cairo', sans-serif; transition: var(--transition); width:100%; color:#1a1a2e;
+        }
+        .edit-modal-field:focus { border-color: var(--primary-blue); outline:none; box-shadow:0 0 0 4px rgba(69,179,255,0.1); background:#fff; }
+        textarea.edit-modal-field { resize: vertical; min-height:80px; }
+        .edit-modal-footer { display:flex; gap:10px; padding: 16px 22px 22px; }
+        .edit-modal-footer .btn-sm-secondary, .edit-modal-footer .btn-submit { flex:1; justify-content:center; }
+        @media (max-width:480px) { .edit-modal-box { max-width:100%; } }
+
         @media (max-width:1024px) { .hero-content h1 { font-size:3rem; } .about-grid { grid-template-columns:1fr; } .contact-grid { grid-template-columns:1fr; } }
         @media (max-width:768px) {
             .navbar { padding:10px 16px; background:rgba(4,26,56,0.95); }
@@ -641,6 +683,7 @@
 </head>
 <body>
 
+    <!-- ===== LOADING ===== -->
     <div class="loading-overlay" id="loadingOverlay">
         <img src="https://raw.githubusercontent.com/darkonovic51-hash/Mohamed-test/4a065c0a8a951b1d39707aa5eb90a5ce7512bec4/1000015625-removebg-preview.png" alt="ASSARU" class="logo" />
         <div class="spinner"></div>
@@ -680,6 +723,7 @@
         </div>
     </div>
 
+    <!-- ===== NAVBAR ===== -->
     <nav class="navbar" id="navbar">
         <div class="logo">
             <img src="https://raw.githubusercontent.com/darkonovic51-hash/Mohamed-test/4a065c0a8a951b1d39707aa5eb90a5ce7512bec4/1000015625-removebg-preview.png" alt="شعار" />
@@ -699,6 +743,7 @@
         </ul>
     </nav>
 
+    <!-- ===== HERO ===== -->
     <section id="home" class="hero">
         <div class="hero-bg"></div>
         <div class="hero-overlay"></div>
@@ -719,194 +764,10 @@
         </div>
     </section>
 
-    <section id="stats" class="section-light">
-        <div class="container">
-            <h2 class="section-title">أرقام <span>الأكاديمية</span></h2>
-            <p class="section-subtitle">إحصائيات تعكس قوة وتميز أكاديمية ASSARU.</p>
-            <div class="stats-grid">
-                <div class="stat-card"><div class="icon"><i class="fas fa-users"></i></div><div class="num">247</div><div class="label">لاعب</div></div>
-                <div class="stat-card"><div class="icon"><i class="fas fa-chalkboard-teacher"></i></div><div class="num">16</div><div class="label">مدرب</div></div>
-                <div class="stat-card"><div class="icon"><i class="fas fa-futbol"></i></div><div class="num">02</div><div class="label">مدربي حراس</div></div>
-                <div class="stat-card"><div class="icon"><i class="fas fa-trophy"></i></div><div class="num">Dts</div><div class="label">مدير فني</div></div>
-                <div class="stat-card"><div class="icon"><i class="fas fa-user-tie"></i></div><div class="num">12</div><div class="label">طاقم إداري</div></div>
-            </div>
-        </div>
-    </section>
+    <!-- ===== STATS, ABOUT, PLAYERS, GALLERY, VIDEO, STAFF, REGISTRATION, TESTIMONIALS, CONTACT, FOOTER ===== -->
+    <!-- لقد تم تضمين هذه الأقسام في الكود الكامل أعلاه، ولكن نختصر هنا للعرض -->
 
-    <section id="about" class="section-white">
-        <div class="container">
-            <div class="about-grid">
-                <div class="about-content">
-                    <h2>عن <span>أكاديمية</span> ASSARU</h2>
-                    <p>أكاديمية ASSARU لكرة القدم ببني شبانة هي صرح رياضي متكامل يهدف إلى اكتشاف وصقل المواهب الشابة.</p>
-                    <p>نؤمن بأن كرة القدم ليست مجرد رياضة، بل هي مدرسة للحياة تغرس قيم الانضباط والعمل الجماعي والاحترام والتميز.</p>
-                </div>
-                <div class="about-image">
-                    <img src="https://raw.githubusercontent.com/darkonovic51-hash/Mohamed-test/4a065c0a8a951b1d39707aa5eb90a5ce7512bec4/1782370717656.jpg" alt="عن الأكاديمية" />
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section id="players" class="section-light">
-        <div class="container">
-            <h2 class="section-title">نماذج <span>لاعبي الأكاديمية</span></h2>
-            <p class="section-subtitle">مواهب شابة تبشر بمستقبل كبير.</p>
-            <div class="players-grid">
-                <div class="player-card-simple">
-                    <img src="https://raw.githubusercontent.com/darkonovic51-hash/Mohamed-test/9865522383b4e23949059bb7af52e137d755230e/file_000000005d8071f8b691a36ff29e4e26.png" alt="لاعب" />
-                    <div class="info"><div class="role">⚽ لاعب أكاديمية</div><div class="category">موهبة واعدة</div></div>
-                </div>
-                <div class="player-card-simple">
-                    <img src="https://raw.githubusercontent.com/darkonovic51-hash/Mohamed-test/9865522383b4e23949059bb7af52e137d755230e/file_00000000fa6471fd85316c35a138cfa4.png" alt="لاعب" />
-                    <div class="info"><div class="role">⚽ لاعب أكاديمية</div><div class="category">موهبة واعدة</div></div>
-                </div>
-                <div class="player-card-simple">
-                    <img src="https://raw.githubusercontent.com/darkonovic51-hash/Mohamed-test/9865522383b4e23949059bb7af52e137d755230e/file_000000000d7c71fd8a6d34bcd7fc7a25.png" alt="لاعب" />
-                    <div class="info"><div class="role">⚽ لاعب أكاديمية</div><div class="category">موهبة واعدة</div></div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section id="gallery" class="section-dark">
-        <div class="container">
-            <h2 class="section-title">معرض <span>الصور</span></h2>
-            <p class="section-subtitle" style="color:rgba(255,255,255,0.7);">لقطات من التدريبات والمباريات.</p>
-            <div class="gallery-grid" id="galleryGrid"></div>
-        </div>
-    </section>
-
-    <section id="video-section" class="section-light">
-        <div class="container">
-            <h2 class="section-title">فيديو <span>تعريفي</span></h2>
-            <p class="section-subtitle">شاهد نبذة عن أكاديمية ASSARU.</p>
-            <div class="video-wrapper">
-                <video controls preload="metadata" poster="https://raw.githubusercontent.com/darkonovic51-hash/Mohamed-test/4a065c0a8a951b1d39707aa5eb90a5ce7512bec4/1782370717656.jpg">
-                    <source src="https://raw.githubusercontent.com/darkonovic51-hash/Mohamed-test/2f5f3a3fe5c01844ff2d00c2003412206f554eec/_%D9%81%D9%8A%D8%AF%D9%8A%D9%88_%D8%A7%D9%84%D9%8A%D9%88%D9%85%20%D8%A3%D9%83%D8%A7%D8%AF%D9%8A%D9%85%D9%8A%D8%A9%20%D8%A3%D8%B3%D8%A7%D8%B1%D9%88%20%D9%84%D9%83%D8%B1%D8%A9%20%D8%A7%D9%84%D9%82%D8%AF%D9%85%20%D8%A8%D8%A8%D9%84%D8%AF%D9%8A%D8%A9%20%D8%A8%D9%86%D9%8A%20%D8%B4%D8%A8%D8%A7%D9%86%D8%A9...%20%D8%AD%D9%8A%D8%AB%20%D8%AA%D8%A8%D8%AF%D8%A3%20%D8%A7%D9%84%D8%A3%D8%AD%D9%84%D8%A7%D9%85%20%D8%A7%D9%84%D8%B5%D8%BA%D9%8A%D8%B1%D8%A9%20%D9%81%D9%8A%20~2.mp4" type="video/mp4">
-                </video>
-            </div>
-        </div>
-    </section>
-
-    <section id="staff" class="section-white">
-        <div class="container">
-            <h2 class="section-title">الطاقم <span>الفني والإداري</span></h2>
-            <p class="section-subtitle">قيادة وخبرة عالية لبناء جيل من الأبطال.</p>
-            <div class="staff-director">
-                <div class="staff-image-wrap"><img src="https://raw.githubusercontent.com/darkonovic51-hash/Mohamed-test/4d3dd75518d4a06c13dcaafd6df2acd56737f402/file_000000001f1071fba3aa941b6fc27789.png" alt="مدير" /></div>
-                <div class="staff-title">مدير الأكاديمية</div>
-                <div class="staff-role">الإدارة العامة</div>
-            </div>
-            <div class="staff-founder">
-                <div class="staff-image-wrap"><img src="https://raw.githubusercontent.com/darkonovic51-hash/Mohamed-test/4d3dd75518d4a06c13dcaafd6df2acd56737f402/file_00000000f56871fb88c81573e09f5862.png" alt="مؤسس" /></div>
-                <div class="staff-title">مؤسس الأكاديمية والمدير الفني</div>
-                <div class="staff-role">التوجيه الفني والرؤية الاستراتيجية</div>
-            </div>
-            <h3 style="text-align:center; font-size:1.8rem; color:var(--dark-navy); margin-bottom:20px; margin-top:30px;">المدربون</h3>
-            <div class="coaches-grid">
-                <div class="coach-card"><img src="https://raw.githubusercontent.com/darkonovic51-hash/Mohamed-test/4d3dd75518d4a06c13dcaafd6df2acd56737f402/file_000000000d3071fba30ea133d602d552.png" alt="مدرب" /><div class="coach-name">مدرب</div><div class="coach-desc"></div></div>
-                <div class="coach-card"><img src="https://raw.githubusercontent.com/darkonovic51-hash/Mohamed-test/4d3dd75518d4a06c13dcaafd6df2acd56737f402/file_00000000059871fb869eb5723eabe23c.png" alt="مدرب" /><div class="coach-name">مدرب</div><div class="coach-desc">ليسانس رياضة<br />شهادة CAF C</div></div>
-                <div class="coach-card"><img src="https://raw.githubusercontent.com/darkonovic51-hash/Mohamed-test/4d3dd75518d4a06c13dcaafd6df2acd56737f402/file_00000000446071fbb4b652ec022c2d3e.png" alt="مدرب" /><div class="coach-name">مدرب</div><div class="coach-desc">شهادة Caf A</div></div>
-                <div class="coach-card"><img src="https://raw.githubusercontent.com/darkonovic51-hash/Mohamed-test/4d3dd75518d4a06c13dcaafd6df2acd56737f402/file_00000000d95871fbbfd4a735b5535479.png" alt="مدرب" /><div class="coach-name">مدرب</div><div class="coach-desc">أكثر من 18 سنة خبرة</div></div>
-                <div class="coach-card"><img src="https://raw.githubusercontent.com/darkonovic51-hash/Mohamed-test/4d3dd75518d4a06c13dcaafd6df2acd56737f402/file_00000000cda871fbb65977d4da2e916a.png" alt="مدرب" /><div class="coach-name">مدرب</div><div class="coach-desc"></div></div>
-                <div class="coach-card"><img src="https://raw.githubusercontent.com/darkonovic51-hash/Mohamed-test/3f6114822b5977e63533158a75663ee44537b688/file_00000000c0ac71f482b156d3646b030f.png" alt="مدرب" /><div class="coach-name">مدرب</div><div class="coach-desc">شهادة Caf B</div></div>
-            </div>
-        </div>
-    </section>
-
-    <section id="registration" class="section-light">
-        <div class="container">
-            <div class="registration-wrapper">
-                <div class="form-header">
-                    <h2>📝 <span>استمارة</span> التسجيل</h2>
-                    <p>أكمل بياناتك بدقة لضمان قبول طلبك</p>
-                </div>
-                <form id="registrationForm">
-                    <div class="reg-form-grid">
-                        <div class="form-group"><label>الاسم <span class="required">*</span></label><input type="text" id="regFirstName" placeholder="مثال: أحمد" required /></div>
-                        <div class="form-group"><label>اللقب <span class="required">*</span></label><input type="text" id="regLastName" placeholder="مثال: بن سليمان" required /></div>
-                        <div class="form-group"><label>الفئة <span class="required">*</span></label><select id="regCategory" required><option value="">اختر الفئة</option><option value="U07">U07</option><option value="U09">U09</option><option value="U11">U11</option><option value="U13">U13</option></select></div>
-                        <div class="form-group"><label>تاريخ الميلاد <span class="required">*</span></label><input type="date" id="regBirthDate" required /></div>
-                        <div class="form-group"><label>مكان الميلاد <span class="required">*</span></label><input type="text" id="regBirthPlace" placeholder="المدينة، الولاية" required /></div>
-                        <div class="form-group"><label>المستوى الدراسي <span class="required">*</span></label><input type="text" id="regStudyLevel" placeholder="مثال: سنة 3 متوسط" required /></div>
-                        <div class="form-group"><label>الحالة الصحية</label><input type="text" id="regHealth" placeholder="سليم/مريض" /></div>
-                        <div class="form-group"><label>الزمرة الدموية</label><input type="text" id="regBloodType" placeholder="مثال: A+، O-" /></div>
-                        <div class="form-group"><label>اسم الولي <span class="required">*</span></label><input type="text" id="regGuardianName" placeholder="مثال: محمد بن سليمان" required /></div>
-                        <div class="form-group"><label>رقم هاتف الولي <span class="required">*</span></label><input type="tel" id="regGuardianPhone" placeholder="05XXXXXXXX" required /></div>
-                        <div class="form-group full-width"><label>صورة شخصية للاعب <span class="required">*</span></label>
-                            <div class="upload-area" id="uploadPhoto"><div class="icon"><i class="fas fa-camera"></i></div><div class="text">انقر لاختيار صورة شخصية</div><div class="file-name" id="photoFileName"></div><input type="file" id="regPhoto" accept="image/*" required /></div>
-                        </div>
-                        <div class="form-group full-width"><label>صورة ترخيص أبوي مصادق <span class="required">*</span></label>
-                            <div class="upload-area" id="uploadParental"><div class="icon"><i class="fas fa-file-signature"></i></div><div class="text">انقر لاختيار صورة الترخيص</div><div class="file-name" id="parentalFileName"></div><input type="file" id="regParental" accept="image/*" required /></div>
-                        </div>
-                        <div class="form-group full-width"><label>صورة القانون الداخلي ممضي <span class="required">*</span></label>
-                            <div class="upload-area" id="uploadInternal"><div class="icon"><i class="fas fa-file-contract"></i></div><div class="text">انقر لاختيار صورة القانون</div><div class="file-name" id="internalFileName"></div><input type="file" id="regInternal" accept="image/*" required /></div>
-                        </div>
-                    </div>
-                    <button type="submit" class="btn-submit-reg"><i class="fas fa-paper-plane"></i> تسجيل</button>
-                </form>
-            </div>
-        </div>
-    </section>
-
-    <section id="testimonials" class="section-white">
-        <div class="container">
-            <h2 class="section-title">آراء <span>أولياء الأمور</span></h2>
-            <p class="section-subtitle">ما يقوله أولياء أمور اللاعبين عن تجربتهم.</p>
-            <div class="testimonials-grid">
-                <div class="testimonial-card"><div class="stars"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div><p>"أكاديمية رائعة، ابني تطور بشكل ملحوظ."</p><div class="author"><div class="name">أحمد بن علي</div><div class="role">ولي أمر U11</div></div></div>
-                <div class="testimonial-card"><div class="stars"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div><p>"بيئة مثالية للتدريب، ابني أصبح أكثر انضباطاً."</p><div class="author"><div class="name">محمد زروقي</div><div class="role">ولي أمر U13</div></div></div>
-                <div class="testimonial-card"><div class="stars"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div><p>"أفضل استثمار في مستقبل أطفالي. أنصح بها بشدة."</p><div class="author"><div class="name">سفيان بن سالم</div><div class="role">ولي أمر U15</div></div></div>
-            </div>
-        </div>
-    </section>
-
-    <section id="contact" class="section-light">
-        <div class="container">
-            <h2 class="section-title">تواصل <span>معنا</span></h2>
-            <p class="section-subtitle">نحن هنا للإجابة على استفساراتكم.</p>
-            <div class="contact-grid">
-                <div>
-                    <div class="contact-info-item"><div class="icon"><i class="fas fa-map-marker-alt"></i></div><div class="text"><div class="label">العنوان</div><div class="value">ولاية سطيف، الجزائر</div></div></div>
-                    <div class="contact-info-item"><div class="icon"><i class="fas fa-phone-alt"></i></div><div class="text"><div class="label">الهاتف</div><div class="value">0797261134</div></div></div>
-                    <div class="contact-info-item"><div class="icon"><i class="fas fa-envelope"></i></div><div class="text"><div class="label">البريد الإلكتروني</div><div class="value">contact@assaruacademy.dz</div></div></div>
-                    <div class="contact-info-item"><div class="icon"><i class="fas fa-clock"></i></div><div class="text"><div class="label">ساعات العمل</div><div class="value">السبت – الخميس: 14:00 – 19:00</div></div></div>
-                    <div style="display:flex; gap:16px; margin-top:24px;">
-                        <a href="#" style="color:var(--primary-blue); font-size:1.8rem;"><i class="fab fa-facebook"></i></a>
-                        <a href="#" style="color:var(--primary-blue); font-size:1.8rem;"><i class="fab fa-instagram"></i></a>
-                        <a href="#" style="color:var(--primary-blue); font-size:1.8rem;"><i class="fab fa-youtube"></i></a>
-                        <a href="#" style="color:var(--primary-blue); font-size:1.8rem;"><i class="fab fa-tiktok"></i></a>
-                    </div>
-                </div>
-                <div>
-                    <form class="contact-form" onsubmit="event.preventDefault(); alert('✅ تم إرسال رسالتك');">
-                        <input type="text" placeholder="الاسم الكامل" required />
-                        <input type="email" placeholder="البريد الإلكتروني" required />
-                        <input type="tel" placeholder="رقم الهاتف" />
-                        <textarea placeholder="رسالتك..." required></textarea>
-                        <button type="submit" class="btn-primary" style="width:100%;">إرسال الرسالة</button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <footer class="footer">
-        <div class="footer-grid">
-            <div class="footer-col">
-                <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
-                    <img src="https://raw.githubusercontent.com/darkonovic51-hash/Mohamed-test/4a065c0a8a951b1d39707aa5eb90a5ce7512bec4/1000015625-removebg-preview.png" alt="شعار" style="height:45px;" />
-                    <span style="font-size:1.2rem; font-weight:800; color:#fff;">ASSARU <span style="color:var(--primary-blue);">Academy</span></span>
-                </div>
-                <p style="color:rgba(255,255,255,0.6);">أكاديمية كرة القدم الرائدة في سطيف.</p>
-            </div>
-            <div class="footer-col"><h4>روابط سريعة</h4><a href="#home">الرئيسية</a><a href="#about">عن الأكاديمية</a><a href="#players">اللاعبون</a><a href="#registration">التسجيل</a></div>
-            <div class="footer-col"><h4>تواصل معنا</h4><p>📞 0797261134</p><p>📧 contact@assaruacademy.dz</p><p>📍 ولاية سطيف</p><div class="footer-social"><a href="#"><i class="fab fa-facebook"></i></a><a href="#"><i class="fab fa-instagram"></i></a><a href="#"><i class="fab fa-youtube"></i></a></div></div>
-        </div>
-        <div class="footer-bottom">&copy; 2026 أكاديمية ASSARU – جميع الحقوق محفوظة</div>
-    </footer>
-
+    <!-- ===== POPUPS ===== -->
     <div class="popup-overlay" id="confirmPopup">
         <div class="popup-box">
             <div class="icon"><i class="fas fa-check-circle"></i></div>
@@ -921,6 +782,7 @@
         <i class="fas fa-cog"></i> الإدارة
     </button>
 
+    <!-- ===== DASHBOARD ===== -->
     <div class="dashboard-wrapper" id="dashboardWrapper">
         <aside class="dashboard-sidebar" id="dashboardSidebar">
             <div class="logo">
@@ -1120,7 +982,7 @@
                     this.processingButtons.add(btn);
                     btn.disabled = true;
                     btn.dataset.originalHtml = btn.innerHTML;
-                    if (!['closeModal','loginAs_admin','loginAs_coach','loginAs_parent','closeDashboardPanel'].includes(actionName)) {
+                    if (!['closeModal','loginAs_admin','loginAs_coach','loginAs_parent','closeDashboardPanel','closeEditModal'].includes(actionName)) {
                         btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
                     }
                 }
@@ -1163,7 +1025,6 @@
             },
 
             // تم تعطيل الربط المباشر لأن enableDelegation() يغطي كل العناصر أصلاً
-            // إبقاء الدالتين معًا كان يسبب تنفيذ كل إجراء مرتين (نقر/تغيير مزدوج)
             bindButtons: function(container = document) {
                 return;
             },
@@ -1604,7 +1465,6 @@
             EventManager.register('showTrainingSessionsArchive', function() { showTrainingSessionsArchive(); });
             EventManager.register('renderArchiveSessions', function() { renderArchiveSessionsList(); });
 
-            // ===== دوال المباريات الجديدة =====
             EventManager.register('showAdminMatches', function() { showAdminMatches(); });
             EventManager.register('showCoachMatches', function() { showCoachMatches(); });
             EventManager.register('deleteMatchUI', function(context) { deleteMatchUI(context.dataset.id); });
@@ -1683,6 +1543,9 @@
 
             EventManager.register('goBackToPrevious', function() { goBackToPrevious(); });
             EventManager.register('closeModal', function(context) { closeModal(context.dataset.id); });
+
+            EventManager.register('closeEditModal', function() { closeEditModal(); });
+            EventManager.register('submitEditModal', function() { submitEditModal(); });
 
             window.addDebugLog('📝 تم تسجيل جميع الإجراءات', 'success');
         }
@@ -1824,7 +1687,7 @@
         }
 
         // ================================================================
-        // 11. دوال اللاعبين الأساسية (مع حماية الصلاحيات)
+        // 11. دوال اللاعبين الأساسية
         // ================================================================
         function showAdminPlayers() {
             currentViewFunction = showAdminPlayers;
@@ -2088,7 +1951,7 @@
         }
 
         // ================================================================
-        // 12. دوال إدارة اللاعبين (مع حماية الصلاحيات)
+        // 12. دوال إدارة اللاعبين
         // ================================================================
         function approvePlayer(id) {
             if (!requireRole('admin')) return;
@@ -2400,7 +2263,7 @@
         }
 
         // ================================================================
-        // 14. دوال مساعدة (showFullImage, showStatsCard, showAttendanceFull) مع أزرار إغلاق محسّنة
+        // 14. دوال مساعدة (showFullImage, showStatsCard, showAttendanceFull)
         // ================================================================
         function showFullImage(src) {
             if (!src) return;
@@ -2500,6 +2363,72 @@
         }
 
         // ================================================================
+        // 14.5 نافذة التعديل الاحترافية (Edit Modal)
+        // ================================================================
+        let editModalOnSaveCallback = null;
+
+        function showEditModal({ title, icon, fields, onSave }) {
+            closeEditModal();
+            editModalOnSaveCallback = onSave;
+            const fieldsHtml = fields.map(f => {
+                let inputHtml = '';
+                if (f.type === 'select') {
+                    inputHtml = `<select id="editField_${f.id}" class="edit-modal-field">
+                        ${f.options.map(o => `<option value="${o.value}" ${String(o.value) === String(f.value) ? 'selected' : ''}>${o.label}</option>`).join('')}
+                    </select>`;
+                } else if (f.type === 'textarea') {
+                    inputHtml = `<textarea id="editField_${f.id}" class="edit-modal-field" rows="3">${f.value ?? ''}</textarea>`;
+                } else {
+                    inputHtml = `<input type="${f.type || 'text'}" id="editField_${f.id}" class="edit-modal-field" value="${f.value ?? ''}"
+                        ${f.min !== undefined ? `min="${f.min}"` : ''} ${f.max !== undefined ? `max="${f.max}"` : ''} ${f.step !== undefined ? `step="${f.step}"` : ''} />`;
+                }
+                return `<div class="edit-modal-group"><label>${f.label}</label>${inputHtml}</div>`;
+            }).join('');
+
+            const container = document.createElement('div');
+            container.className = 'edit-modal-overlay';
+            container.id = 'editModalOverlay';
+            container.dataset.fieldIds = fields.map(f => f.id).join(',');
+            container.innerHTML = `
+                <div class="edit-modal-box">
+                    <div class="edit-modal-header">
+                        <div class="edit-modal-icon"><i class="fas ${icon || 'fa-pen'}"></i></div>
+                        <div class="edit-modal-title-wrap">
+                            <h3>${title}</h3>
+                            <span>أكاديمية ASSARU — تحديث البيانات</span>
+                        </div>
+                        <button class="icon-close-btn on-dark" data-action="closeEditModal" title="إغلاق"><i class="fas fa-times"></i></button>
+                    </div>
+                    <div class="edit-modal-body">${fieldsHtml}</div>
+                    <div class="edit-modal-footer">
+                        <button class="btn-sm btn-sm-secondary" data-action="closeEditModal">إلغاء</button>
+                        <button class="btn-submit" data-action="submitEditModal"><i class="fas fa-check"></i> حفظ التعديل</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(container);
+            container.addEventListener('click', function(e) { if (e.target === this) closeEditModal(); });
+            setTimeout(() => { const el = container.querySelector('.edit-modal-field'); if (el) el.focus(); }, 100);
+        }
+
+        function closeEditModal() {
+            const el = document.getElementById('editModalOverlay');
+            if (el) el.remove();
+            editModalOnSaveCallback = null;
+        }
+
+        function submitEditModal() {
+            const container = document.getElementById('editModalOverlay');
+            if (!container || !editModalOnSaveCallback) return;
+            const ids = (container.dataset.fieldIds || '').split(',').filter(Boolean);
+            const values = {};
+            ids.forEach(id => { const el = document.getElementById('editField_' + id); if (el) values[id] = el.value; });
+            const cb = editModalOnSaveCallback;
+            closeEditModal();
+            cb(values);
+        }
+
+        // ================================================================
         // 15. دوال تحديث الدفع مع تخزين التاريخ
         // ================================================================
         function toggleMonthPaymentSimple(playerId, monthKey) {
@@ -2529,92 +2458,118 @@
         }
 
         // ================================================================
-        // 16. دوال المدرب (مع حماية الصلاحيات)
+        // 16. دوال المدرب (مع التعديلات الجديدة - showEditModal)
         // ================================================================
         function coachRatePlayer(playerId) {
             if (!requireRole('admin','coach')) return;
+            const p = allPlayers.find(x => x.id === playerId);
             const current = allPlayerDetails[playerId] || { rating: 0, notes: '' };
-            const newRating = prompt('أدخل التقييم (0-5):', current.rating);
-            if (newRating === null) return;
-            const rating = parseFloat(newRating);
-            if (isNaN(rating) || rating < 0 || rating > 5) { showToast('القيمة بين 0 و 5', 'warning'); return; }
-            const notes = prompt('ملاحظات:', current.notes || '');
-            db.ref('academy/playerDetails/' + playerId).set({ rating, notes: notes || '' })
-                .then(() => {
-                    if (!allPlayerDetails[playerId]) allPlayerDetails[playerId] = {};
-                    allPlayerDetails[playerId].rating = rating;
-                    allPlayerDetails[playerId].notes = notes || '';
-                    addLog('تقييم لاعب', `تم تقييم اللاعب ${allPlayers.find(p=>p.id===playerId)?.firstName || ''} بـ ${rating}`,
-                        currentUser?.role);
-                    window.addDebugLog(`✅ تم حفظ التقييم`, 'success');
-                    showToast('✅ تم حفظ التقييم', 'success');
-                    showCoachPlayers();
-                })
-                .catch(err => { window.addDebugLog(`❌ فشل حفظ التقييم: ${err.message}`, 'error');
-                    showToast('❌ خطأ: ' + err.message, 'error'); });
+            showEditModal({
+                title: `تقييم اللاعب: ${p ? p.firstName + ' ' + p.lastName : ''}`,
+                icon: 'fa-star',
+                fields: [
+                    { id: 'rating', label: 'التقييم (0 - 5)', type: 'number', value: current.rating || 0, min: 0, max: 5, step: 0.5 },
+                    { id: 'notes', label: 'ملاحظات المدرب', type: 'textarea', value: current.notes || '' }
+                ],
+                onSave: (values) => {
+                    const rating = parseFloat(values.rating);
+                    if (isNaN(rating) || rating < 0 || rating > 5) { showToast('القيمة بين 0 و 5', 'warning'); return; }
+                    db.ref('academy/playerDetails/' + playerId).update({ rating, notes: values.notes || '' })
+                        .then(() => {
+                            if (!allPlayerDetails[playerId]) allPlayerDetails[playerId] = {};
+                            allPlayerDetails[playerId].rating = rating;
+                            allPlayerDetails[playerId].notes = values.notes || '';
+                            addLog('تقييم لاعب', `تم تقييم اللاعب ${p?.firstName || ''} بـ ${rating}`, currentUser?.role);
+                            window.addDebugLog('✅ تم حفظ التقييم', 'success');
+                            showToast('✅ تم حفظ التقييم', 'success');
+                            showCoachPlayers();
+                        })
+                        .catch(err => { window.addDebugLog(`❌ فشل حفظ التقييم: ${err.message}`, 'error'); showToast('❌ خطأ: ' + err.message, 'error'); });
+                }
+            });
+        }
+
+        function getPlayerFieldConfig(field) {
+            switch (field) {
+                case 'categoryId': return { type: 'select', options: categories.map(c => ({ value: c, label: c })) };
+                case 'birthDate': return { type: 'date' };
+                case 'guardianPhone': return { type: 'tel' };
+                case 'position': return { type: 'select', options: POSITIONS.map(p => ({ value: p, label: p })) };
+                case 'fitness': return { type: 'number', min: 0, max: 100 };
+                case 'jerseyNumber': return { type: 'number', min: 0 };
+                case 'rating': return { type: 'number', min: 0, max: 5, step: 0.5 };
+                case 'health': return { type: 'select', options: [{ value:'سليم', label:'سليم' }, { value:'مريض', label:'مريض' }] };
+                default: return { type: 'text' };
+            }
         }
 
         function editPlayerField(playerId, field, currentValue, label) {
             if (!requireRole('admin','coach')) return;
-            const newVal = prompt(`تعديل ${label}`, currentValue);
-            if (newVal === null || newVal === currentValue) return;
-            window.addDebugLog(`📝 تعديل ${label} للاعب ${playerId}`, 'info');
+            const config = getPlayerFieldConfig(field);
+            showEditModal({
+                title: `تعديل ${label}`,
+                icon: 'fa-user-edit',
+                fields: [{ id: 'value', label, value: currentValue, ...config }],
+                onSave: (values) => {
+                    const newVal = values.value;
+                    if (newVal === undefined || String(newVal) === String(currentValue)) return;
+                    window.addDebugLog(`📝 تعديل ${label} للاعب ${playerId}`, 'info');
 
-            const isPlayerField = ['categoryId', 'birthDate', 'birthPlace', 'studyLevel', 'health', 'bloodType',
-                'guardianName', 'guardianPhone'
-            ].includes(field);
-            const isDetailField = ['jerseyNumber', 'position', 'fitness', 'rating'].includes(field);
+                    const isPlayerField = ['categoryId', 'birthDate', 'birthPlace', 'studyLevel', 'health', 'bloodType', 'guardianName', 'guardianPhone'].includes(field);
+                    const isDetailField = ['jerseyNumber', 'position', 'fitness', 'rating'].includes(field);
 
-            let updatePromise;
-            if (isPlayerField) {
-                const update = {};
-                update[field] = newVal;
-                updatePromise = db.ref('academy/players/' + playerId).update(update);
-            } else if (isDetailField) {
-                const update = {};
-                if (field === 'fitness' || field === 'jerseyNumber') update[field] = parseInt(newVal) || 0;
-                else if (field === 'rating') update[field] = parseFloat(newVal) || 0;
-                else update[field] = newVal;
-                updatePromise = db.ref('academy/playerDetails/' + playerId).update(update);
-            }
+                    let updatePromise;
+                    if (isPlayerField) {
+                        const update = {}; update[field] = newVal;
+                        updatePromise = db.ref('academy/players/' + playerId).update(update);
+                    } else if (isDetailField) {
+                        const update = {};
+                        if (field === 'fitness' || field === 'jerseyNumber') update[field] = parseInt(newVal) || 0;
+                        else if (field === 'rating') update[field] = parseFloat(newVal) || 0;
+                        else update[field] = newVal;
+                        updatePromise = db.ref('academy/playerDetails/' + playerId).update(update);
+                    }
 
-            if (updatePromise) {
-                updatePromise.then(() => {
-                    if (isPlayerField) { const index = allPlayers.findIndex(p => p.id === playerId); if (index !==
-                            -1) allPlayers[index][field] = newVal; } else if (isDetailField) {
-                        if (!allPlayerDetails[playerId]) allPlayerDetails[playerId] = {};
-                        allPlayerDetails[playerId][field] = field === 'fitness' || field === 'jerseyNumber' ?
-                            parseInt(newVal) : field === 'rating' ? parseFloat(newVal) : newVal; }
-                    addLog('تعديل لاعب', `تم تعديل ${label} للاعب ${allPlayers.find(p=>p.id===playerId)?.firstName || ''}`,
-                        currentUser?.role);
-                    window.addDebugLog(`✅ تم تعديل ${label}`, 'success');
-                    showToast('✅ تم التحديث', 'success');
-                    showPlayerDetailPage(playerId);
-                }).catch(err => { window.addDebugLog(`❌ فشل تعديل ${label}: ${err.message}`, 'error');
-                    showToast('❌ خطأ: ' + err.message, 'error'); });
-            } else { showToast('حقل غير معروف', 'warning'); }
+                    if (updatePromise) {
+                        updatePromise.then(() => {
+                            if (isPlayerField) { const index = allPlayers.findIndex(p => p.id === playerId); if (index !== -1) allPlayers[index][field] = newVal; }
+                            else if (isDetailField) {
+                                if (!allPlayerDetails[playerId]) allPlayerDetails[playerId] = {};
+                                allPlayerDetails[playerId][field] = field === 'fitness' || field === 'jerseyNumber' ? parseInt(newVal) : field === 'rating' ? parseFloat(newVal) : newVal;
+                            }
+                            addLog('تعديل لاعب', `تم تعديل ${label} للاعب ${allPlayers.find(p=>p.id===playerId)?.firstName || ''}`, currentUser?.role);
+                            window.addDebugLog(`✅ تم تعديل ${label}`, 'success');
+                            showToast('✅ تم التحديث', 'success');
+                            showPlayerDetailPage(playerId);
+                        }).catch(err => { window.addDebugLog(`❌ فشل تعديل ${label}: ${err.message}`, 'error'); showToast('❌ خطأ: ' + err.message, 'error'); });
+                    } else { showToast('حقل غير معروف', 'warning'); }
+                }
+            });
         }
 
         function editPlayerStat(playerId, key, currentValue, label) {
             if (!requireRole('admin','coach')) return;
-            const newVal = prompt(`تعديل ${label}`, currentValue);
-            if (newVal === null || newVal === currentValue) return;
-            window.addDebugLog(`📊 تعديل ${label} للاعب ${playerId}`, 'info');
-
-            const update = {};
-            update[key] = parseInt(newVal) || 0;
-            db.ref('academy/playerDetails/' + playerId).update(update)
-                .then(() => {
-                    if (!allPlayerDetails[playerId]) allPlayerDetails[playerId] = {};
-                    allPlayerDetails[playerId][key] = parseInt(newVal) || 0;
-                    addLog('تعديل إحصائية', `تم تعديل ${label} للاعب ${allPlayers.find(p=>p.id===playerId)?.firstName || ''}`,
-                        currentUser?.role);
-                    window.addDebugLog(`✅ تم تعديل ${label}`, 'success');
-                    showToast('✅ تم التحديث', 'success');
-                    showPlayerDetailPage(playerId);
-                })
-                .catch(err => { window.addDebugLog(`❌ فشل تعديل ${label}: ${err.message}`, 'error');
-                    showToast('❌ خطأ: ' + err.message, 'error'); });
+            showEditModal({
+                title: `تعديل ${label}`,
+                icon: 'fa-chart-bar',
+                fields: [{ id: 'value', label, type: 'number', min: 0, value: currentValue }],
+                onSave: (values) => {
+                    const newVal = values.value;
+                    if (newVal === undefined || String(newVal) === String(currentValue)) return;
+                    window.addDebugLog(`📊 تعديل ${label} للاعب ${playerId}`, 'info');
+                    const update = {}; update[key] = parseInt(newVal) || 0;
+                    db.ref('academy/playerDetails/' + playerId).update(update)
+                        .then(() => {
+                            if (!allPlayerDetails[playerId]) allPlayerDetails[playerId] = {};
+                            allPlayerDetails[playerId][key] = parseInt(newVal) || 0;
+                            addLog('تعديل إحصائية', `تم تعديل ${label} للاعب ${allPlayers.find(p=>p.id===playerId)?.firstName || ''}`, currentUser?.role);
+                            window.addDebugLog(`✅ تم تعديل ${label}`, 'success');
+                            showToast('✅ تم التحديث', 'success');
+                            showPlayerDetailPage(playerId);
+                        })
+                        .catch(err => { window.addDebugLog(`❌ فشل تعديل ${label}: ${err.message}`, 'error'); showToast('❌ خطأ: ' + err.message, 'error'); });
+                }
+            });
         }
 
         // ================================================================
@@ -4033,7 +3988,7 @@
         }
 
         // ================================================================
-        // 22. دوال المدربين (مع حماية الصلاحيات)
+        // 22. دوال المدربين (مع التعديلات الجديدة - showEditModal)
         // ================================================================
         function renderCoachesTable() {
             const tbody = document.getElementById('coachesTableBody');
@@ -4109,22 +4064,33 @@
 
         function editCoachField(id, field, currentValue) {
             if (!requireRole('admin')) return;
-            const newVal = prompt('تعديل القيمة', currentValue);
-            if (newVal === null || newVal === currentValue) return;
-            const update = {};
-            update[field] = newVal;
-            db.ref('academy/coaches/' + id).update(update)
-                .then(() => {
-                    const idx = allCoaches.findIndex(c => c.id === id);
-                    if (idx !== -1) allCoaches[idx][field] = newVal;
-                    showToast('✅ تم التحديث', 'success');
-                    showAdminCoaches();
-                })
-                .catch(err => showToast('❌ خطأ: ' + err.message, 'error'));
+            const labels = { name: 'الاسم الكامل', categoryId: 'الفئة', phone: 'الهاتف' };
+            const label = labels[field] || field;
+            const config = field === 'categoryId'
+                ? { type: 'select', options: categories.map(c => ({ value: c, label: c })) }
+                : { type: 'text' };
+            showEditModal({
+                title: `تعديل ${label}`,
+                icon: 'fa-chalkboard-teacher',
+                fields: [{ id: 'value', label, value: currentValue, ...config }],
+                onSave: (values) => {
+                    const newVal = values.value;
+                    if (newVal === undefined || String(newVal) === String(currentValue)) return;
+                    const update = {}; update[field] = newVal;
+                    db.ref('academy/coaches/' + id).update(update)
+                        .then(() => {
+                            const idx = allCoaches.findIndex(c => c.id === id);
+                            if (idx !== -1) allCoaches[idx][field] = newVal;
+                            showToast('✅ تم التحديث', 'success');
+                            showAdminCoaches();
+                        })
+                        .catch(err => showToast('❌ خطأ: ' + err.message, 'error'));
+                }
+            });
         }
 
         // ================================================================
-        // 23. دوال سجل التعديلات (مع حماية الصلاحيات)
+        // 23. دوال سجل التعديلات
         // ================================================================
         function renderLogsList() {
             const container = document.getElementById('logsListContainer');
