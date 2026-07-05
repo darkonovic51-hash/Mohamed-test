@@ -641,6 +641,20 @@
         .edit-modal-footer .btn-sm-secondary, .edit-modal-footer .btn-submit { flex:1; justify-content:center; }
         @media (max-width:480px) { .edit-modal-box { max-width:100%; } }
 
+        /* ===== بطاقات إنشاء مباراة احترافية ===== */
+        .mf-wrap { display:flex; flex-direction:column; gap:16px; }
+        .mf-card { background:#fff; border:1px solid #eef2f7; border-radius:18px; padding:18px 20px; box-shadow:0 6px 20px rgba(4,26,56,0.05); position:relative; overflow:hidden; }
+        .mf-card::before { content:''; position:absolute; top:0; right:0; width:100%; height:4px; background:linear-gradient(90deg, var(--primary-blue), var(--gold)); }
+        .mf-card-header { display:flex; align-items:center; gap:10px; margin-bottom:14px; }
+        .mf-card-header .mf-icon { width:38px; height:38px; border-radius:12px; background:rgba(69,179,255,0.12); color:var(--primary-blue); display:flex; align-items:center; justify-content:center; font-size:1rem; flex-shrink:0; }
+        .mf-card-header h4 { font-size:1rem; font-weight:800; color:var(--dark-navy); margin:0; }
+        .mf-grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+        .mf-grid-3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px; }
+        .mf-logo-preview { display:flex; align-items:center; gap:14px; }
+        .mf-logo-circle { width:64px; height:64px; border-radius:50%; background:var(--light-bg); border:2px dashed #cfd8e3; display:flex; align-items:center; justify-content:center; overflow:hidden; flex-shrink:0; }
+        .mf-logo-circle img { width:100%; height:100%; object-fit:cover; }
+        @media (max-width:640px){ .mf-grid-2, .mf-grid-3 { grid-template-columns:1fr; } }
+
         @media (max-width:1024px) { .hero-content h1 { font-size:3rem; } .about-grid { grid-template-columns:1fr; } .contact-grid { grid-template-columns:1fr; } }
         @media (max-width:768px) {
             .navbar { padding:10px 16px; background:rgba(4,26,56,0.95); }
@@ -3210,7 +3224,7 @@
                 .catch(err => showToast('❌ خطأ: ' + err.message, 'error'));
         }
 
-        // ---------- إنشاء مباراة جديدة ----------
+        // ---------- إنشاء مباراة جديدة (التعديل 4 و 5) ----------
         function openCreateMatchModal() {
             if (!requireRole('admin', 'coach')) return;
             const coachCategory = currentUser.role === 'coach' ? currentUser.data.categoryId : '';
@@ -3218,27 +3232,62 @@
             container.className = 'session-detail-modal';
             container.id = 'createMatchModal';
             container.innerHTML = `
-                <div class="modal-content" style="max-width:700px;">
+                <div class="modal-content" style="max-width:760px;">
                     <button class="icon-close-btn abs-top-right" data-action="closeModal" data-id="createMatchModal" title="إغلاق"><i class="fas fa-times"></i></button>
-                    <div class="modal-header"><h2>⚽ إنشاء مباراة ودية</h2></div>
-                    <div class="form-grid">
-                        <div class="form-group"><label>اسم الفريق المنافس <span class="required">*</span></label><input type="text" id="cmOpponent" /></div>
-                        <div class="form-group full"><label>شعار الفريق المنافس (اختياري)</label>
-                            <div class="upload-area" id="cmLogoUpload"><div class="icon"><i class="fas fa-image"></i></div><div class="text">انقر لاختيار شعار</div><div class="file-name" id="cmLogoName"></div><input type="file" id="cmLogo" accept="image/*" /></div>
+                    <div class="modal-header"><h2><i class="fas fa-futbol" style="color:var(--primary-blue);"></i> إنشاء مباراة ودية جديدة</h2></div>
+                    <div class="mf-wrap">
+                        <div class="mf-card">
+                            <div class="mf-card-header"><div class="mf-icon"><i class="fas fa-shield-alt"></i></div><h4>الفريق المنافس</h4></div>
+                            <div class="mf-grid-2">
+                                <div class="form-group"><label>اسم الفريق المنافس <span class="required">*</span></label><input type="text" id="cmOpponent" placeholder="مثال: نادي الأمل" /></div>
+                                <div class="form-group">
+                                    <label>شعار الفريق المنافس (اختياري)</label>
+                                    <div class="mf-logo-preview">
+                                        <div class="mf-logo-circle" id="cmLogoPreviewCircle"><i class="fas fa-image" style="color:#aaa;"></i></div>
+                                        <div class="upload-area" id="cmLogoUpload" style="flex:1;">
+                                            <div class="icon"><i class="fas fa-upload"></i></div>
+                                            <div class="text">انقر لاختيار شعار</div>
+                                            <div class="file-name" id="cmLogoName"></div>
+                                            <input type="file" id="cmLogo" accept="image/*" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <div class="form-group"><label>التاريخ <span class="required">*</span></label><input type="date" id="cmDate" /></div>
-                        <div class="form-group"><label>وقت البداية</label><input type="time" id="cmStartTime" /></div>
-                        <div class="form-group"><label>وقت النهاية</label><input type="time" id="cmEndTime" /></div>
-                        <div class="form-group"><label>الملعب</label><input type="text" id="cmVenue" /></div>
-                        <div class="form-group"><label>المدينة</label><input type="text" id="cmCity" /></div>
-                        <div class="form-group"><label>نوع المباراة</label><select id="cmMatchType">${MATCH_TYPES.map(t => `<option value="${t}">${t}</option>`).join('')}</select></div>
-                        <div class="form-group"><label>الفئة المشاركة <span class="required">*</span></label>
-                            <select id="cmCategory">${categories.map(c => `<option value="${c}" ${c === coachCategory ? 'selected' : ''}>${c}</option>`).join('')}</select>
+
+                        <div class="mf-card">
+                            <div class="mf-card-header"><div class="mf-icon"><i class="fas fa-calendar-alt"></i></div><h4>موعد المباراة</h4></div>
+                            <div class="mf-grid-3">
+                                <div class="form-group"><label>التاريخ <span class="required">*</span></label><input type="date" id="cmDate" /></div>
+                                <div class="form-group"><label>وقت البداية</label><input type="time" id="cmStartTime" /></div>
+                                <div class="form-group"><label>وقت النهاية</label><input type="time" id="cmEndTime" /></div>
+                            </div>
                         </div>
-                        <div class="form-group"><label>المدرب المسؤول</label><input type="text" id="cmCoachName" value="${currentUser.data.name || ''}" /></div>
-                        <div class="form-group"><label>الحكام (اختياري)</label><input type="text" id="cmReferees" /></div>
-                        <div class="form-group full"><label>ملاحظات قبل المباراة</label><textarea id="cmNotes" rows="2"></textarea></div>
-                        <div class="form-group full"><button class="btn-submit" data-action="saveMatchDetailed"><i class="fas fa-save"></i> إنشاء المباراة</button></div>
+
+                        <div class="mf-card">
+                            <div class="mf-card-header"><div class="mf-icon"><i class="fas fa-map-marked-alt"></i></div><h4>الملعب والمنافسة</h4></div>
+                            <div class="mf-grid-2">
+                                <div class="form-group"><label>الملعب</label><input type="text" id="cmVenue" /></div>
+                                <div class="form-group"><label>المدينة</label><input type="text" id="cmCity" /></div>
+                                <div class="form-group"><label>نوع المباراة</label><select id="cmMatchType">${MATCH_TYPES.map(t => `<option value="${t}">${t}</option>`).join('')}</select></div>
+                                <div class="form-group"><label>الفئة المشاركة <span class="required">*</span></label><select id="cmCategory">${categories.map(c => `<option value="${c}" ${c === coachCategory ? 'selected' : ''}>${c}</option>`).join('')}</select></div>
+                            </div>
+                        </div>
+
+                        <div class="mf-card">
+                            <div class="mf-card-header"><div class="mf-icon"><i class="fas fa-user-tie"></i></div><h4>الطاقم الفني والتحكيم</h4></div>
+                            <div class="mf-grid-2">
+                                <div class="form-group"><label>المدرب المسؤول</label><input type="text" id="cmCoachName" value="${currentUser.data.name || ''}" /></div>
+                                <div class="form-group"><label>الحكام (اختياري)</label><input type="text" id="cmReferees" /></div>
+                            </div>
+                        </div>
+
+                        <div class="mf-card">
+                            <div class="mf-card-header"><div class="mf-icon"><i class="fas fa-sticky-note"></i></div><h4>ملاحظات قبل المباراة</h4></div>
+                            <textarea id="cmNotes" class="edit-modal-field" rows="3" style="width:100%;"></textarea>
+                        </div>
+
+                        <button class="btn-submit" data-action="saveMatchDetailed" style="width:100%; justify-content:center;"><i class="fas fa-save"></i> إنشاء المباراة</button>
                     </div>
                 </div>
             `;
@@ -3246,8 +3295,25 @@
             container.addEventListener('click', function(e) { if (e.target === this) this.remove(); });
             EventManager.bindButtons(container);
             setupUpload('cmLogo', 'cmLogoName', 'cmLogoUpload');
+
+            // معاينة الشعار الفوري (التعديل 5)
+            const cmLogoInput = document.getElementById('cmLogo');
+            const cmLogoCircle = document.getElementById('cmLogoPreviewCircle');
+            if (cmLogoInput && cmLogoCircle) {
+                cmLogoInput.addEventListener('change', function() {
+                    const file = this.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = e => { cmLogoCircle.innerHTML = `<img src="${e.target.result}" />`; };
+                        reader.readAsDataURL(file);
+                    } else {
+                        cmLogoCircle.innerHTML = '<i class="fas fa-image" style="color:#aaa;"></i>';
+                    }
+                });
+            }
         }
 
+        // ---------- حفظ المباراة مع شريط تقدم حقيقي ومؤقت أمان (التعديل 3) ----------
         function saveMatchDetailed() {
             if (!requireRole('admin', 'coach')) return;
             const opponent = document.getElementById('cmOpponent').value.trim();
@@ -3278,19 +3344,45 @@
                 createdAt: new Date().toISOString()
             });
 
-            showProgress('جاري إنشاء المباراة...', 0);
+            showProgress('جاري تجهيز البيانات...', 10);
             const finish = (data) => {
+                updateProgress(50, 'جاري إرسال المباراة إلى القاعدة...');
+
+                let settled = false;
+                const safetyTimer = setTimeout(() => {
+                    if (settled) return;
+                    settled = true;
+                    hideProgress();
+                    showToast('⚠️ تعذر الاتصال بالخادم، تحقق من الإنترنت وحاول مجدداً', 'warning');
+                }, 12000);
+
                 db.ref('academy/matches').push(data).then((snap) => {
+                    if (settled) return;
+                    settled = true;
+                    clearTimeout(safetyTimer);
                     allMatches.push({ id: snap.key, ...data });
+                    updateProgress(100, 'تم الإنشاء بنجاح ✅');
                     hideProgress();
                     closeModal('createMatchModal');
                     addLog('إنشاء مباراة ودية', `تم إنشاء مباراة ضد ${opponent}`, currentUser.role);
                     showToast('✅ تم إنشاء المباراة بنجاح', 'success');
                     if (currentUser.role === 'coach') showCoachMatches(); else showAdminMatches();
-                }).catch(err => { hideProgress(); showToast('❌ خطأ: ' + err.message, 'error'); });
+                }).catch(err => {
+                    if (settled) return;
+                    settled = true;
+                    clearTimeout(safetyTimer);
+                    hideProgress();
+                    showToast('❌ خطأ: ' + err.message, 'error');
+                });
             };
-            if (logoFile) { const reader = new FileReader(); reader.onload = e => finish(buildData(e.target.result)); reader.readAsDataURL(logoFile); }
-            else finish(buildData(null));
+            if (logoFile) {
+                updateProgress(25, 'جاري رفع شعار الفريق...');
+                const reader = new FileReader();
+                reader.onload = e => finish(buildData(e.target.result));
+                reader.readAsDataURL(logoFile);
+            } else {
+                finish(buildData(null));
+            }
         }
 
         // ---------- صفحة تفاصيل المباراة (12 بطاقة بنظام تبويبات) ----------
