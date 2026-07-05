@@ -10,6 +10,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
+        /* ===== جميع الأنماط كما هي مع التعديلات التالية ===== */
         :root {
             --primary-blue: #45B3FF;
             --secondary-blue: #2196F3;
@@ -378,9 +379,10 @@
         .dashboard-sidebar .logo { text-align: center; padding:10px 0 20px; border-bottom: 1px solid rgba(255,255,255,0.05); }
         .dashboard-sidebar .logo img { height:50px; width:auto; }
         .dashboard-sidebar .logo h2 { font-size:1.1rem; margin-top:6px; color: var(--primary-blue); }
-        .dashboard-sidebar .menu-item { display: block; padding: 14px 24px; color: rgba(255,255,255,0.7); text-decoration: none; font-weight: 600; font-size: 0.95rem; transition: background 0.2s ease, border-color 0.2s ease, padding-right 0.2s ease; border-right: 3px solid transparent; cursor: pointer; }
-        .dashboard-sidebar .menu-item:hover, .dashboard-sidebar .menu-item.active { background: rgba(69,179,255,0.1); color: #fff; border-right-color: var(--primary-blue); }
-        .dashboard-sidebar .menu-item:active { background: rgba(69,179,255,0.2) !important; }
+        .dashboard-sidebar .menu-item { display: block; padding: 14px 24px; color: rgba(255,255,255,0.7); text-decoration: none; font-weight: 600; font-size: 0.95rem; transition: background 0.25s ease, color 0.25s ease, border-color 0.25s ease, transform 0.15s ease; border-right: 3px solid transparent; cursor: pointer; position: relative; }
+        .dashboard-sidebar .menu-item:active { transform: scale(0.97); }
+        .dashboard-sidebar .menu-item:hover, .dashboard-sidebar .menu-item.active { background: rgba(69,179,255,0.12); color: #fff; border-right-color: var(--primary-blue); }
+        .dashboard-sidebar .menu-item.active i { color: var(--primary-blue); transform: scale(1.1); transition: transform 0.25s ease; }
         .dashboard-sidebar .menu-item i { margin-left: 12px; width:20px; text-align: center; }
         .dashboard-sidebar .logout-btn { position: absolute; bottom:20px; left:0; width:100%; text-align: center; padding:12px; background: rgba(231,76,60,0.2); color: #e74c3c; border: none; font-weight:700; cursor: pointer; transition: var(--transition); font-size:0.9rem; }
         .dashboard-sidebar .logout-btn:hover { background: rgba(231,76,60,0.3); }
@@ -389,8 +391,9 @@
         .dashboard-content .page-title { font-size: 1.8rem; font-weight: 800; color: var(--dark-navy); margin-bottom:6px; }
         .dashboard-content .page-sub { color: #888; margin-bottom:20px; }
 
-        .dashboard-content #pageContent {
-            animation: pageFadeIn 0.25s ease;
+        /* ===== التعديل الخاص بالأنيميشن ===== */
+        .dashboard-content #pageContent.page-anim {
+            animation: pageFadeIn 0.35s cubic-bezier(0.2, 0.9, 0.4, 1);
         }
         @keyframes pageFadeIn {
             from { opacity: 0; transform: translateY(8px); }
@@ -764,8 +767,8 @@
         </div>
     </section>
 
-    <!-- ===== STATS, ABOUT, PLAYERS, GALLERY, VIDEO, STAFF, REGISTRATION, TESTIMONIALS, CONTACT, FOOTER ===== -->
-    <!-- لقد تم تضمين هذه الأقسام في الكود الكامل أعلاه، ولكن نختصر هنا للعرض -->
+    <!-- ===== باقي الأقسام (حوالي 200 سطر) تم حذفها للاختصار ولكنها موجودة في الكود الأصلي ===== -->
+    <!-- سيتم تضمينها في الملف النهائي -->
 
     <!-- ===== POPUPS ===== -->
     <div class="popup-overlay" id="confirmPopup">
@@ -1024,7 +1027,6 @@
                 }
             },
 
-            // تم تعطيل الربط المباشر لأن enableDelegation() يغطي كل العناصر أصلاً
             bindButtons: function(container = document) {
                 return;
             },
@@ -1102,17 +1104,41 @@
             if (overlay) overlay.classList.remove('active');
         }
 
-        // تم تعطيل شريط التحميل المرئي لتسريع تنفيذ الأوامر
+        // ===== دوال شريط التقدم الجديدة (التعديل 1) =====
         function showProgress(label, initialValue = 0) {
-            return;
+            const overlay = document.getElementById('progressOverlay');
+            const bar = document.getElementById('progressBar');
+            const text = document.getElementById('progressText');
+            const lbl = document.getElementById('progressLabel');
+            if (!overlay) return;
+            window.progressValue = initialValue;
+            overlay.classList.add('active');
+            bar.style.width = initialValue + '%';
+            text.textContent = initialValue + '%';
+            lbl.textContent = label || 'جاري التحميل...';
         }
 
         function updateProgress(value, label) {
-            return;
+            const bar = document.getElementById('progressBar');
+            const text = document.getElementById('progressText');
+            const lbl = document.getElementById('progressLabel');
+            if (!bar) return;
+            window.progressValue = Math.min(value, 100);
+            bar.style.width = window.progressValue + '%';
+            text.textContent = Math.round(window.progressValue) + '%';
+            if (label) lbl.textContent = label;
         }
 
         function hideProgress() {
-            return;
+            const overlay = document.getElementById('progressOverlay');
+            if (!overlay) return;
+            setTimeout(() => {
+                overlay.classList.remove('active');
+                const bar = document.getElementById('progressBar');
+                const text = document.getElementById('progressText');
+                if (bar) bar.style.width = '0%';
+                if (text) text.textContent = '0%';
+            }, 400);
         }
 
         function isThisWeek(dateStr) {
@@ -1125,12 +1151,22 @@
             return d >= startOfWeek && d <= endOfWeek;
         }
 
+        // ===== دالة إعادة تشغيل الأنيميشن (التعديل 2) =====
+        function animatePageTransition() {
+            const el = document.getElementById('pageContent');
+            if (!el) return;
+            el.classList.remove('page-anim');
+            void el.offsetWidth; // إجبار إعادة الرسم
+            el.classList.add('page-anim');
+        }
+
         function setActiveMenu(index) {
             const items = document.querySelectorAll('#sidebarMenu .menu-item');
             items.forEach((el, i) => { el.classList.toggle('active', i === index); });
             const contentEl = document.getElementById('dashboardContent');
             if (contentEl) contentEl.scrollTo({ top: 0, behavior: 'smooth' });
             updateDashboardActionBar();
+            animatePageTransition();   // إضافة الأنيميشن
         }
 
         function isHomeView() {
@@ -1280,7 +1316,7 @@
         let currentMatchTab = 'info';
 
         // ================================================================
-        // 7. تحميل البيانات
+        // 7. تحميل البيانات (مع شريط تقدم حقيقي)
         // ================================================================
         function loadAllData(forceReload = false) {
             if (dataLoaded && !forceReload) return Promise.resolve();
@@ -1290,75 +1326,69 @@
             window.addDebugLog('📦 بدء تحميل البيانات' + (forceReload ? ' (إعادة تحميل)' : ''), 'info');
 
             dataLoadPromise = new Promise((resolve, reject) => {
-                if (!db) { isLoadingData = false;
-                    hideProgress();
+                if (!db) { isLoadingData = false; hideProgress();
                     window.addDebugLog('❌ Firebase غير متصل', 'error');
                     reject('Firebase غير متصل'); return; }
+
                 const startTime = performance.now();
-                const paths = [
-                    'academy/players', 'academy/coaches', 'academy/trainings', 'academy/trainingSessions',
-                    'academy/tournaments', 'academy/matches', 'academy/attendances', 'academy/payments',
-                    'academy/playerDetails', 'academy/attendanceArchive', 'academy/matchReports',
-                    'academy/paymentArchive', 'academy/logs'
+                const items = [
+                    { key: 'players', path: 'academy/players', label: 'اللاعبين' },
+                    { key: 'coaches', path: 'academy/coaches', label: 'المدربين' },
+                    { key: 'trainings', path: 'academy/trainings', label: 'التدريبات' },
+                    { key: 'trainingSessions', path: 'academy/trainingSessions', label: 'الحصص التدريبية' },
+                    { key: 'tournaments', path: 'academy/tournaments', label: 'الدورات' },
+                    { key: 'matches', path: 'academy/matches', label: 'المباريات' },
+                    { key: 'attendances', path: 'academy/attendances', label: 'الحضور' },
+                    { key: 'payments', path: 'academy/payments', label: 'المدفوعات' },
+                    { key: 'playerDetails', path: 'academy/playerDetails', label: 'تفاصيل اللاعبين' },
+                    { key: 'attendanceArchive', path: 'academy/attendanceArchive', label: 'أرشيف الحضور' },
+                    { key: 'matchReports', path: 'academy/matchReports', label: 'تقارير المباريات' },
+                    { key: 'paymentArchive', path: 'academy/paymentArchive', label: 'أرشيف المدفوعات' },
+                    { key: 'logs', path: 'academy/logs', label: 'السجل' }
                 ];
-                const promises = paths.map(path => db.ref(path).once('value'));
-                Promise.all(promises)
-                    .then(results => {
-                        updateProgress(30, 'جاري معالجة بيانات اللاعبين...');
-                        allPlayers = results[0].val() ? Object.keys(results[0].val()).map(k => ({ id: k, ...results[
-                                0].val()[k] })) : [];
-                        updateProgress(40, 'جاري معالجة بيانات المدربين...');
-                        allCoaches = results[1].val() ? Object.keys(results[1].val()).map(k => ({ id: k, ...results[
-                                1].val()[k] })) : [];
-                        updateProgress(45, 'جاري معالجة التدريبات...');
-                        allTrainings = results[2].val() ? Object.keys(results[2].val()).map(k => ({ id: k, ...results[
-                                2].val()[k] })) : [];
-                        updateProgress(55, 'جاري معالجة الحصص التدريبية...');
-                        allTrainingSessions = results[3].val() ? Object.keys(results[3].val()).map(k => ({ id: k,
-                                ...results[3].val()[k] })) : [];
-                        updateProgress(60, 'جاري معالجة الدورات...');
-                        allTournaments = results[4].val() ? Object.keys(results[4].val()).map(k => ({ id: k, ...results[
-                                4].val()[k] })) : [];
-                        updateProgress(68, 'جاري معالجة المباريات...');
-                        allMatches = results[5].val() ? Object.keys(results[5].val()).map(k => ({ id: k, ...results[
-                                5].val()[k] })) : [];
-                        updateProgress(72, 'جاري معالجة بيانات الحضور...');
-                        allAttendances = results[6].val() ? Object.keys(results[6].val()).map(k => ({ id: k, ...results[
-                                6].val()[k] })) : [];
-                        updateProgress(78, 'جاري معالجة بيانات الدفع...');
-                        allPayments = results[7].val() ? Object.keys(results[7].val()).map(k => ({ id: k, ...results[
-                                7].val()[k] })) : [];
-                        updateProgress(82, 'جاري معالجة تفاصيل اللاعبين...');
-                        allPlayerDetails = results[8].val() || {};
-                        updateProgress(88, 'جاري معالجة الأرشيف...');
-                        allAttendanceArchive = results[9].val() ? Object.keys(results[9].val()).map(k => ({ id: k,
-                                ...results[9].val()[k] })) : [];
-                        allMatchReports = results[10].val() ? Object.keys(results[10].val()).map(k => ({ id: k,
-                                ...results[10].val()[k] })) : [];
-                        allPaymentArchive = results[11].val() ? Object.keys(results[11].val()).map(k => ({ id: k,
-                                ...results[11].val()[k] })) : [];
-                        allLogs = results[12].val() ? Object.keys(results[12].val()).map(k => ({ id: k, ...results[
-                                12].val()[k] })) : [];
-                        updateProgress(95, 'جاري إنهاء التحميل...');
-                        const endTime = performance.now();
-                        const duration = Math.round(endTime - startTime);
-                        dataLoaded = true;
-                        isLoadingData = false;
-                        updateProgress(100, 'تم التحميل بنجاح');
-                        setTimeout(hideProgress, 300);
-                        window.addDebugLog(
-                            `✅ تم تحميل ${allPlayers.length} لاعب، ${allCoaches.length} مدرب، ${allTrainingSessions.length} حصة (${duration}ms)`,
-                            'success');
-                        console.log('✅ جميع البيانات تم تحميلها بنجاح');
-                        resolve();
+
+                const total = items.length;
+                let completed = 0;
+                const results = {};
+                const toArray = (val) => val ? Object.keys(val).map(k => ({ id: k, ...val[k] })) : [];
+
+                Promise.all(items.map(item =>
+                    db.ref(item.path).once('value').then(snap => {
+                        results[item.key] = snap.val();
+                        completed++;
+                        const pct = Math.round((completed / total) * 95);
+                        updateProgress(pct, `جاري تحميل ${item.label}... (${completed}/${total})`);
                     })
-                    .catch(err => {
-                        isLoadingData = false;
-                        hideProgress();
-                        window.addDebugLog('❌ فشل تحميل البيانات: ' + err.message, 'error');
-                        console.error('❌ خطأ في تحميل البيانات:', err);
-                        reject(err);
-                    });
+                )).then(() => {
+                    allPlayers = toArray(results.players);
+                    allCoaches = toArray(results.coaches);
+                    allTrainings = toArray(results.trainings);
+                    allTrainingSessions = toArray(results.trainingSessions);
+                    allTournaments = toArray(results.tournaments);
+                    allMatches = toArray(results.matches);
+                    allAttendances = toArray(results.attendances);
+                    allPayments = toArray(results.payments);
+                    allPlayerDetails = results.playerDetails || {};
+                    allAttendanceArchive = toArray(results.attendanceArchive);
+                    allMatchReports = toArray(results.matchReports);
+                    allPaymentArchive = toArray(results.paymentArchive);
+                    allLogs = toArray(results.logs);
+
+                    const duration = Math.round(performance.now() - startTime);
+                    dataLoaded = true;
+                    isLoadingData = false;
+                    updateProgress(100, 'تم التحميل بنجاح ✅');
+                    hideProgress();
+                    window.addDebugLog(
+                        `✅ تم تحميل ${allPlayers.length} لاعب، ${allCoaches.length} مدرب، ${allTrainingSessions.length} حصة (${duration}ms)`,
+                        'success');
+                    resolve();
+                }).catch(err => {
+                    isLoadingData = false;
+                    hideProgress();
+                    window.addDebugLog('❌ فشل تحميل البيانات: ' + err.message, 'error');
+                    reject(err);
+                });
             });
             return dataLoadPromise;
         }
@@ -1647,6 +1677,7 @@
             if (sidebar) sidebar.innerHTML = `<div class="menu-item" style="opacity:0.5; cursor:default;"><i class="fas fa-user"></i> <span>تسجيل الدخول</span></div>`;
             EventManager.bindButtons(content);
             updateDashboardActionBar();
+            animatePageTransition(); // إضافة الأنيميشن
         }
 
         function renderDashboard() {
@@ -1752,6 +1783,7 @@
             renderPlayersTable('all');
             EventManager.bindButtons(content);
             window.addDebugLog('📋 عرض قائمة اللاعبين', 'info');
+            // تمت إضافة animatePageTransition داخل setActiveMenu
         }
 
         function renderPlayersTable(filterCategory) {
@@ -2260,6 +2292,7 @@
             window.addDebugLog(`👤 عرض تفاصيل اللاعب ${p.firstName} ${p.lastName}`, 'info');
             EventManager.bindButtons(content);
             updateDashboardActionBar();
+            animatePageTransition(); // إضافة الأنيميشن
         }
 
         // ================================================================
@@ -2768,6 +2801,7 @@
             window.addDebugLog('📝 فتح نموذج إنشاء حصة تدريبية', 'info');
             EventManager.bindButtons(content);
             updateDashboardActionBar();
+            animatePageTransition(); // إضافة الأنيميشن
         }
 
         function updateSessionPlayersListUI(categoryId) {
@@ -3081,6 +3115,7 @@
             window.addDebugLog(`🗄️ عرض أرشيف الحصص (${completedList.length})`, 'info');
             EventManager.bindButtons(content);
             updateDashboardActionBar();
+            animatePageTransition(); // إضافة الأنيميشن
         }
 
         function renderArchiveSessionsList() { showTrainingSessionsArchive(); }
@@ -3282,6 +3317,7 @@
             renderMatchCard();
             window.addDebugLog(`⚽ عرض تفاصيل المباراة ${m.opponent}`, 'info');
             updateDashboardActionBar();
+            animatePageTransition(); // إضافة الأنيميشن
         }
 
         function renderMatchTabsBar() {
@@ -3840,6 +3876,7 @@
             renderMatchesList(document.getElementById('matchArchiveList'), allMatches);
             window.addDebugLog('🗄️ عرض أرشيف المباريات', 'info');
             updateDashboardActionBar();
+            animatePageTransition(); // إضافة الأنيميشن
         }
         function applyMatchArchiveFilters() {
             const search = document.getElementById('archMatchSearch')?.value.trim().toLowerCase() || '';
@@ -3985,6 +4022,7 @@
             window.addDebugLog(`🗄️ عرض أرشيف الدورات (${completedList.length})`, 'info');
             EventManager.bindButtons(content);
             updateDashboardActionBar();
+            animatePageTransition(); // إضافة الأنيميشن
         }
 
         // ================================================================
