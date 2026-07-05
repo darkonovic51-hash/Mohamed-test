@@ -10,7 +10,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
-        /* ===== جميع الأنماط كما هي مع التعديلات التالية ===== */
+        /* ===== جميع الأنماط كما هي مع التعديلات السابقة ===== */
         :root {
             --primary-blue: #45B3FF;
             --secondary-blue: #2196F3;
@@ -781,9 +781,6 @@
         </div>
     </section>
 
-    <!-- ===== باقي الأقسام (حوالي 200 سطر) تم حذفها للاختصار ولكنها موجودة في الكود الأصلي ===== -->
-    <!-- سيتم تضمينها في الملف النهائي -->
-
     <!-- ===== POPUPS ===== -->
     <div class="popup-overlay" id="confirmPopup">
         <div class="popup-box">
@@ -823,9 +820,7 @@
     </div>
 
     <script>
-        // ================================================================
-        // 0. نظام Debug والتحميل المتقدم
-        // ================================================================
+        // ===== الجزء الأول: نظام Debug والتحميل المتقدم =====
         (function() {
             window.DEBUG_MODE = false;
             window.debugLogs = [];
@@ -833,7 +828,6 @@
             window.debugLastTime = 0;
             window.isFirebaseReady = false;
             window.progressValue = 0;
-            window.progressInterval = null;
 
             window.addDebugLog = function(message, type = 'info') {
                 const time = new Date().toLocaleTimeString('fr-FR', { hour12: false });
@@ -964,9 +958,7 @@
             window.addDebugLog('🚀 تم تشغيل النظام', 'success');
         })();
 
-        // ================================================================
-        // 1. Event Manager
-        // ================================================================
+        // ===== Event Manager =====
         const EventManager = {
             initialized: false,
             actions: {},
@@ -1041,9 +1033,7 @@
                 }
             },
 
-            bindButtons: function(container = document) {
-                return;
-            },
+            bindButtons: function(container = document) { return; },
 
             unbindButton: function(btn) {
                 if (btn._eventManagerHandlers) {
@@ -1090,9 +1080,7 @@
             }
         };
 
-        // ================================================================
-        // 2. دوال مساعدة عامة
-        // ================================================================
+        // ===== دوال مساعدة عامة =====
         function showToast(message, type = 'info') {
             const container = document.getElementById('toastContainer');
             if (!container) return;
@@ -1118,7 +1106,7 @@
             if (overlay) overlay.classList.remove('active');
         }
 
-        // ===== دوال شريط التقدم الجديدة (التعديل 1) =====
+        // ===== دوال شريط التقدم الجديدة =====
         function showProgress(label, initialValue = 0) {
             const overlay = document.getElementById('progressOverlay');
             const bar = document.getElementById('progressBar');
@@ -1165,12 +1153,12 @@
             return d >= startOfWeek && d <= endOfWeek;
         }
 
-        // ===== دالة إعادة تشغيل الأنيميشن (التعديل 2) =====
+        // ===== دالة إعادة تشغيل الأنيميشن =====
         function animatePageTransition() {
             const el = document.getElementById('pageContent');
             if (!el) return;
             el.classList.remove('page-anim');
-            void el.offsetWidth; // إجبار إعادة الرسم
+            void el.offsetWidth;
             el.classList.add('page-anim');
         }
 
@@ -1180,7 +1168,7 @@
             const contentEl = document.getElementById('dashboardContent');
             if (contentEl) contentEl.scrollTo({ top: 0, behavior: 'smooth' });
             updateDashboardActionBar();
-            animatePageTransition();   // إضافة الأنيميشن
+            animatePageTransition();
         }
 
         function isHomeView() {
@@ -1213,9 +1201,7 @@
             document.getElementById('confirmPopup').classList.remove('active');
         }
 
-        // ================================================================
-        // 3. Firebase وبيانات النظام
-        // ================================================================
+        // ===== Firebase وبيانات النظام =====
         const firebaseConfig = {
             apiKey: "AIzaSyCDrCtY7weMKAfWQq1k3Hx9hx1PPWa4XAE",
             authDomain: "academy-al.firebaseapp.com",
@@ -1239,9 +1225,7 @@
             window.addDebugLog('❌ فشل الاتصال بـ Firebase: ' + e.message, 'error');
         }
 
-        // ================================================================
-        // 4. المتغيرات العامة
-        // ================================================================
+        // ===== المتغيرات العامة =====
         let allPlayers = [];
         let allCoaches = [];
         let allTrainings = [];
@@ -1264,9 +1248,7 @@
         let isLoadingData = false;
         let dataLoadPromise = null;
 
-        // ================================================================
-        // 5. دالة حماية الصلاحيات
-        // ================================================================
+        // ===== دالة حماية الصلاحيات =====
         function requireRole(...roles) {
             if (!currentUser || !roles.includes(currentUser.role)) {
                 showToast('❌ ليس لديك صلاحية لهذا الإجراء', 'error');
@@ -1276,9 +1258,7 @@
             return true;
         }
 
-        // ================================================================
-        // 6. الثوابت
-        // ================================================================
+        // ===== الثوابت =====
         const categories = ['U07', 'U09', 'U11', 'U13'];
         const MONTHS_AR = ['جانفي', 'فيفري', 'مارس', 'أبريل', 'ماي', 'جوان', 'جويلية', 'أوت', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
         const TRAINING_TYPES = ['بدني', 'تقني', 'تكتيكي', 'تدريب حراس', 'مباراة تطبيقية', 'استشفاء', 'تدريب خاص'];
@@ -1329,9 +1309,7 @@
         let currentMatchId = null;
         let currentMatchTab = 'info';
 
-        // ================================================================
-        // 7. تحميل البيانات (مع شريط تقدم حقيقي ودعم التحميل الصامت)
-        // ================================================================
+        // ===== تحميل البيانات (مع دعم التحميل الصامت) =====
         function loadAllData(forceReload = false, silent = false) {
             if (dataLoaded && !forceReload) return Promise.resolve();
             if (isLoadingData) return dataLoadPromise;
@@ -1408,9 +1386,7 @@
 
         function refreshCurrentView() { if (currentViewFunction) currentViewFunction(...currentViewArgs); }
 
-        // ================================================================
-        // 8. سجل التعديلات
-        // ================================================================
+        // ===== سجل التعديلات =====
         function addLog(action, details, userRole) {
             const logEntry = {
                 action,
@@ -1426,9 +1402,7 @@
             allLogs.push({ id: Date.now(), ...logEntry });
         }
 
-        // ================================================================
-        // 9. تسجيل جميع الإجراءات (Actions)
-        // ================================================================
+        // ===== تسجيل جميع الإجراءات (Actions) =====
         function registerAllActions() {
             EventManager.register('openDashboard', function() {
                 const wrapper = document.getElementById('dashboardWrapper');
@@ -1593,9 +1567,7 @@
             window.addDebugLog('📝 تم تسجيل جميع الإجراءات', 'success');
         }
 
-        // ================================================================
-        // 10. دوال تسجيل الدخول
-        // ================================================================
+        // ===== دوال تسجيل الدخول =====
         async function loginAs(role) {
             const codeInput = document.getElementById('loginCode');
             if (!codeInput) { showToast('حدث خطأ في تحميل الصفحة', 'error');
@@ -1690,7 +1662,7 @@
             if (sidebar) sidebar.innerHTML = `<div class="menu-item" style="opacity:0.5; cursor:default;"><i class="fas fa-user"></i> <span>تسجيل الدخول</span></div>`;
             EventManager.bindButtons(content);
             updateDashboardActionBar();
-            animatePageTransition(); // إضافة الأنيميشن
+            animatePageTransition();
         }
 
         function renderDashboard() {
@@ -1730,9 +1702,7 @@
             EventManager.bindButtons(sidebar);
         }
 
-        // ================================================================
-        // 11. دوال اللاعبين الأساسية
-        // ================================================================
+        // ===== دوال اللاعبين الأساسية =====
         function showAdminPlayers() {
             currentViewFunction = showAdminPlayers;
             currentViewArgs = [];
@@ -1796,7 +1766,6 @@
             renderPlayersTable('all');
             EventManager.bindButtons(content);
             window.addDebugLog('📋 عرض قائمة اللاعبين', 'info');
-            // تمت إضافة animatePageTransition داخل setActiveMenu
         }
 
         function renderPlayersTable(filterCategory) {
@@ -1995,9 +1964,7 @@
             window.addDebugLog(`🔍 تصفية اللاعبين حسب ${key}`, 'info');
         }
 
-        // ================================================================
-        // 12. دوال إدارة اللاعبين
-        // ================================================================
+        // ===== دوال إدارة اللاعبين =====
         function approvePlayer(id) {
             if (!requireRole('admin')) return;
             if (!confirm('قبول هذا اللاعب؟')) return;
@@ -2129,9 +2096,7 @@
                 reader.readAsDataURL(photoFile); } else { processAdd(null); }
         }
 
-        // ================================================================
-        // 13. دوال تفاصيل اللاعب مع بطاقات الدفع الجديدة
-        // ================================================================
+        // ===== دوال تفاصيل اللاعب مع بطاقات الدفع الجديدة =====
         function showPlayerDetailPage(playerId) {
             previousViewFunction = currentViewFunction;
             previousViewArgs = currentViewArgs;
@@ -2305,12 +2270,10 @@
             window.addDebugLog(`👤 عرض تفاصيل اللاعب ${p.firstName} ${p.lastName}`, 'info');
             EventManager.bindButtons(content);
             updateDashboardActionBar();
-            animatePageTransition(); // إضافة الأنيميشن
+            animatePageTransition();
         }
 
-        // ================================================================
-        // 14. دوال مساعدة (showFullImage, showStatsCard, showAttendanceFull)
-        // ================================================================
+        // ===== دوال مساعدة (showFullImage, showStatsCard, showAttendanceFull) =====
         function showFullImage(src) {
             if (!src) return;
             const container = document.createElement('div');
@@ -2408,9 +2371,7 @@
             container.addEventListener('click', function(e) { if (e.target === this) this.remove(); });
         }
 
-        // ================================================================
-        // 14.5 نافذة التعديل الاحترافية (Edit Modal)
-        // ================================================================
+        // ===== نافذة التعديل الاحترافية (Edit Modal) =====
         let editModalOnSaveCallback = null;
 
         function showEditModal({ title, icon, fields, onSave }) {
@@ -2474,9 +2435,7 @@
             cb(values);
         }
 
-        // ================================================================
-        // 15. دوال تحديث الدفع مع تخزين التاريخ
-        // ================================================================
+        // ===== دوال تحديث الدفع =====
         function toggleMonthPaymentSimple(playerId, monthKey) {
             if (!requireRole('admin','coach')) return;
             const payment = allPayments.find(p => p.playerId === playerId);
@@ -2503,9 +2462,7 @@
                     showToast('❌ خطأ: ' + err.message, 'error'); });
         }
 
-        // ================================================================
-        // 16. دوال المدرب (مع التعديلات الجديدة - showEditModal)
-        // ================================================================
+        // ===== دوال المدرب =====
         function coachRatePlayer(playerId) {
             if (!requireRole('admin','coach')) return;
             const p = allPlayers.find(x => x.id === playerId);
@@ -2618,9 +2575,7 @@
             });
         }
 
-        // ================================================================
-        // 17. دوال المدرب الرئيسية
-        // ================================================================
+        // ===== دوال المدرب الرئيسية =====
         function showCoachHome() {
             currentViewFunction = showCoachHome;
             currentViewArgs = [];
@@ -2687,9 +2642,7 @@
             EventManager.bindButtons(content);
         }
 
-        // ================================================================
-        // 18. دوال الحصص التدريبية (مع حماية الصلاحيات)
-        // ================================================================
+        // ===== دوال الحصص التدريبية =====
         let sessionSelectedPlayers = [];
 
         function showCoachTrainingSessions() {
@@ -2814,7 +2767,7 @@
             window.addDebugLog('📝 فتح نموذج إنشاء حصة تدريبية', 'info');
             EventManager.bindButtons(content);
             updateDashboardActionBar();
-            animatePageTransition(); // إضافة الأنيميشن
+            animatePageTransition();
         }
 
         function updateSessionPlayersListUI(categoryId) {
@@ -2928,9 +2881,7 @@
                     showToast('❌ خطأ: ' + err.message, 'error'); });
         }
 
-        // ================================================================
-        // 19. دوال المدير للحصص والمباريات والدورات
-        // ================================================================
+        // ===== دوال المدير للحصص والمباريات والدورات =====
         function showAdminHome() {
             currentViewFunction = showAdminHome;
             currentViewArgs = [];
@@ -3128,14 +3079,12 @@
             window.addDebugLog(`🗄️ عرض أرشيف الحصص (${completedList.length})`, 'info');
             EventManager.bindButtons(content);
             updateDashboardActionBar();
-            animatePageTransition(); // إضافة الأنيميشن
+            animatePageTransition();
         }
 
         function renderArchiveSessionsList() { showTrainingSessionsArchive(); }
 
-        // ================================================================
-        // 20. دوال المباريات الودية - النظام المتكامل
-        // ================================================================
+        // ===== دوال المباريات الودية - النظام المتكامل =====
         function renderMatchesList(container, matches) {
             if (!container) return;
             if (matches.length === 0) { container.innerHTML = `<p class="text-muted text-center">لا توجد مباريات</p>`; return; }
@@ -3223,7 +3172,7 @@
                 .catch(err => showToast('❌ خطأ: ' + err.message, 'error'));
         }
 
-        // ---------- إنشاء مباراة جديدة (التعديل 4 و 5) ----------
+        // ---------- إنشاء مباراة جديدة (التعديلات 4 و 5) ----------
         function openCreateMatchModal() {
             if (!requireRole('admin', 'coach')) return;
             const coachCategory = currentUser.role === 'coach' ? currentUser.data.categoryId : '';
@@ -3295,7 +3244,6 @@
             EventManager.bindButtons(container);
             setupUpload('cmLogo', 'cmLogoName', 'cmLogoUpload');
 
-            // معاينة الشعار الفوري (التعديل 5)
             const cmLogoInput = document.getElementById('cmLogo');
             const cmLogoCircle = document.getElementById('cmLogoPreviewCircle');
             if (cmLogoInput && cmLogoCircle) {
@@ -3312,9 +3260,13 @@
             }
         }
 
-        // ---------- حفظ المباراة مع شريط تقدم حقيقي ومؤقت أمان (التعديل 3) ----------
+        // ---------- حفظ المباراة (تنفيذ مباشر بدون شريط تقدم + حماية من التنفيذ المزدوج) ----------
+        let isSavingMatch = false; // حارس منع التنفيذ المزدوج
+
         function saveMatchDetailed() {
             if (!requireRole('admin', 'coach')) return;
+            if (isSavingMatch) return; // منع أي استدعاء ثانٍ أثناء تنفيذ عملية جارية
+
             const opponent = document.getElementById('cmOpponent').value.trim();
             const date = document.getElementById('cmDate').value;
             const categoryId = document.getElementById('cmCategory').value;
@@ -3343,25 +3295,24 @@
                 createdAt: new Date().toISOString()
             });
 
-            showProgress('جاري تجهيز البيانات...', 10);
+            isSavingMatch = true;
+
+            // مؤقت أمان: إن لم يرد الخادم خلال 15 ثانية نحرر القفل ونُعلم المستخدم بدل التعليق للأبد
+            let settled = false;
+            const safetyTimer = setTimeout(() => {
+                if (settled) return;
+                settled = true;
+                isSavingMatch = false;
+                showToast('⚠️ تعذر الاتصال بالخادم، تحقق من الإنترنت وحاول مجدداً', 'warning');
+            }, 15000);
+
             const finish = (data) => {
-                updateProgress(50, 'جاري إرسال المباراة إلى القاعدة...');
-
-                let settled = false;
-                const safetyTimer = setTimeout(() => {
-                    if (settled) return;
-                    settled = true;
-                    hideProgress();
-                    showToast('⚠️ تعذر الاتصال بالخادم، تحقق من الإنترنت وحاول مجدداً', 'warning');
-                }, 12000);
-
                 db.ref('academy/matches').push(data).then((snap) => {
                     if (settled) return;
                     settled = true;
                     clearTimeout(safetyTimer);
+                    isSavingMatch = false;
                     allMatches.push({ id: snap.key, ...data });
-                    updateProgress(100, 'تم الإنشاء بنجاح ✅');
-                    hideProgress();
                     closeModal('createMatchModal');
                     addLog('إنشاء مباراة ودية', `تم إنشاء مباراة ضد ${opponent}`, currentUser.role);
                     showToast('✅ تم إنشاء المباراة بنجاح', 'success');
@@ -3370,14 +3321,21 @@
                     if (settled) return;
                     settled = true;
                     clearTimeout(safetyTimer);
-                    hideProgress();
+                    isSavingMatch = false;
                     showToast('❌ خطأ: ' + err.message, 'error');
                 });
             };
+
             if (logoFile) {
-                updateProgress(25, 'جاري رفع شعار الفريق...');
                 const reader = new FileReader();
                 reader.onload = e => finish(buildData(e.target.result));
+                reader.onerror = () => {
+                    if (settled) return;
+                    settled = true;
+                    clearTimeout(safetyTimer);
+                    isSavingMatch = false;
+                    showToast('❌ فشل قراءة صورة الشعار', 'error');
+                };
                 reader.readAsDataURL(logoFile);
             } else {
                 finish(buildData(null));
@@ -3408,7 +3366,7 @@
             renderMatchCard();
             window.addDebugLog(`⚽ عرض تفاصيل المباراة ${m.opponent}`, 'info');
             updateDashboardActionBar();
-            animatePageTransition(); // إضافة الأنيميشن
+            animatePageTransition();
         }
 
         function renderMatchTabsBar() {
@@ -3967,7 +3925,7 @@
             renderMatchesList(document.getElementById('matchArchiveList'), allMatches);
             window.addDebugLog('🗄️ عرض أرشيف المباريات', 'info');
             updateDashboardActionBar();
-            animatePageTransition(); // إضافة الأنيميشن
+            animatePageTransition();
         }
         function applyMatchArchiveFilters() {
             const search = document.getElementById('archMatchSearch')?.value.trim().toLowerCase() || '';
@@ -3984,9 +3942,7 @@
             renderMatchesList(document.getElementById('matchArchiveList'), list);
         }
 
-        // ================================================================
-        // 21. دوال الدورات (مع حماية الصلاحيات)
-        // ================================================================
+        // ===== دوال الدورات =====
         function renderTournamentsList() {
             const container = document.getElementById('tournamentsList');
             if (!container) return;
@@ -4113,12 +4069,10 @@
             window.addDebugLog(`🗄️ عرض أرشيف الدورات (${completedList.length})`, 'info');
             EventManager.bindButtons(content);
             updateDashboardActionBar();
-            animatePageTransition(); // إضافة الأنيميشن
+            animatePageTransition();
         }
 
-        // ================================================================
-        // 22. دوال المدربين (مع التعديلات الجديدة - showEditModal)
-        // ================================================================
+        // ===== دوال المدربين =====
         function renderCoachesTable() {
             const tbody = document.getElementById('coachesTableBody');
             if (!tbody) return;
@@ -4218,9 +4172,7 @@
             });
         }
 
-        // ================================================================
-        // 23. دوال سجل التعديلات
-        // ================================================================
+        // ===== دوال سجل التعديلات =====
         function renderLogsList() {
             const container = document.getElementById('logsListContainer');
             if (!container) return;
@@ -4278,9 +4230,7 @@
                 .catch(err => showToast('❌ خطأ: ' + err.message, 'error'));
         }
 
-        // ================================================================
-        // 24. دوال تحديث البيانات وولي الأمر والرجوع
-        // ================================================================
+        // ===== دوال تحديث البيانات وولي الأمر والرجوع =====
         function refreshDashboardData() {
             showProgress('جاري تحديث البيانات...', 0);
             loadAllData(true, false).then(() => {
@@ -4309,9 +4259,7 @@
             updateDashboardActionBar();
         }
 
-        // ================================================================
-        // 25. دوال رفع الملفات والمعرض
-        // ================================================================
+        // ===== دوال رفع الملفات والمعرض =====
         function setupUpload(inputId, nameDisplayId, containerId) {
             const input = document.getElementById(inputId);
             const nameDisplay = document.getElementById(nameDisplayId);
@@ -4347,9 +4295,7 @@
             });
         }
 
-        // ================================================================
-        // 26. تهيئة النظام
-        // ================================================================
+        // ===== تهيئة النظام =====
         function initSystem() {
             registerAllActions();
             EventManager.enableDelegation();
@@ -4475,9 +4421,7 @@
             console.log('✅ النظام جاهز مع Event Manager وتسجيل دخول سريع');
         }
 
-        // ================================================================
-        // 27. بدء التشغيل
-        // ================================================================
+        // ===== بدء التشغيل =====
         document.addEventListener('DOMContentLoaded', function() {
             initSystem();
 
