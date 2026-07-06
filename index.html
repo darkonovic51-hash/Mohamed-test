@@ -391,7 +391,6 @@
         .dashboard-content .page-title { font-size: 1.8rem; font-weight: 800; color: var(--dark-navy); margin-bottom:6px; }
         .dashboard-content .page-sub { color: #888; margin-bottom:20px; }
 
-        /* ===== التعديل الخاص بالأنيميشن ===== */
         .dashboard-content #pageContent.page-anim {
             animation: pageFadeIn 0.35s cubic-bezier(0.2, 0.9, 0.4, 1);
         }
@@ -430,8 +429,9 @@
 
         .table-wrap { background: #fff; border-radius: 16px; overflow: auto; box-shadow: 0 2px 12px rgba(0,0,0,0.04); border: 1px solid #e8ecf1; margin-bottom:20px; }
         .table-wrap table { width:100%; border-collapse: collapse; font-size:0.85rem; min-width:700px; }
-        .table-wrap th { background: var(--dark-navy); color:#fff; padding:12px 10px; text-align: center; font-weight:700; white-space: nowrap; }
-        .table-wrap td { padding:10px 8px; text-align: center; border-bottom:1px solid #f0f0f0; vertical-align: middle; }
+        .table-wrap th { background: var(--dark-navy); color:#fff; padding:12px 10px; text-align: center; font-weight:700; white-space: nowrap; font-size: 0.78rem; letter-spacing: 0.4px; }
+        .table-wrap td { padding:10px 8px; text-align: center; border-bottom:1px solid #f0f0f0; vertical-align: middle; font-size: 0.88rem; }
+        .table-wrap tr { transition: background 0.2s ease; }
         .table-wrap tr:hover td { background: rgba(69,179,255,0.04); }
 
         .badge-status { display: inline-block; padding:2px 12px; border-radius:30px; font-size:0.7rem; font-weight:700; }
@@ -489,6 +489,19 @@
         .session-detail-modal .player-row:hover { background:rgba(69,179,255,0.04); }
         .session-detail-modal .player-row .player-name { font-weight:600; }
         .session-detail-modal .player-row .attendance-select { padding:4px 8px; border-radius:8px; border:1px solid #ddd; font-family:'Cairo', sans-serif; font-size:0.8rem; }
+
+        .attendance-sheet-modal .attendance-sheet { background:#fff; border-radius:24px; max-width:820px; width:100%; max-height:92vh; overflow:hidden; display:flex; flex-direction:column; box-shadow:0 30px 80px rgba(0,0,0,0.35); animation:popupIn 0.35s ease; }
+        .attendance-sheet-header { background:linear-gradient(135deg, var(--dark-navy), var(--navy-blue)); color:#fff; padding:26px 30px; position:relative; }
+        .attendance-sheet-header h2 { font-size:1.4rem; font-weight:900; }
+        .attendance-sheet-header .sub { color:rgba(255,255,255,0.7); font-size:0.85rem; margin-top:4px; }
+        .attendance-sheet-header .badge-count { position:absolute; left:20px; top:20px; background:rgba(255,255,255,0.15); border:1px solid rgba(255,255,255,0.3); border-radius:14px; padding:8px 18px; text-align:center; }
+        .attendance-sheet-summary { display:flex; gap:12px; padding:16px 24px; border-bottom:2px solid #f0f0f0; }
+        .attendance-sheet-body { padding:16px 24px; overflow-y:auto; flex:1; }
+        .attendance-sheet-row { display:flex; justify-content:space-between; align-items:center; padding:12px 16px; border-radius:14px; margin-bottom:8px; border-right:6px solid #ccc; font-weight:700; }
+        .attendance-sheet-row.present { background:#eafaf0; border-color:#28a745; color:#155724; }
+        .attendance-sheet-row.absent { background:#fdeeee; border-color:#dc3545; color:#721c24; }
+        .attendance-sheet-row.excused { background:#fff8e6; border-color:#ffc107; color:#856404; }
+        .attendance-sheet-row .date-badge { font-size:0.78rem; color:#666; font-weight:600; }
 
         .player-detail-page { background:#fff; border-radius:24px; padding:30px; box-shadow:var(--shadow); max-width:1200px; margin:10px auto; }
         .player-detail-page .player-header { display:flex; align-items:center; gap:30px; border-bottom:2px solid #f0f0f0; padding-bottom:20px; margin-bottom:20px; flex-wrap:wrap; }
@@ -1886,6 +1899,7 @@
                     </div>
                     <button class="btn-sm btn-sm-secondary" data-action="applyPlayerFilters"><i class="fas fa-search"></i> بحث</button>
                     <button class="btn-sm btn-sm-warning" data-action="resetPlayerFilters"><i class="fas fa-undo"></i> إعادة تعيين</button>
+                    <button class="btn-sm btn-sm-info" data-action="exportPlayersListPDF"><i class="fas fa-file-pdf"></i> تحميل PDF</button>
                 </div>
             `;
             html += `<div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px;">`;
@@ -1908,30 +1922,9 @@
             html += `</div>`;
 
             html += `<div class="table-wrap"><table>
-                <thead><tr><th>#</th><th>الصورة</th><th>الاسم</th><th>الفئة</th><th>الولي</th><th>الحالة</th><th>الحضور</th><th>الدفع</th><th>التقييم</th><th>إجراءات</th></tr></thead>
+                <thead><tr><th>#</th><th>الصورة</th><th>الاسم</th><th>الفئة</th><th>الولي</th><th>الحالة</th><th>التقييم</th><th>إجراءات</th></tr></thead>
                 <tbody id="playersTableBody"></tbody>
             </table></div>`;
-
-            html += `
-                <div class="form-card">
-                    <h3>➕ إضافة لاعب جديد</h3>
-                    <div class="form-grid">
-                        <div class="form-group"><label>الاسم</label><input type="text" id="newFirstName" /></div>
-                        <div class="form-group"><label>اللقب</label><input type="text" id="newLastName" /></div>
-                        <div class="form-group"><label>الفئة</label><select id="newCategory">${categories.map(c=>`<option value="${c}">${c}</option>`).join('')}</select></div>
-                        <div class="form-group"><label>تاريخ الميلاد</label><input type="date" id="newBirthDate" /></div>
-                        <div class="form-group"><label>الولي</label><input type="text" id="newGuardian" /></div>
-                        <div class="form-group"><label>هاتف الولي</label><input type="text" id="newGuardianPhone" /></div>
-                        <div class="form-group"><label>رقم القميص</label><input type="number" id="newJerseyNumber" /></div>
-                        <div class="form-group"><label>المنصب</label><select id="newPosition">${POSITIONS.map(p => `<option value="${p}">${p}</option>`).join('')}</select></div>
-                        <div class="form-group"><label>الجاهزية %</label><input type="number" id="newFitness" min="0" max="100" value="80" /></div>
-                        <div class="form-group full"><label>صورة شخصية</label>
-                            <div class="upload-area" id="newPhotoUpload"><div class="icon"><i class="fas fa-camera"></i></div><div class="text">انقر لاختيار صورة</div><div class="file-name" id="newPhotoName"></div><input type="file" id="newPhoto" accept="image/*" /></div>
-                        </div>
-                        <div class="form-group full"><button class="btn-submit" data-action="addPlayerWithPhoto"><i class="fas fa-save"></i> حفظ</button></div>
-                    </div>
-                </div>
-            `;
             content.innerHTML = html;
             setActiveMenu(1);
             renderPlayersTable('all');
@@ -1945,17 +1938,11 @@
             let players = allPlayers;
             if (filterCategory !== 'all') players = players.filter(p => p.categoryId === filterCategory);
             if (players.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="10" style="text-align:center;color:#888;padding:20px;">لا يوجد لاعبون</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:#888;padding:20px;">لا يوجد لاعبون</td></tr>`;
                 return;
             }
             let html = '';
             players.forEach((p, idx) => {
-                const weekAtt = allAttendances.filter(a => a.playerId === p.id && isThisWeek(a.date));
-                const present = weekAtt.filter(a => a.status === 'present').length;
-                const absent = weekAtt.filter(a => a.status === 'absent').length;
-                const payment = allPayments.find(pay => pay.playerId === p.id);
-                const payStatus = payment ? payment.status : 'unpaid';
-                const expiry = payment ? payment.expiryDate : '-';
                 const rating = allPlayerDetails[p.id] ? allPlayerDetails[p.id].rating : '-';
                 const imgSrc = p.photo && p.photo.startsWith('data:image') ? p.photo : 'https://via.placeholder.com/50';
 
@@ -1972,14 +1959,16 @@
 
                 html += `<tr data-player-id="${p.id}">
                     <td>${idx + 1}</td>
-                    <td><img src="${imgSrc}" style="width:40px; height:40px; border-radius:50%; object-fit:cover; border:2px solid var(--primary-blue);" /></td>
-                    <td>${p.firstName || ''} ${p.lastName || ''}</td>
-                    <td><strong>${p.categoryId || ''}</strong></td>
+                    <td><img src="${imgSrc}" style="width:44px; height:44px; border-radius:50%; object-fit:cover; border:2px solid var(--primary-blue); box-shadow:0 2px 8px rgba(69,179,255,0.25);" /></td>
+                    <td style="font-weight:700; color:var(--dark-navy);">${p.firstName || ''} ${p.lastName || ''}</td>
+                    <td>
+                        <select class="attendance-select" data-action="changePlayerCategoryInline" data-id="${p.id}" style="font-weight:700;">
+                            ${categories.map(c => `<option value="${c}" ${c === p.categoryId ? 'selected' : ''}>${c}</option>`).join('')}
+                        </select>
+                    </td>
                     <td>${p.guardianName || ''}</td>
                     <td>${statusHtml}</td>
-                    <td><span class="badge-status ${present > absent ? 'present' : 'absent'}">ح:${present} / غ:${absent}</span></td>
-                    <td><span class="badge-status ${payStatus === 'paid' ? 'paid' : 'unpaid'}">${payStatus === 'paid' ? 'مدفوع' : 'غير مدفوع'} (${expiry})</span></td>
-                    <td>${rating}</td>
+                    <td>${rating !== '-' ? `<span style="color:var(--gold); font-weight:800;">⭐ ${rating}</span>` : '<span class="text-muted">-</span>'}</td>
                     <td>
                         <button class="btn-sm btn-sm-info" data-action="showPlayerDetailPage" data-id="${p.id}"><i class="fas fa-eye"></i> عرض</button>
                         <button class="btn-sm btn-sm-danger" data-action="deletePlayer" data-id="${p.id}"><i class="fas fa-trash"></i></button>
@@ -2015,17 +2004,11 @@
             const tbody = document.getElementById('playersTableBody');
             if (!tbody) return;
             if (players.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="10" style="text-align:center;color:#888;padding:20px;">لا يوجد لاعبون</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:#888;padding:20px;">لا يوجد لاعبون</td></tr>`;
                 return;
             }
             let html = '';
             players.forEach((p, idx) => {
-                const weekAtt = allAttendances.filter(a => a.playerId === p.id && isThisWeek(a.date));
-                const present = weekAtt.filter(a => a.status === 'present').length;
-                const absent = weekAtt.filter(a => a.status === 'absent').length;
-                const payment = allPayments.find(pay => pay.playerId === p.id);
-                const payStatus = payment ? payment.status : 'unpaid';
-                const expiry = payment ? payment.expiryDate : '-';
                 const rating = allPlayerDetails[p.id] ? allPlayerDetails[p.id].rating : '-';
                 const imgSrc = p.photo && p.photo.startsWith('data:image') ? p.photo : 'https://via.placeholder.com/50';
 
@@ -2042,14 +2025,16 @@
 
                 html += `<tr data-player-id="${p.id}">
                     <td>${idx + 1}</td>
-                    <td><img src="${imgSrc}" style="width:40px; height:40px; border-radius:50%; object-fit:cover; border:2px solid var(--primary-blue);" /></td>
-                    <td>${p.firstName || ''} ${p.lastName || ''}</td>
-                    <td><strong>${p.categoryId || ''}</strong></td>
+                    <td><img src="${imgSrc}" style="width:44px; height:44px; border-radius:50%; object-fit:cover; border:2px solid var(--primary-blue); box-shadow:0 2px 8px rgba(69,179,255,0.25);" /></td>
+                    <td style="font-weight:700; color:var(--dark-navy);">${p.firstName || ''} ${p.lastName || ''}</td>
+                    <td>
+                        <select class="attendance-select" data-action="changePlayerCategoryInline" data-id="${p.id}" style="font-weight:700;">
+                            ${categories.map(c => `<option value="${c}" ${c === p.categoryId ? 'selected' : ''}>${c}</option>`).join('')}
+                        </select>
+                    </td>
                     <td>${p.guardianName || ''}</td>
                     <td>${statusHtml}</td>
-                    <td><span class="badge-status ${present > absent ? 'present' : 'absent'}">ح:${present} / غ:${absent}</span></td>
-                    <td><span class="badge-status ${payStatus === 'paid' ? 'paid' : 'unpaid'}">${payStatus === 'paid' ? 'مدفوع' : 'غير مدفوع'} (${expiry})</span></td>
-                    <td>${rating}</td>
+                    <td>${rating !== '-' ? `<span style="color:var(--gold); font-weight:800;">⭐ ${rating}</span>` : '<span class="text-muted">-</span>'}</td>
                     <td>
                         <button class="btn-sm btn-sm-info" data-action="showPlayerDetailPage" data-id="${p.id}"><i class="fas fa-eye"></i> عرض</button>
                         <button class="btn-sm btn-sm-danger" data-action="deletePlayer" data-id="${p.id}"><i class="fas fa-trash"></i></button>
@@ -2188,85 +2173,19 @@
                     showToast('❌ خطأ: ' + err.message, 'error'); });
         }
 
-        function addPlayerWithPhoto() {
+        function changePlayerCategoryInline(context) {
             if (!requireRole('admin')) return;
-            const firstName = document.getElementById('newFirstName').value.trim();
-            const lastName = document.getElementById('newLastName').value.trim();
-            const categoryId = document.getElementById('newCategory').value;
-            const birthDate = document.getElementById('newBirthDate').value;
-            const guardianName = document.getElementById('newGuardian').value.trim();
-            const guardianPhone = document.getElementById('newGuardianPhone').value.trim();
-            const jerseyNumber = parseInt(document.getElementById('newJerseyNumber').value) || 0;
-            const position = document.getElementById('newPosition').value;
-            const fitness = parseInt(document.getElementById('newFitness').value) || 80;
-
-            if (!firstName || !lastName || !categoryId || !birthDate || !guardianName || !guardianPhone) {
-                showToast('الرجاء ملء جميع الحقول الإجبارية', 'warning');
-                return;
-            }
-            const photoFile = document.getElementById('newPhoto').files[0];
-            window.addDebugLog(`➕ إضافة لاعب: ${firstName} ${lastName}`, 'info');
-
-            const processAdd = (photoData) => {
-                const randomSuffix = Math.random().toString(36).substring(2, 6).toUpperCase();
-                const parentCode = `${firstName}${lastName}${categoryId}${new Date(birthDate).getFullYear()}${randomSuffix}`;
-                const newPlayer = {
-                    firstName,
-                    lastName,
-                    categoryId,
-                    birthDate,
-                    guardianName,
-                    guardianPhone,
-                    parentCode,
-                    status: 'approved',
-                    registrationDate: new Date().toISOString(),
-                    photo: photoData || ''
-                };
-                db.ref('academy/players').push(newPlayer)
-                    .then((snap) => {
-                        const playerId = snap.key;
-                        db.ref('academy/playerDetails/' + playerId).set({
-                            jerseyNumber,
-                            position,
-                            fitness,
-                            goals: 0,
-                            manOfMatch: 0,
-                            yellowCards: 0,
-                            redCards: 0,
-                            assists: 0,
-                            minutesPlayed: 0,
-                            starterMatches: 0,
-                            injuries: 0,
-                            penalties: 0
-                        }).then(() => {
-                            allPlayers.push({ id: playerId, ...newPlayer });
-                            if (!allPlayerDetails[playerId]) allPlayerDetails[playerId] = {};
-                            allPlayerDetails[playerId].jerseyNumber = jerseyNumber;
-                            allPlayerDetails[playerId].position = position;
-                            allPlayerDetails[playerId].fitness = fitness;
-                            addLog('إضافة لاعب', `تم إضافة اللاعب ${firstName} ${lastName}`, currentUser?.role);
-                            window.addDebugLog(`✅ تم إضافة اللاعب`, 'success');
-                            showToast('✅ تم إضافة اللاعب', 'success');
-                            document.getElementById('newFirstName').value = '';
-                            document.getElementById('newLastName').value = '';
-                            document.getElementById('newBirthDate').value = '';
-                            document.getElementById('newGuardian').value = '';
-                            document.getElementById('newGuardianPhone').value = '';
-                            document.getElementById('newJerseyNumber').value = '';
-                            document.getElementById('newFitness').value = '80';
-                            document.getElementById('newPhoto').value = '';
-                            document.getElementById('newPhotoName').textContent = '';
-                            document.getElementById('newPhotoUpload').classList.remove('has-file');
-                            showAdminPlayers();
-                        });
-                    })
-                    .catch(err => { window.addDebugLog(`❌ فشل إضافة اللاعب: ${err.message}`, 'error');
-                        showToast('❌ خطأ: ' + err.message, 'error'); });
-            };
-
-            if (photoFile) { const reader = new FileReader();
-                reader.onload = function(e) { processAdd(e.target.result); };
-                reader.readAsDataURL(photoFile); } else { processAdd(null); }
+            const playerId = context.dataset.id;
+            const newCategory = context.value;
+            db.ref('academy/players/' + playerId).update({ categoryId: newCategory })
+                .then(() => {
+                    const idx = allPlayers.findIndex(p => p.id === playerId);
+                    if (idx !== -1) allPlayers[idx].categoryId = newCategory;
+                    addLog('تغيير فئة لاعب', `تم نقل اللاعب إلى فئة ${newCategory}`, currentUser?.role);
+                    showToast('✅ تم تغيير الفئة فورًا', 'success');
+                    applyPlayerFilters();
+                })
+                .catch(err => showToast('❌ خطأ: ' + err.message, 'error'));
         }
 
         // ================================================================
@@ -2503,49 +2422,80 @@
         function showAttendanceFull(playerId) {
             const p = allPlayers.find(x => x.id === playerId);
             if (!p) { showToast('اللاعب غير موجود', 'error'); return; }
-            const sessions = allTrainingSessions.filter(s => s.categoryId === p.categoryId && s.status === 'مكتملة');
+            const sessions = allTrainingSessions.filter(s => s.categoryId === p.categoryId && s.status === 'مكتملة')
+                .sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            let present = 0, absent = 0, excused = 0;
+            sessions.forEach(s => {
+                const st = (s.attendance || {})[playerId];
+                if (st === 'present') present++; else if (st === 'absent') absent++; else if (st === 'excused') excused++;
+            });
+            const total = present + absent + excused;
+            const rate = total > 0 ? Math.round((present / total) * 100) : 0;
+
             const container = document.createElement('div');
+            container.className = 'attendance-sheet-modal';
             container.id = 'attendanceFullModal';
-            container.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); backdrop-filter:blur(8px); z-index:999999; display:flex; align-items:center; justify-content:center; padding:20px;';
-            let html = `
-                <div style="background:#fff; border-radius:24px; padding:30px; max-width:800px; width:100%; max-height:90vh; overflow-y:auto; position:relative;">
-                    <button class="icon-close-btn abs-top-right" onclick="document.getElementById('attendanceFullModal').remove()" title="إغلاق"><i class="fas fa-times"></i></button>
-                    <h3 style="color:var(--dark-navy); margin-bottom:16px; padding-left:44px;">📋 سجل حضور ${p.firstName} ${p.lastName}</h3>
-                    <div style="border:1px solid #eee; border-radius:12px; overflow:hidden;">
-                        <table style="width:100%; border-collapse:collapse; font-size:0.85rem;">
-                            <thead><tr style="background:var(--dark-navy); color:#fff;"><th style="padding:8px 12px; text-align:center;">التاريخ</th><th style="padding:8px 12px; text-align:center;">الحصة</th><th style="padding:8px 12px; text-align:center;">الحالة</th><th style="padding:8px 12px; text-align:center;">التقييم</th></tr></thead>
-                            <tbody>
-            `;
-            if (sessions.length === 0) {
-                html += `<tr><td colspan="4" style="text-align:center;padding:20px;color:#888;">لا توجد حصص مكتملة</td></tr>`;
-            } else {
-                sessions.forEach(s => {
-                    const att = s.attendance || {};
-                    const status = att[playerId] || 'غير محدد';
-                    const statusText = status === 'present' ? '✅ حاضر' : status === 'absent' ? '❌ غائب' :
-                        '⚠️ معذور';
-                    const statusClass = status === 'present' ? 'present' : status === 'absent' ? 'absent' :
-                        'excused';
-                    const rating = (s.ratings || {})[playerId] || '';
-                    html += `
-                        <tr style="border-bottom:1px solid #eee;">
-                            <td style="padding:6px 12px; text-align:center;">${s.date}</td>
-                            <td style="padding:6px 12px; text-align:center;">${s.title || 'حصة'}</td>
-                            <td style="padding:6px 12px; text-align:center;"><span class="badge-status ${statusClass}">${statusText}</span></td>
-                            <td style="padding:6px 12px; text-align:center;">${rating ? '⭐ '.repeat(Math.round(rating)) : '-'}</td>
-                        </tr>
-                    `;
-                });
-            }
-            html += `</tbody></table></div>
-                    <div style="margin-top:12px; text-align:center;">
+            container.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(4,26,56,0.75); backdrop-filter:blur(10px); z-index:999999; display:flex; align-items:center; justify-content:center; padding:20px;';
+
+            const rowsHtml = sessions.map(s => {
+                const status = (s.attendance || {})[playerId] || 'unmarked';
+                const cls = status === 'present' ? 'present' : status === 'absent' ? 'absent' : status === 'excused' ? 'excused' : '';
+                const label = status === 'present' ? '✅ حاضر' : status === 'absent' ? '❌ غائب' : status === 'excused' ? '⚠️ معذور' : '⬜ غير مسجل';
+                const note = (s.notes || {})[playerId] || '';
+                const rating = (s.ratings || {})[playerId] || '';
+                return `
+                    <div class="attendance-sheet-row ${cls}">
+                        <div>
+                            <div>${s.title || 'حصة تدريبية'} <span class="date-badge">— ${s.date}</span></div>
+                            ${note ? `<div style="font-size:0.75rem; font-weight:500; margin-top:4px; opacity:0.85;">📝 ${note}</div>` : ''}
+                        </div>
+                        <div style="text-align:left;">
+                            <div>${label}</div>
+                            ${rating ? `<div style="font-size:0.75rem; font-weight:600;">⭐ ${rating}</div>` : ''}
+                        </div>
+                    </div>`;
+            }).join('') || '<p class="text-muted text-center" style="padding:30px;">لا توجد حصص مكتملة بعد</p>';
+
+            container.innerHTML = `
+                <div class="attendance-sheet">
+                    <div class="attendance-sheet-header">
+                        <button class="icon-close-btn on-dark abs-top-right" onclick="document.getElementById('attendanceFullModal').remove()" title="إغلاق"><i class="fas fa-times"></i></button>
+                        <div class="badge-count">
+                            <div style="font-size:1.6rem; font-weight:900;">${rate}%</div>
+                            <div style="font-size:0.7rem; opacity:0.8;">نسبة الحضور</div>
+                        </div>
+                        <h2>📋 سجل حضور ${p.firstName} ${p.lastName}</h2>
+                        <div class="sub">${p.categoryId} — إجمالي الحصص المسجلة: ${total}</div>
+                    </div>
+                    <div class="attendance-sheet-summary">
+                        <div class="payment-summary-item paid" style="flex:1;"><i class="fas fa-check-circle"></i><span>${present}</span><label>حضور</label></div>
+                        <div class="payment-summary-item unpaid" style="flex:1;"><i class="fas fa-times-circle"></i><span>${absent}</span><label>غياب</label></div>
+                        <div class="payment-summary-item" style="flex:1; border-color:#ffc107;"><i class="fas fa-exclamation-circle" style="color:#ffc107;"></i><span style="color:#856404;">${excused}</span><label>معذور</label></div>
+                    </div>
+                    <div class="attendance-sheet-body" id="attendanceSheetPrintArea">${rowsHtml}</div>
+                    <div style="padding:16px 24px; border-top:2px solid #f0f0f0; display:flex; gap:10px; justify-content:center;">
+                        <button class="btn-sm btn-sm-info" data-action="exportAttendanceSheetPDF" data-id="${playerId}"><i class="fas fa-file-pdf"></i> تحميل PDF</button>
                         <button class="btn-sm btn-sm-secondary" onclick="document.getElementById('attendanceFullModal').remove()">إغلاق</button>
                     </div>
                 </div>
             `;
-            container.innerHTML = html;
             document.body.appendChild(container);
             container.addEventListener('click', function(e) { if (e.target === this) this.remove(); });
+            EventManager.bindButtons(container);
+        }
+
+        function exportAttendanceSheetPDF(context) {
+            const playerId = context.dataset.id;
+            const p = allPlayers.find(x => x.id === playerId);
+            const area = document.getElementById('attendanceSheetPrintArea');
+            if (!area || !p) return;
+            showLoading('جاري تجهيز ملف PDF...');
+            const wrapper = document.createElement('div');
+            wrapper.style.cssText = 'padding:20px; direction:rtl; font-family:Cairo,sans-serif;';
+            wrapper.innerHTML = `<h2 style="text-align:center; color:#082D5C;">سجل حضور ${p.firstName} ${p.lastName} — ${p.categoryId}</h2>` + area.innerHTML;
+            html2pdf().set({ margin: 10, filename: `سجل_حضور_${p.firstName}_${p.lastName}.pdf`, html2canvas: { scale: 2 }, jsPDF: { orientation: 'portrait' } })
+                .from(wrapper).save().then(hideLoading).catch(() => { hideLoading(); showToast('❌ فشل إنشاء PDF', 'error'); });
         }
 
         // ================================================================
@@ -2831,10 +2781,33 @@
         // 18. دوال الحصص التدريبية (مع حماية الصلاحيات)
         // ================================================================
         let sessionSelectedPlayers = [];
+        let sessionsListFilterSource = 'admin';
+
+        function buildSessionsCategoryFilterHtml() {
+            let html = `<div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px;">`;
+            html += `<button class="btn-sm btn-sm-warning active" data-action="filterTrainingSessionsByCategoryUI" data-cat="all">الكل</button>`;
+            categories.forEach(c => { html += `<button class="btn-sm btn-sm-primary" data-action="filterTrainingSessionsByCategoryUI" data-cat="${c}">${c}</button>`; });
+            html += `</div>`;
+            return html;
+        }
+
+        function filterTrainingSessionsByCategoryUI(context) {
+            const cat = context.dataset.cat;
+            document.querySelectorAll('[data-action="filterTrainingSessionsByCategoryUI"]').forEach(b => b.classList.remove('active'));
+            context.classList.add('active');
+            const isCoach = sessionsListFilterSource === 'coach';
+            const source = isCoach
+                ? allTrainingSessions.filter(s => s.coachId === currentUser.id || s.coachName === currentUser.data.name)
+                : allTrainingSessions;
+            const filtered = (cat === 'all' || !cat) ? source : source.filter(s => s.categoryId === cat);
+            const containerId = isCoach ? 'coachSessionsList' : 'adminSessionsList';
+            renderSessionsList(document.getElementById(containerId), filtered);
+        }
 
         function showCoachTrainingSessions() {
             currentViewFunction = showCoachTrainingSessions;
             currentViewArgs = [];
+            sessionsListFilterSource = 'coach';
             const coach = currentUser.data;
             const mySessions = allTrainingSessions.filter(s => s.coachId === currentUser.id || s.coachName === coach
             .name);
@@ -2846,6 +2819,7 @@
                     <button class="btn-submit" data-action="showCreateTrainingSession"><i class="fas fa-plus"></i> إنشاء حصة جديدة</button>
                     <button class="btn-submit" data-action="showTrainingSessionsArchive" style="background:linear-gradient(135deg,#6c757d,#495057);"><i class="fas fa-archive"></i> أرشيف الحصص</button>
                 </div>
+                ${buildSessionsCategoryFilterHtml()}
                 <div id="coachSessionsList"></div>
             `;
             content.innerHTML = html;
@@ -2927,10 +2901,6 @@
                         <div class="form-group"><label>الحالة</label>
                             <select id="sessionStatus">${SESSION_STATUS.map(s => `<option value="${s}">${s}</option>`).join('')}</select>
                         </div>
-                        <div class="form-group full"><label>أهداف الحصة</label>
-                            <select id="sessionObjectives" multiple style="height:80px;">${OBJECTIVES.map(o => `<option value="${o}">${o}</option>`).join('')}</select>
-                            <small>Ctrl+Click لتحديد عدة أهداف</small>
-                        </div>
                         <div class="form-group full"><label>اللاعبون المستدعون</label>
                             <div id="playersListContainer" style="border:1px solid #e0e0e0; border-radius:10px; padding:8px; max-height:200px; overflow-y:auto;">
                                 <p class="text-muted">اختر الفئة أولاً لعرض اللاعبين</p>
@@ -2940,7 +2910,6 @@
                                 <button class="btn-sm btn-sm-danger" data-action="deselectAllSessionPlayers">❌ إلغاء الكل</button>
                             </div>
                         </div>
-                        <div class="form-group full"><label>ملاحظات</label><textarea id="sessionNotes" rows="2"></textarea></div>
                         <div class="form-group full"><button class="btn-submit" data-action="saveTrainingSession"><i class="fas fa-save"></i> حفظ الحصة</button></div>
                     </div>
                 </div>
@@ -3019,9 +2988,6 @@
             const field = document.getElementById('sessionField').value.trim();
             const trainingType = document.getElementById('sessionTrainingType').value;
             const status = document.getElementById('sessionStatus').value;
-            const notes = document.getElementById('sessionNotes').value.trim();
-            const objectivesSelect = document.getElementById('sessionObjectives');
-            const objectives = Array.from(objectivesSelect.selectedOptions).map(o => o.value);
             const playersList = sessionSelectedPlayers;
 
             if (!date || !startTime || !endTime || !categoryId || !trainingType) {
@@ -3041,8 +3007,6 @@
                 field: field || 'غير محدد',
                 trainingType,
                 status,
-                generalNotes: notes,
-                objectives,
                 playersList,
                 createdAt: new Date().toISOString(),
                 updatedAt: new Date().toISOString(),
@@ -3105,6 +3069,7 @@
         function showAdminTrainingSessions() {
             currentViewFunction = showAdminTrainingSessions;
             currentViewArgs = [];
+            sessionsListFilterSource = 'admin';
             const content = document.getElementById('pageContent');
             content.innerHTML = `
                 <h2 class="page-title">⚽ الحصص التدريبية</h2>
@@ -3113,6 +3078,7 @@
                     <button class="btn-submit" data-action="showCreateTrainingSession"><i class="fas fa-plus"></i> إنشاء حصة جديدة</button>
                     <button class="btn-submit" data-action="showTrainingSessionsArchive" style="background:linear-gradient(135deg,#6c757d,#495057);"><i class="fas fa-archive"></i> أرشيف الحصص</button>
                 </div>
+                ${buildSessionsCategoryFilterHtml()}
                 <div id="adminSessionsList"></div>
             `;
             setActiveMenu(2);
@@ -4341,6 +4307,26 @@
             updateDashboardActionBar();
         }
 
+        function exportPlayersListPDF() {
+            const activeCatBtn = document.querySelector('[data-action="filterPlayers"].active');
+            const activeCat = activeCatBtn ? activeCatBtn.getAttribute('data-cat') : 'all';
+            const catLabel = activeCat === 'all' || !activeCat ? 'جميع الفئات' : activeCat;
+            const tableWrap = document.getElementById('playersTableBody')?.closest('.table-wrap');
+            if (!tableWrap) { showToast('لا يوجد جدول لتصديره', 'warning'); return; }
+            showLoading('جاري تجهيز ملف PDF...');
+            const clone = tableWrap.cloneNode(true);
+            clone.querySelectorAll('button, select').forEach(el => {
+                if (el.tagName === 'SELECT') { const span = document.createElement('span'); span.textContent = el.value; el.replaceWith(span); }
+                else el.remove();
+            });
+            const wrapper = document.createElement('div');
+            wrapper.style.cssText = 'padding:20px; direction:rtl; font-family:Cairo,sans-serif;';
+            wrapper.innerHTML = `<h2 style="text-align:center;color:#082D5C;">قائمة اللاعبين — ${catLabel}</h2><p style="text-align:center;color:#888;">أكاديمية ASSARU — ${new Date().toLocaleDateString('ar-EG')}</p>`;
+            wrapper.appendChild(clone);
+            html2pdf().set({ margin: 10, filename: `قائمة_اللاعبين_${catLabel}.pdf`, html2canvas: { scale: 2 }, jsPDF: { orientation: 'landscape' } })
+                .from(wrapper).save().then(hideLoading).catch(() => { hideLoading(); showToast('❌ فشل إنشاء PDF', 'error'); });
+        }
+
         // ================================================================
         // 25. دوال رفع الملفات والمعرض
         // ================================================================
@@ -5441,10 +5427,10 @@
             EventManager.register('filterPlayersBy', function (c) { filterPlayersBy(c.dataset.key || 'payment'); });
             EventManager.register('applyPlayerFilters', function () { applyPlayerFilters(); });
             EventManager.register('resetPlayerFilters', function () { resetPlayerFilters(); });
-            EventManager.register('addPlayerWithPhoto', function () { addPlayerWithPhoto(); });
             EventManager.register('approvePlayer', function (c) { approvePlayer(c.dataset.id); });
             EventManager.register('rejectPlayer', function (c) { rejectPlayer(c.dataset.id); });
             EventManager.register('deletePlayer', function (c) { deletePlayer(c.dataset.id); });
+            EventManager.register('changePlayerCategoryInline', function (c) { changePlayerCategoryInline(c); });
             EventManager.register('showPlayerDetailPage', function (c) { showPlayerDetailPage(c.dataset.id); });
             EventManager.register('showCoachHome', function () { showCoachHome(); });
             EventManager.register('showCoachPlayers', function () { showCoachPlayers(); });
@@ -5501,6 +5487,8 @@
             EventManager.register('showFullImage', function (c) { showFullImage(c.dataset.src); });
             EventManager.register('showStatsCard', function (c) { showStatsCard(c.dataset.id); });
             EventManager.register('showAttendanceFull', function (c) { showAttendanceFull(c.dataset.id); });
+            EventManager.register('exportAttendanceSheetPDF', function (c) { exportAttendanceSheetPDF(c); });
+            EventManager.register('exportPlayersListPDF', function () { exportPlayersListPDF(); });
             EventManager.register('toggleMonthPaymentSimple', function (c) { toggleMonthPaymentSimple(c.dataset.playerId, c.dataset.monthKey); });
             EventManager.register('editPlayerField', function (c) { editPlayerField(c.dataset.id, c.dataset.field, c.dataset.current, c.dataset.label); });
             EventManager.register('editPlayerStat', function (c) { editPlayerStat(c.dataset.id, c.dataset.key, c.dataset.current, c.dataset.label); });
@@ -5508,6 +5496,7 @@
             EventManager.register('closeModal', function (c) { closeModal(c.dataset.id); });
             EventManager.register('closeEditModal', function () { closeEditModal(); });
             EventManager.register('submitEditModal', function () { submitEditModal(); });
+            EventManager.register('filterTrainingSessionsByCategoryUI', function (c) { filterTrainingSessionsByCategoryUI(c); });
 
             /* ---- إضافات نظام الدورات ---- */
             EventManager.register('showAdminTournaments', function () { showAdminTournaments(); });
@@ -5567,8 +5556,6 @@
             setupUpload('regParental', 'parentalFileName', 'uploadParental');
             setupUpload('regInternal', 'internalFileName', 'uploadInternal');
             setupUpload('matchOpponentLogo', 'matchOpponentLogoName', 'matchOpponentLogoUpload');
-            setupUpload('newPhoto', 'newPhotoName', 'newPhotoUpload');
-            setupUpload('tournamentLogo', 'tournamentLogoName', 'tournamentLogoUpload');
 
             const regForm = document.getElementById('registrationForm');
             if (regForm) {
@@ -5599,8 +5586,7 @@
                         const [photoData, parentalData, internalData] = await Promise.all([
                             readFileAsBase64(photoFile), readFileAsBase64(parentalFile), readFileAsBase64(internalFile)
                         ]);
-                        const randomSuffix = Math.random().toString(36).substring(2, 6).toUpperCase();
-                        const parentCode = `${firstName}${lastName}${categoryId}${new Date(birthDate).getFullYear()}${randomSuffix}`;
+                        const parentCode = `${firstName} ${lastName} ${new Date(birthDate).getFullYear()} ${categoryId}`;
                         const newPlayer = {
                             firstName, lastName, categoryId, birthDate, birthPlace, studyLevel,
                             health: health || 'سليم', bloodType, guardianName, guardianPhone,
