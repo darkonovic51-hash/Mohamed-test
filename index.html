@@ -485,6 +485,15 @@
         .spf-group select, .spf-group input { padding:8px 10px; border-radius:10px; border:2px solid #e0e0e0; font-family:'Cairo',sans-serif; font-size:0.85rem; }
         .spf-save { align-self:flex-end; height:38px; }
 
+        /* ===== بطاقة معلومات المباراة الاحترافية ===== */
+        .match-info-hero { background:linear-gradient(135deg, var(--dark-navy), var(--navy-blue)); border-radius:20px; padding:24px; border:2px solid; margin-bottom:16px; position:relative; }
+        .match-info-hero-top { display:flex; align-items:center; justify-content:center; gap:24px; flex-wrap:wrap; }
+        .match-info-team { display:flex; flex-direction:column; align-items:center; gap:8px; color:#fff; font-weight:800; }
+        .match-info-team-logo { width:56px; height:56px; border-radius:14px; background:rgba(255,255,255,0.1); display:flex; align-items:center; justify-content:center; object-fit:contain; padding:6px; }
+        .match-info-vs { color:var(--gold); font-weight:900; font-size:1.2rem; }
+        .match-info-hero-badge { position:absolute; top:14px; left:14px; padding:5px 16px; border-radius:20px; font-weight:800; font-size:0.75rem; }
+        .match-info-notes { margin-top:14px; background:var(--light-bg); padding:12px 16px; border-radius:12px; color:#555; font-size:0.9rem; border-right:4px solid var(--primary-blue); }
+
         .parent-dashboard { max-width: 900px; margin:0 auto; background:#fff; border-radius:20px; padding:30px; box-shadow:var(--shadow); }
         .parent-dashboard .player-card { display: flex; align-items: center; gap:20px; border-bottom:1px solid #eee; padding-bottom:16px; margin-bottom:16px; }
         .parent-dashboard .player-card img { width:80px; height:80px; border-radius:50%; object-fit:cover; border:3px solid var(--primary-blue); }
@@ -1675,7 +1684,6 @@
             { key: 'stats', label: 'الإحصائيات', icon: 'fa-chart-bar' },
             { key: 'ratings', label: 'التقييمات', icon: 'fa-star-half-alt' },
             { key: 'report', label: 'تقرير المدرب', icon: 'fa-file-alt' },
-            { key: 'media', label: 'الوسائط', icon: 'fa-photo-video' },
             { key: 'result', label: 'النتيجة', icon: 'fa-trophy' },
             { key: 'timeline', label: 'السجل الزمني', icon: 'fa-history' }
         ];
@@ -1689,11 +1697,11 @@
             if (dataLoaded && !forceReload) return Promise.resolve();
             if (isLoadingData) return dataLoadPromise;
             isLoadingData = true;
-            if (!silent) showProgress('جاري تحميل البيانات...', 0);
+            if (!silent) showLoading('جاري تحديث البيانات...');
             window.addDebugLog('📦 بدء تحميل البيانات' + (forceReload ? ' (إعادة تحميل)' : '') + (silent ? ' (صامت)' : ''), 'info');
 
             dataLoadPromise = new Promise((resolve, reject) => {
-                if (!db) { isLoadingData = false; if (!silent) hideProgress();
+                if (!db) { isLoadingData = false; if (!silent) hideLoading();
                     window.addDebugLog('❌ Firebase غير متصل', 'error');
                     reject('Firebase غير متصل'); return; }
 
@@ -1714,18 +1722,11 @@
                     { key: 'logs', path: 'academy/logs', label: 'السجل' }
                 ];
 
-                const total = items.length;
-                let completed = 0;
                 const results = {};
                 const toArray = (val) => val ? Object.keys(val).map(k => ({ id: k, ...val[k] })) : [];
 
                 Promise.all(items.map(item =>
-                    db.ref(item.path).once('value').then(snap => {
-                        results[item.key] = snap.val();
-                        completed++;
-                        const pct = Math.round((completed / total) * 95);
-                        if (!silent) updateProgress(pct, `جاري تحميل ${item.label}... (${completed}/${total})`);
-                    })
+                    db.ref(item.path).once('value').then(snap => { results[item.key] = snap.val(); })
                 )).then(() => {
                     allPlayers = toArray(results.players);
                     allCoaches = toArray(results.coaches);
@@ -1744,14 +1745,14 @@
                     const duration = Math.round(performance.now() - startTime);
                     dataLoaded = true;
                     isLoadingData = false;
-                    if (!silent) { updateProgress(100, 'تم التحميل بنجاح ✅'); hideProgress(); }
+                    if (!silent) hideLoading();
                     window.addDebugLog(
                         `✅ تم تحميل ${allPlayers.length} لاعب، ${allCoaches.length} مدرب، ${allTrainingSessions.length} حصة (${duration}ms)`,
                         'success');
                     resolve();
                 }).catch(err => {
                     isLoadingData = false;
-                    if (!silent) hideProgress();
+                    if (!silent) hideLoading();
                     window.addDebugLog('❌ فشل تحميل البيانات: ' + err.message, 'error');
                     reject(err);
                 });
@@ -2460,13 +2461,14 @@
             const p = allPlayers.find(x => x.id === playerId);
             if (!p) { showToast('اللاعب غير موجود', 'error'); return; }
             const sessions = allTrainingSessions.filter(s => s.categoryId === p.categoryId && s.status === 'مكتملة')
-                .sort((a, b) => new Date(b.date) - new Date(a.date));
+                .map(s => ({ type: 'حصة', title: s.title || 'حصة تدريبية', date: s.date, status: (s.attendance || {})[playerId], note: (s.notes || {})[playerId], rating: (s.ratings || {})[playerId] }));
+            const matches = allMatches.filter(m => m.categoryId === p.categoryId && m.status === 'منتهية' && (m.callups || {})[playerId]?.called)
+                .map(m => ({ type: 'مباراة', title: `ضد ${m.opponent}`, date: m.date, status: (m.callups || {})[playerId]?.attendanceStatus, note: '', rating: '' }));
+
+            const combined = [...sessions, ...matches].sort((a, b) => new Date(b.date) - new Date(a.date));
 
             let present = 0, absent = 0, excused = 0;
-            sessions.forEach(s => {
-                const st = (s.attendance || {})[playerId];
-                if (st === 'present') present++; else if (st === 'absent') absent++; else if (st === 'excused') excused++;
-            });
+            combined.forEach(e => { if (e.status === 'present') present++; else if (e.status === 'absent') absent++; else if (e.status === 'excused') excused++; });
             const total = present + absent + excused;
             const rate = total > 0 ? Math.round((present / total) * 100) : 0;
 
@@ -2475,24 +2477,21 @@
             container.id = 'attendanceFullModal';
             container.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(4,26,56,0.75); backdrop-filter:blur(10px); z-index:999999; display:flex; align-items:center; justify-content:center; padding:20px;';
 
-            const rowsHtml = sessions.map(s => {
-                const status = (s.attendance || {})[playerId] || 'unmarked';
-                const cls = status === 'present' ? 'present' : status === 'absent' ? 'absent' : status === 'excused' ? 'excused' : '';
-                const label = status === 'present' ? '✅ حاضر' : status === 'absent' ? '❌ غائب' : status === 'excused' ? '⚠️ معذور' : '⬜ غير مسجل';
-                const note = (s.notes || {})[playerId] || '';
-                const rating = (s.ratings || {})[playerId] || '';
+            const rowsHtml = combined.map(e => {
+                const cls = e.status === 'present' ? 'present' : e.status === 'absent' ? 'absent' : e.status === 'excused' ? 'excused' : '';
+                const label = e.status === 'present' ? '✅ حاضر' : e.status === 'absent' ? '❌ غائب' : e.status === 'excused' ? '⚠️ معذور' : '⬜ غير مسجل';
                 return `
                     <div class="attendance-sheet-row ${cls}">
                         <div>
-                            <div>${s.title || 'حصة تدريبية'} <span class="date-badge">— ${s.date}</span></div>
-                            ${note ? `<div style="font-size:0.75rem; font-weight:500; margin-top:4px; opacity:0.85;">📝 ${note}</div>` : ''}
+                            <div>${e.type === 'مباراة' ? '⚽' : '🏃'} ${e.title} <span class="date-badge">— ${e.date}</span></div>
+                            ${e.note ? `<div style="font-size:0.75rem; font-weight:500; margin-top:4px; opacity:0.85;">📝 ${e.note}</div>` : ''}
                         </div>
                         <div style="text-align:left;">
                             <div>${label}</div>
-                            ${rating ? `<div style="font-size:0.75rem; font-weight:600;">⭐ ${rating}</div>` : ''}
+                            ${e.rating ? `<div style="font-size:0.75rem; font-weight:600;">⭐ ${e.rating}</div>` : ''}
                         </div>
                     </div>`;
-            }).join('') || '<p class="text-muted text-center" style="padding:30px;">لا توجد حصص مكتملة بعد</p>';
+            }).join('') || '<p class="text-muted text-center" style="padding:30px;">لا توجد حصص أو مباريات مسجلة بعد</p>';
 
             container.innerHTML = `
                 <div class="attendance-sheet">
@@ -2503,7 +2502,7 @@
                             <div style="font-size:0.7rem; opacity:0.8;">نسبة الحضور</div>
                         </div>
                         <h2>📋 سجل حضور ${p.firstName} ${p.lastName}</h2>
-                        <div class="sub">${p.categoryId} — إجمالي الحصص المسجلة: ${total}</div>
+                        <div class="sub">${p.categoryId} — يشمل الحصص والمباريات — الإجمالي: ${total}</div>
                     </div>
                     <div class="attendance-sheet-summary">
                         <div class="payment-summary-item paid" style="flex:1;"><i class="fas fa-check-circle"></i><span>${present}</span><label>حضور</label></div>
@@ -3460,13 +3459,37 @@
         // ================================================================
         // 20. دوال المباريات الودية - النظام المتكامل
         // ================================================================
+        let matchesListFilterSource = 'admin';
+
+        function buildMatchesCategoryFilterHtml() {
+            let html = `<div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px;">`;
+            html += `<button class="btn-sm btn-sm-warning active" data-action="filterMatchesByCategoryUI" data-cat="all">الكل</button>`;
+            categories.forEach(c => { html += `<button class="btn-sm btn-sm-primary" data-action="filterMatchesByCategoryUI" data-cat="${c}">${c}</button>`; });
+            html += `</div>`;
+            return html;
+        }
+
+        function filterMatchesByCategoryUI(context) {
+            const cat = context.dataset.cat;
+            document.querySelectorAll('[data-action="filterMatchesByCategoryUI"]').forEach(b => b.classList.remove('active'));
+            context.classList.add('active');
+            const isCoach = matchesListFilterSource === 'coach';
+            let source = isCoach ? allMatches.filter(m => m.categoryId === currentUser.data.categoryId) : allMatches;
+            source = source.filter(m => m.status === 'مجدولة' || m.status === 'جارية' || m.status === 'مؤجلة');
+            const filtered = (cat === 'all' || !cat) ? source : source.filter(m => m.categoryId === cat);
+            renderMatchesList(document.getElementById('matchesList'), filtered);
+        }
+
         function renderMatchesList(container, matches) {
             if (!container) return;
             if (matches.length === 0) { container.innerHTML = `<p class="text-muted text-center">لا توجد مباريات</p>`; return; }
             let html = '';
             [...matches].sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(m => {
+                const isScheduled = m.status === 'مجدولة' || m.status === 'جارية';
+                const isFinished = m.status === 'منتهية';
+                const cardClass = isScheduled ? 'session-card-scheduled' : isFinished ? 'session-card-completed' : '';
                 html += `
-                    <div class="match-card">
+                    <div class="match-card ${cardClass}" data-action="showMatchDetailPage" data-id="${m.id}" style="cursor:pointer;">
                         <div class="match-header">
                             <div class="match-teams">
                                 <div class="team"><span class="name">ASSARU ${m.categoryId || ''}</span></div>
@@ -3476,7 +3499,7 @@
                                     <span class="name">${m.opponent || ''}</span>
                                 </div>
                             </div>
-                            <span class="badge-status ${m.status === 'منتهية' ? 'paid' : 'unpaid'}">${m.status || 'مجدولة'}</span>
+                            <span class="badge-status ${m.status === 'منتهية' ? 'paid' : 'unpaid'}">${isScheduled ? '🔴' : isFinished ? '🟢' : ''} ${m.status || 'مجدولة'}</span>
                         </div>
                         <div class="match-info">
                             <span><i class="fas fa-calendar-alt"></i> ${m.date || ''}</span>
@@ -3498,6 +3521,7 @@
         function showAdminMatches() {
             currentViewFunction = showAdminMatches;
             currentViewArgs = [];
+            matchesListFilterSource = 'admin';
             const content = document.getElementById('pageContent');
             content.innerHTML = `
                 <h2 class="page-title">🤝 المباريات الودية</h2>
@@ -3506,11 +3530,13 @@
                     <button class="btn-submit" data-action="openCreateMatchModal"><i class="fas fa-plus"></i> إنشاء مباراة ودية</button>
                     <button class="btn-submit" data-action="showMatchesArchive" style="background:linear-gradient(135deg,#6c757d,#495057);"><i class="fas fa-archive"></i> أرشيف المباريات</button>
                 </div>
+                ${buildMatchesCategoryFilterHtml()}
                 <div id="matchesList"></div>
             `;
             setActiveMenu(3);
-            renderMatchesList(document.getElementById('matchesList'), allMatches);
-            window.addDebugLog(`🤝 عرض المباريات (${allMatches.length})`, 'info');
+            const scheduledOnly = allMatches.filter(m => m.status === 'مجدولة' || m.status === 'جارية' || m.status === 'مؤجلة');
+            renderMatchesList(document.getElementById('matchesList'), scheduledOnly);
+            window.addDebugLog(`🤝 عرض المباريات المجدولة (${scheduledOnly.length})`, 'info');
             EventManager.bindButtons(content);
         }
 
@@ -3528,9 +3554,10 @@
                 </div>
                 <div id="matchesList"></div>
             `;
-            renderMatchesList(document.getElementById('matchesList'), myMatches);
+            const scheduledOnly = myMatches.filter(m => m.status === 'مجدولة' || m.status === 'جارية' || m.status === 'مؤجلة');
+            renderMatchesList(document.getElementById('matchesList'), scheduledOnly);
             setActiveMenu(3);
-            window.addDebugLog(`🤝 عرض مباريات المدرب (${myMatches.length})`, 'info');
+            window.addDebugLog(`🤝 عرض مبارياتي المجدولة (${scheduledOnly.length})`, 'info');
             EventManager.bindButtons(content);
         }
 
@@ -3551,6 +3578,7 @@
         function openCreateMatchModal() {
             if (!requireRole('admin', 'coach')) return;
             const coachCategory = currentUser.role === 'coach' ? currentUser.data.categoryId : '';
+            const activeTournaments = allTournaments.filter(t => t.status !== 'منتهية');
             const container = document.createElement('div');
             container.className = 'session-detail-modal';
             container.id = 'createMatchModal';
@@ -3599,7 +3627,7 @@
 
                         <div class="mf-card">
                             <div class="mf-card-header"><div class="mf-icon"><i class="fas fa-trophy"></i></div><h4>ربط الدورة (اختياري)</h4></div>
-                            <div class="form-group"><label>الدورة</label><select id="cmTournament"><option value="">بدون دورة (مباراة ودية مستقلة)</option></select></div>
+                            <div class="form-group"><label>الدورة</label><select id="cmTournament"><option value="">بدون دورة (مباراة ودية مستقلة)</option>${activeTournaments.map(t => `<option value="${t.id}" ${pendingTournamentIdForMatch === t.id ? 'selected' : ''}>${t.name}</option>`).join('')}</select></div>
                         </div>
 
                         <div class="mf-card">
@@ -3620,11 +3648,10 @@
                 </div>
             `;
             document.body.appendChild(container);
-            container.addEventListener('click', function(e) { if (e.target === this) this.remove(); });
+            container.addEventListener('click', function(e) { if (e.target === this) { this.remove(); pendingTournamentIdForMatch = null; } });
             EventManager.bindButtons(container);
             setupUpload('cmLogo', 'cmLogoName', 'cmLogoUpload');
 
-            // معاينة الشعار الفوري (التعديل 5)
             const cmLogoInput = document.getElementById('cmLogo');
             const cmLogoCircle = document.getElementById('cmLogoPreviewCircle');
             if (cmLogoInput && cmLogoCircle) {
@@ -3641,17 +3668,17 @@
             }
         }
 
-        // ---------- حفظ المباراة (تنفيذ مباشر بدون شريط تقدم + حماية من التنفيذ المزدوج) ----------
         let isSavingMatch = false;
 
         function saveMatchDetailed() {
             if (!requireRole('admin', 'coach')) return;
-            if (isSavingMatch) return; // منع أي استدعاء ثانٍ أثناء تنفيذ عملية جارية
+            if (isSavingMatch) return;
 
             const opponent = document.getElementById('cmOpponent').value.trim();
             const date = document.getElementById('cmDate').value;
             const categoryId = document.getElementById('cmCategory').value;
             if (!opponent || !date || !categoryId) { showToast('الرجاء ملء الحقول الإجبارية', 'warning'); return; }
+            const tournamentId = document.getElementById('cmTournament').value || null;
             const logoFile = document.getElementById('cmLogo').files[0];
 
             const buildData = (logoData) => ({
@@ -3661,7 +3688,7 @@
                 venue: document.getElementById('cmVenue').value.trim(),
                 city: document.getElementById('cmCity').value.trim(),
                 matchType: document.getElementById('cmMatchType').value,
-                categoryId,
+                categoryId, tournamentId,
                 coachId: currentUser.id,
                 coachName: document.getElementById('cmCoachName').value.trim() || currentUser.data.name || '',
                 referees: document.getElementById('cmReferees').value.trim(),
@@ -3677,8 +3704,6 @@
             });
 
             isSavingMatch = true;
-
-            // مؤقت أمان: إن لم يرد الخادم خلال 15 ثانية نحرر القفل ونُعلم المستخدم بدل التعليق للأبد
             let settled = false;
             const safetyTimer = setTimeout(() => {
                 if (settled) return;
@@ -3695,9 +3720,12 @@
                     isSavingMatch = false;
                     allMatches.push({ id: snap.key, ...data });
                     closeModal('createMatchModal');
-                    addLog('إنشاء مباراة ودية', `تم إنشاء مباراة ضد ${opponent}`, currentUser.role);
+                    addLog('إنشاء مباراة ودية', `تم إنشاء مباراة ضد ${opponent}${tournamentId ? ' ضمن دورة' : ''}`, currentUser.role);
                     showToast('✅ تم إنشاء المباراة بنجاح', 'success');
-                    if (currentUser.role === 'coach') showCoachMatches(); else showAdminMatches();
+                    if (tournamentId) { pushTournamentMatchTimeline(tournamentId, `تم إنشاء مباراة ضد ${opponent}`); }
+                    pendingTournamentIdForMatch = null;
+                    if (tournamentId) { openTournamentWorkspace(tournamentId); currentTournamentTab = 'matches'; renderTourTabsBar(); renderTourCard(); }
+                    else if (currentUser.role === 'coach') showCoachMatches(); else showAdminMatches();
                 }).catch(err => {
                     if (settled) return;
                     settled = true;
@@ -3707,29 +3735,24 @@
                 });
             };
 
-            // التعديل المطلوب: معالجة logoFile مع إمكانية المتابعة بدون شعار عند فشل القراءة
             if (logoFile) {
                 const reader = new FileReader();
                 reader.onload = e => finish(buildData(e.target.result));
                 reader.onerror = () => {
                     if (settled) return;
-                    // لا نوقف إنشاء المباراة، فقط نتجاهل الشعار ونكمل الحفظ
-                    const errDetail = reader.error?.message || reader.error?.name || 'سبب غير معروف';
-                    window.addDebugLog('⚠️ فشل قراءة شعار الفريق: ' + errDetail + ' (حجم الملف: ' + Math.round(logoFile.size/1024) + ' كيلوبايت، النوع: ' + logoFile.type + ')', 'warning');
-                    showToast('⚠️ تعذّرت قراءة الشعار، سيتم إنشاء المباراة بدون شعار', 'warning');
+                    showToast('⚠️ تعذّرت قراءة الشعار، سيتم إنشاء المباراة بدونه', 'warning');
                     finish(buildData(null));
                 };
-                try {
-                    reader.readAsDataURL(logoFile);
-                } catch (e) {
-                    if (settled) return;
-                    window.addDebugLog('⚠️ استثناء أثناء قراءة الشعار: ' + e.message, 'warning');
-                    showToast('⚠️ تعذّرت قراءة الشعار، سيتم إنشاء المباراة بدون شعار', 'warning');
-                    finish(buildData(null));
-                }
-            } else {
-                finish(buildData(null));
-            }
+                try { reader.readAsDataURL(logoFile); } catch (e) { if (settled) return; finish(buildData(null)); }
+            } else finish(buildData(null));
+        }
+
+        function pushTournamentMatchTimeline(tournamentId, action) {
+            const t = getTournamentById(tournamentId);
+            if (!t) return;
+            const entry = { action, time: new Date().toISOString(), user: currentUser?.data?.name || currentUser?.role || '' };
+            const timeline = [...(t.timeline || []), entry];
+            db.ref('academy/tournaments/' + t.id + '/timeline').set(timeline).then(() => { t.timeline = timeline; });
         }
 
         // ---------- صفحة تفاصيل المباراة (12 بطاقة بنظام تبويبات) ----------
@@ -3750,6 +3773,7 @@
                     <span class="badge-status ${m.status === 'منتهية' ? 'paid' : 'unpaid'}">${m.status}</span>
                 </div>
                 <div style="display:flex; gap:8px; overflow-x:auto; padding-bottom:8px; margin-bottom:16px;" id="matchTabsBar"></div>
+                <button class="btn-sm btn-sm-info" data-action="exportMatchFilePDF" style="margin-bottom:14px;"><i class="fas fa-file-pdf"></i> تحميل ملف المباراة PDF</button>
                 <div id="matchCardBody"></div>
             `;
             renderMatchTabsBar();
@@ -3802,7 +3826,7 @@
                 info: renderMatchInfoCard, callups: renderMatchCallupsCard, lineup: renderMatchLineupCard,
                 subs: renderMatchSubsCard, captain: renderMatchCaptainCard, events: renderMatchEventsCard,
                 stats: renderMatchStatsCard, ratings: renderMatchRatingsCard, report: renderMatchReportCard,
-                media: renderMatchMediaCard, result: renderMatchResultCard, timeline: renderMatchTimelineCard
+                result: renderMatchResultCard, timeline: renderMatchTimelineCard
             };
             body.innerHTML = renderers[currentMatchTab](m);
             EventManager.bindButtons(body);
@@ -3811,32 +3835,58 @@
 
         // ===== بطاقة 1: المعلومات =====
         function renderMatchInfoCard(m) {
+            const statusColors = { 'مجدولة': '#dc3545', 'جارية': '#dc3545', 'منتهية': '#28a745', 'ملغاة': '#6c757d', 'مؤجلة': '#ffc107' };
+            const color = statusColors[m.status] || '#45B3FF';
             return `
+                <div class="match-info-hero" style="border-color:${color};">
+                    <div class="match-info-hero-top">
+                        <div class="match-info-team">
+                            <div class="match-info-team-logo"><i class="fas fa-shield-alt" style="color:var(--primary-blue);"></i></div>
+                            <span>ASSARU ${m.categoryId}</span>
+                        </div>
+                        <span class="match-info-vs">VS</span>
+                        <div class="match-info-team">
+                            ${m.opponentLogo ? `<img src="${m.opponentLogo}" class="match-info-team-logo" />` : `<div class="match-info-team-logo"><i class="fas fa-users"></i></div>`}
+                            <span>${m.opponent}</span>
+                        </div>
+                    </div>
+                    <div class="match-info-hero-badge" style="background:${color}22; color:${color};">${m.status}</div>
+                </div>
                 <div class="form-card">
                     <h3>📋 معلومات المباراة</h3>
                     <div class="info-grid-detail">
-                        <div class="item"><div class="label">المنافس</div><div class="value">${m.opponent}</div></div>
-                        <div class="item"><div class="label">التاريخ</div><div class="value">${m.date}</div></div>
-                        <div class="item"><div class="label">الوقت</div><div class="value">${m.startTime || '-'} - ${m.endTime || '-'}</div></div>
-                        <div class="item"><div class="label">الملعب</div><div class="value">${m.venue || '-'}</div></div>
-                        <div class="item"><div class="label">المدينة</div><div class="value">${m.city || '-'}</div></div>
-                        <div class="item"><div class="label">الفئة</div><div class="value">${m.categoryId}</div></div>
-                        <div class="item"><div class="label">المدرب</div><div class="value">${m.coachName || '-'}</div></div>
-                        <div class="item"><div class="label">نوع المباراة</div><div class="value">${m.matchType || '-'}</div></div>
-                        <div class="item"><div class="label">الحكام</div><div class="value">${m.referees || '-'}</div></div>
+                        <div class="item"><div class="label"><i class="fas fa-calendar-alt"></i> التاريخ</div><div class="value">${m.date}</div></div>
+                        <div class="item"><div class="label"><i class="fas fa-clock"></i> الوقت</div><div class="value">${m.startTime || '-'} - ${m.endTime || '-'}</div></div>
+                        <div class="item"><div class="label"><i class="fas fa-map-pin"></i> الملعب</div><div class="value">${m.venue || '-'}</div></div>
+                        <div class="item"><div class="label"><i class="fas fa-city"></i> المدينة</div><div class="value">${m.city || '-'}</div></div>
+                        <div class="item"><div class="label"><i class="fas fa-tag"></i> الفئة</div><div class="value">${m.categoryId}</div></div>
+                        <div class="item"><div class="label"><i class="fas fa-user-tie"></i> المدرب</div><div class="value">${m.coachName || '-'}</div></div>
+                        <div class="item"><div class="label"><i class="fas fa-trophy"></i> نوع المباراة</div><div class="value">${m.matchType || '-'}</div></div>
+                        <div class="item"><div class="label"><i class="fas fa-flag"></i> الحكام</div><div class="value">${m.referees || '-'}</div></div>
                     </div>
-                    ${m.preMatchNotes ? `<p class="text-muted" style="margin-top:10px;">📝 ${m.preMatchNotes}</p>` : ''}
+                    ${m.preMatchNotes ? `<div class="match-info-notes"><i class="fas fa-sticky-note"></i> ${m.preMatchNotes}</div>` : ''}
                     <div class="form-group" style="margin-top:16px; max-width:260px;">
-                        <label>حالة المباراة</label>
+                        <label>تحديث حالة المباراة</label>
                         <select data-action="updateMatchStatus">${MATCH_STATUS_LIST.map(s => `<option value="${s}" ${s === m.status ? 'selected' : ''}>${s}</option>`).join('')}</select>
                     </div>
                 </div>
             `;
         }
+
         function updateMatchStatus(context) {
             if (!requireRole('admin', 'coach')) return;
             const status = context.value;
-            updateMatchInFirebase({ status }, '✅ تم تحديث الحالة').then(() => pushMatchTimeline(`تم تغيير حالة المباراة إلى ${status}`));
+            updateMatchInFirebase({ status }, '✅ تم تحديث الحالة').then(() => {
+                pushMatchTimeline(`تم تغيير حالة المباراة إلى ${status}`);
+                if (status === 'منتهية') {
+                    showToast('⚽ الرجاء إدخال نتيجة المباراة الآن', 'info');
+                    currentMatchTab = 'result';
+                    renderMatchTabsBar();
+                    renderMatchCard();
+                } else {
+                    renderMatchCard();
+                }
+            });
         }
 
         // ===== بطاقة 2: الاستدعاء =====
@@ -3845,36 +3895,102 @@
             const callups = m.callups || {};
             const rows = players.map(p => {
                 const c = callups[p.id] || { called: true };
+                const details = allPlayerDetails[p.id] || {};
+                const fitness = details.fitness ?? 80;
+                const fitCls = fitness >= 70 ? 'ready' : fitness >= 40 ? 'notready' : 'injured';
+                const imgSrc = p.photo && p.photo.startsWith('data:image') ? p.photo : 'https://via.placeholder.com/36';
+                const attStatus = c.attendanceStatus || '';
                 return `
-                    <div class="player-row">
-                        <span class="player-name">${p.firstName} ${p.lastName}</span>
-                        <select class="attendance-select" data-action="toggleCallup" data-player-id="${p.id}">
-                            <option value="called" ${c.called ? 'selected' : ''}>✅ مستدعى</option>
-                            <option value="notcalled" ${!c.called ? 'selected' : ''}>❌ غير مستدعى</option>
-                        </select>
-                        ${!c.called ? `
-                            <select class="attendance-select" data-action="setCallupReason" data-player-id="${p.id}">
-                                <option value="">سبب عدم الاستدعاء</option>
+                    <div class="sp-row ${c.called ? 'is-called' : 'is-excused'}" id="matchCallupRow_${p.id}">
+                        <img src="${imgSrc}" class="sp-avatar" />
+                        <div class="sp-info">
+                            <span class="sp-name">${p.firstName} ${p.lastName}</span>
+                            <span class="sp-meta">${c.called ? 'مستدعى للمباراة' : (c.reason || 'مستبعد')}</span>
+                        </div>
+                        <span class="health-badge ${fitCls}">💪 ${fitness}%</span>
+                        ${c.called ? `
+                            <select class="attendance-select" id="matchAtt_${p.id}" style="min-width:110px;">
+                                <option value="">الحضور؟</option>
+                                <option value="present" ${attStatus === 'present' ? 'selected' : ''}>✅ حاضر</option>
+                                <option value="absent" ${attStatus === 'absent' ? 'selected' : ''}>❌ غائب</option>
+                                <option value="excused" ${attStatus === 'excused' ? 'selected' : ''}>⚠️ معذور</option>
+                            </select>` : `
+                            <select class="attendance-select" id="matchReason_${p.id}" style="min-width:130px;">
+                                <option value="">سبب الاستبعاد</option>
                                 ${NO_CALLUP_REASONS.map(r => `<option value="${r}" ${c.reason === r ? 'selected' : ''}>${r}</option>`).join('')}
-                            </select>` : ''}
+                            </select>`}
+                        <button class="sp-toggle-btn ${c.called ? 'called' : 'excused'}" data-action="toggleMatchCallup" data-player-id="${p.id}">
+                            <i class="fas ${c.called ? 'fa-check-circle' : 'fa-user-slash'}"></i> ${c.called ? 'مستدعى' : 'مستبعد'}
+                        </button>
+                        <button class="btn-sm btn-sm-primary" data-action="saveMatchCallupRow" data-player-id="${p.id}"><i class="fas fa-save"></i> حفظ</button>
                     </div>`;
-            }).join('');
-            return `<div class="form-card"><h3>📣 استدعاء اللاعبين</h3>${rows || '<p class="text-muted">لا يوجد لاعبون</p>'}</div>`;
+            }).join('') || '<p class="text-muted" style="padding:16px; text-align:center;">لا يوجد لاعبون في هذه الفئة</p>';
+
+            return `
+                <div class="form-card">
+                    <h3>📣 استدعاء اللاعبين للمباراة</h3>
+                    <div class="sp-toolbar">
+                        <button class="btn-sm btn-sm-success" data-action="selectAllMatchCallups"><i class="fas fa-check-double"></i> استدعاء الكل</button>
+                        <button class="btn-sm btn-sm-danger" data-action="deselectAllMatchCallups"><i class="fas fa-times"></i> استبعاد الكل</button>
+                    </div>
+                    <div class="sp-container" style="max-height:420px;">
+                        <div class="sp-table">${rows}</div>
+                    </div>
+                    <div class="sp-legend">
+                        <span><i class="fas fa-circle" style="color:#28a745;"></i> مستدعى</span>
+                        <span><i class="fas fa-circle" style="color:#dc3545;"></i> مستبعد</span>
+                    </div>
+                </div>`;
         }
-        function toggleCallup(context) {
+
+        function toggleMatchCallup(context) {
             if (!requireRole('admin', 'coach')) return;
-            const m = getCurrentMatch(); const playerId = context.dataset.playerId;
+            const m = getCurrentMatch();
+            const playerId = context.dataset.playerId;
             const callups = { ...(m.callups || {}) };
-            callups[playerId] = { ...(callups[playerId] || {}), called: context.value === 'called' };
-            if (context.value === 'called') delete callups[playerId].reason;
-            updateMatchInFirebase({ callups }).then(() => renderMatchCard());
+            const current = callups[playerId] || { called: true };
+            callups[playerId] = { ...current, called: !current.called };
+            if (callups[playerId].called) delete callups[playerId].reason;
+            m.callups = callups;
+            renderMatchCard();
         }
-        function setCallupReason(context) {
+
+        function selectAllMatchCallups() {
             if (!requireRole('admin', 'coach')) return;
-            const m = getCurrentMatch(); const playerId = context.dataset.playerId;
+            const m = getCurrentMatch();
+            const players = allPlayers.filter(p => p.categoryId === m.categoryId && p.status === 'approved');
             const callups = { ...(m.callups || {}) };
-            callups[playerId] = { ...(callups[playerId] || { called: false }), reason: context.value };
-            updateMatchInFirebase({ callups });
+            players.forEach(p => { callups[p.id] = { ...(callups[p.id] || {}), called: true }; delete callups[p.id].reason; });
+            updateMatchInFirebase({ callups }, '✅ تم استدعاء جميع اللاعبين').then(() => renderMatchCard());
+        }
+
+        function deselectAllMatchCallups() {
+            if (!requireRole('admin', 'coach')) return;
+            const m = getCurrentMatch();
+            const players = allPlayers.filter(p => p.categoryId === m.categoryId && p.status === 'approved');
+            const callups = { ...(m.callups || {}) };
+            players.forEach(p => { callups[p.id] = { ...(callups[p.id] || {}), called: false }; });
+            updateMatchInFirebase({ callups }, '✅ تم استبعاد جميع اللاعبين').then(() => renderMatchCard());
+        }
+
+        function saveMatchCallupRow(context) {
+            if (!requireRole('admin', 'coach')) return;
+            const m = getCurrentMatch();
+            const playerId = context.dataset.playerId;
+            const callups = { ...(m.callups || {}) };
+            const current = { ...(callups[playerId] || { called: true }) };
+            if (current.called) {
+                const attEl = document.getElementById('matchAtt_' + playerId);
+                if (attEl) current.attendanceStatus = attEl.value;
+            } else {
+                const reasonEl = document.getElementById('matchReason_' + playerId);
+                if (reasonEl) current.reason = reasonEl.value;
+            }
+            callups[playerId] = current;
+            updateMatchInFirebase({ callups }, '✅ تم الحفظ').then(() => {
+                const p = allPlayers.find(x => x.id === playerId);
+                addLog('تحديث استدعاء مباراة', `تحديث بيانات ${p ? p.firstName + ' ' + p.lastName : ''} في مباراة ${m.opponent}`, currentUser?.role);
+            });
         }
 
         // ===== بطاقة 3: التشكيلة (ملعب تفاعلي Drag & Drop) =====
@@ -3910,6 +4026,7 @@
                 </div>
             `;
         }
+
         function addPlayerToPitch(context) {
             if (!requireRole('admin', 'coach')) return;
             const m = getCurrentMatch();
@@ -3929,6 +4046,7 @@
             }
             updateMatchInFirebase({ lineup }).then(() => renderMatchCard());
         }
+
         function changeFormation(context) {
             if (!requireRole('admin', 'coach')) return;
             const m = getCurrentMatch();
@@ -3941,6 +4059,7 @@
             lineup.positions = newPositions;
             updateMatchInFirebase({ lineup }).then(() => renderMatchCard());
         }
+
         function initLineupDragDrop() {
             const pitch = document.getElementById('lineupPitch');
             if (!pitch) return;
@@ -4006,6 +4125,7 @@
             }).join('') || '<p class="text-muted">لا توجد تبديلات بعد</p>';
             return `<div class="form-card"><h3>🔄 البدلاء</h3><div class="tournament-players">${benchHtml}</div>${subFormHtml}<div style="margin-top:12px;">${logHtml}</div></div>`;
         }
+
         function applySubstitution() {
             if (!requireRole('admin', 'coach')) return;
             const outId = document.getElementById('subOutPlayer').value;
@@ -4040,6 +4160,7 @@
                     </div>
                 </div>`;
         }
+
         function setCaptain(context) { if (!requireRole('admin', 'coach')) return; updateMatchInFirebase({ captain: context.value }, '✅ تم التحديد'); }
         function setViceCaptain(context) { if (!requireRole('admin', 'coach')) return; updateMatchInFirebase({ viceCaptain: context.value }, '✅ تم التحديد'); }
 
@@ -4064,6 +4185,7 @@
             }).join('') || '<p class="text-muted">لا توجد أحداث بعد</p>';
             return `<div class="form-card"><h3>⏱️ أحداث المباراة</h3>${formHtml}<div style="margin-top:12px;">${logHtml}</div></div>`;
         }
+
         function addMatchEvent() {
             if (!requireRole('admin', 'coach')) return;
             const type = document.getElementById('evType').value;
@@ -4077,6 +4199,7 @@
                 renderMatchCard();
             });
         }
+
         function deleteMatchEvent(context) {
             if (!requireRole('admin', 'coach')) return;
             const idx = parseInt(context.dataset.index);
@@ -4100,6 +4223,7 @@
             const inputs = fields.map(f => `<div class="form-group"><label>${f.label}</label><input type="number" min="0" id="stat_${f.key}" value="${s[f.key] ?? ''}" /></div>`).join('');
             return `<div class="form-card"><h3>📊 إحصائيات المباراة</h3><div class="form-grid">${inputs}<div class="form-group full"><button class="btn-sm btn-sm-primary" data-action="saveMatchStats"><i class="fas fa-save"></i> حفظ الإحصائيات</button></div></div></div>`;
         }
+
         function saveMatchStats() {
             if (!requireRole('admin', 'coach')) return;
             const fields = ['possession', 'shots', 'shotsOnTarget', 'corners', 'fouls', 'offsides', 'yellowCards', 'redCards'];
@@ -4133,6 +4257,7 @@
             }).join('');
             return `<div><h3 style="color:var(--dark-navy); margin-bottom:12px;">⭐ تقييم اللاعبين</h3>${html || '<p class="text-muted">لا يوجد لاعبون لتقييمهم</p>'}</div>`;
         }
+
         function saveMatchPlayerRating(context) {
             if (!requireRole('admin', 'coach')) return;
             const pid = context.dataset.playerId;
@@ -4168,6 +4293,7 @@
                     </div>
                 </div>`;
         }
+
         function saveMatchReport() {
             if (!requireRole('admin', 'coach')) return;
             const report = {
@@ -4180,71 +4306,7 @@
             updateMatchInFirebase({ report }, '✅ تم حفظ التقرير').then(() => pushMatchTimeline('تم اعتماد تقرير المدرب'));
         }
 
-        // ===== بطاقة 10: الوسائط =====
-        function renderMatchMediaCard(m) {
-            const media = m.media || { photos: [], videos: [], pdfs: [] };
-            const photosHtml = (media.photos || []).map((p, i) => `<div style="position:relative;"><img src="${p}" style="width:100px;height:100px;object-fit:cover;border-radius:10px;" /><button class="icon-close-btn" style="position:absolute;top:2px;left:2px;width:24px;height:24px;font-size:0.7rem;" data-action="removeMatchMedia" data-type="photos" data-index="${i}"><i class="fas fa-times"></i></button></div>`).join('');
-            const pdfsHtml = (media.pdfs || []).map((p, i) => `<div class="log-entry-item"><a href="${p.data}" download="${p.name}" class="log-action">📄 ${p.name}</a><button class="btn-sm btn-sm-danger" data-action="removeMatchMedia" data-type="pdfs" data-index="${i}"><i class="fas fa-trash"></i></button></div>`).join('');
-            return `
-                <div class="form-card">
-                    <h3>📷 الصور والملفات</h3>
-                    <div class="form-group"><label>رفع صور</label><input type="file" id="mediaPhotoInput" accept="image/*" multiple /></div>
-                    <button class="btn-sm btn-sm-primary" data-action="uploadMatchPhotos" style="margin-bottom:12px;"><i class="fas fa-upload"></i> رفع الصور</button>
-                    <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px;">${photosHtml || '<span class="text-muted">لا توجد صور</span>'}</div>
-                    <div class="form-group"><label>رفع ملف PDF (تقرير)</label><input type="file" id="mediaPdfInput" accept="application/pdf" /></div>
-                    <button class="btn-sm btn-sm-primary" data-action="uploadMatchPdf" style="margin-bottom:12px;"><i class="fas fa-upload"></i> رفع PDF</button>
-                    <div>${pdfsHtml || '<span class="text-muted">لا توجد ملفات</span>'}</div>
-                    <p class="text-muted" style="margin-top:8px;">للفيديوهات، يفضّل رفعها على يوتيوب ولصق الرابط هنا لتفادي إثقال قاعدة البيانات.</p>
-                    <div class="form-group" style="margin-top:8px;"><label>رابط فيديو</label><input type="text" id="mediaVideoLink" placeholder="https://..." /></div>
-                    <button class="btn-sm btn-sm-primary" data-action="addMatchVideoLink"><i class="fas fa-plus"></i> إضافة رابط الفيديو</button>
-                    <div style="margin-top:8px;">${(media.videos || []).map((v, i) => `<div class="log-entry-item"><a href="${v}" target="_blank" class="log-action">🎬 ${v}</a><button class="btn-sm btn-sm-danger" data-action="removeMatchMedia" data-type="videos" data-index="${i}"><i class="fas fa-trash"></i></button></div>`).join('')}</div>
-                </div>`;
-        }
-        function uploadMatchPhotos() {
-            if (!requireRole('admin', 'coach')) return;
-            const files = document.getElementById('mediaPhotoInput').files;
-            if (!files.length) { showToast('اختر صوراً أولاً', 'warning'); return; }
-            const m = getCurrentMatch();
-            const readers = Array.from(files).map(f => new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = rej; r.readAsDataURL(f); }));
-            showProgress('جاري رفع الصور...', 0);
-            Promise.all(readers).then(dataUrls => {
-                const media = { photos: [], videos: [], pdfs: [], ...(m.media || {}) };
-                media.photos = [...(media.photos || []), ...dataUrls];
-                updateMatchInFirebase({ media }, '✅ تم رفع الصور').then(() => { hideProgress(); renderMatchCard(); });
-            }).catch(() => { hideProgress(); showToast('❌ فشل رفع الصور', 'error'); });
-        }
-        function uploadMatchPdf() {
-            if (!requireRole('admin', 'coach')) return;
-            const file = document.getElementById('mediaPdfInput').files[0];
-            if (!file) { showToast('اختر ملف PDF', 'warning'); return; }
-            const m = getCurrentMatch();
-            const reader = new FileReader();
-            reader.onload = () => {
-                const media = { photos: [], videos: [], pdfs: [], ...(m.media || {}) };
-                media.pdfs = [...(media.pdfs || []), { name: file.name, data: reader.result }];
-                updateMatchInFirebase({ media }, '✅ تم رفع الملف').then(() => renderMatchCard());
-            };
-            reader.readAsDataURL(file);
-        }
-        function addMatchVideoLink() {
-            if (!requireRole('admin', 'coach')) return;
-            const link = document.getElementById('mediaVideoLink').value.trim();
-            if (!link) { showToast('أدخل رابط الفيديو', 'warning'); return; }
-            const m = getCurrentMatch();
-            const media = { photos: [], videos: [], pdfs: [], ...(m.media || {}) };
-            media.videos = [...(media.videos || []), link];
-            updateMatchInFirebase({ media }, '✅ تم إضافة الرابط').then(() => renderMatchCard());
-        }
-        function removeMatchMedia(context) {
-            if (!requireRole('admin', 'coach')) return;
-            const type = context.dataset.type; const idx = parseInt(context.dataset.index);
-            const m = getCurrentMatch();
-            const media = { ...(m.media || {}) };
-            media[type] = [...(media[type] || [])]; media[type].splice(idx, 1);
-            updateMatchInFirebase({ media }, '✅ تم الحذف').then(() => renderMatchCard());
-        }
-
-        // ===== بطاقة 11: النتيجة =====
+        // ===== بطاقة 10: النتيجة =====
         function renderMatchResultCard(m) {
             const r = m.result || {};
             const players = allPlayers.filter(p => p.categoryId === m.categoryId);
@@ -4261,6 +4323,7 @@
                     ${r.scoreHome !== undefined ? `<div style="text-align:center; margin-top:16px; font-size:2rem; font-weight:900; color:var(--dark-navy);">${r.scoreHome} - ${r.scoreAway} <span style="font-size:1rem; color:var(--primary-blue);">(${r.winner || ''})</span></div>` : ''}
                 </div>`;
         }
+
         function saveMatchResult() {
             if (!requireRole('admin', 'coach')) return;
             const scoreHome = parseInt(document.getElementById('resScoreHome').value) || 0;
@@ -4278,7 +4341,7 @@
             });
         }
 
-        // ===== بطاقة 12: السجل الزمني =====
+        // ===== بطاقة 11: السجل الزمني =====
         function renderMatchTimelineCard(m) {
             const timeline = [...(m.timeline || [])].reverse();
             const html = timeline.map(t => `
@@ -4310,26 +4373,65 @@
                         <div class="form-group"><label>المدرب</label><select id="archMatchCoach" onchange="applyMatchArchiveFilters()"><option value="">الكل</option>${coachesNames.map(c => `<option value="${c}">${c}</option>`).join('')}</select></div>
                     </div>
                 </div>
+                <button class="btn-sm btn-sm-info" data-action="exportMatchesArchivePDF" style="margin-bottom:14px;"><i class="fas fa-file-pdf"></i> تحميل أرشيف المباريات PDF</button>
                 <div id="matchArchiveList"></div>
             `;
-            renderMatchesList(document.getElementById('matchArchiveList'), allMatches);
+            const finishedOnly = allMatches.filter(m => m.status === 'منتهية' || m.status === 'ملغاة');
+            renderMatchesList(document.getElementById('matchArchiveList'), finishedOnly);
             window.addDebugLog('🗄️ عرض أرشيف المباريات', 'info');
             updateDashboardActionBar();
             animatePageTransition();
         }
+
         function applyMatchArchiveFilters() {
+            let list = allMatches.filter(m => m.status === 'منتهية' || m.status === 'ملغاة');
             const search = document.getElementById('archMatchSearch')?.value.trim().toLowerCase() || '';
             const season = document.getElementById('archMatchSeason')?.value || '';
             const category = document.getElementById('archMatchCategory')?.value || '';
             const opponent = document.getElementById('archMatchOpponent')?.value || '';
             const coachName = document.getElementById('archMatchCoach')?.value || '';
-            let list = allMatches;
             if (search) list = list.filter(m => (m.opponent || '').toLowerCase().includes(search));
             if (season) list = list.filter(m => (m.season || (m.date ? new Date(m.date).getFullYear().toString() : '')) === season);
             if (category) list = list.filter(m => m.categoryId === category);
             if (opponent) list = list.filter(m => m.opponent === opponent);
             if (coachName) list = list.filter(m => m.coachName === coachName);
             renderMatchesList(document.getElementById('matchArchiveList'), list);
+        }
+
+        function exportMatchesArchivePDF() {
+            const listEl = document.getElementById('matchArchiveList');
+            if (!listEl) return;
+            showLoading('جاري تجهيز ملف PDF...');
+            const clone = listEl.cloneNode(true);
+            const wrapper = document.createElement('div');
+            wrapper.style.cssText = 'padding:20px; direction:rtl; font-family:Cairo,sans-serif;';
+            wrapper.innerHTML = `<h2 style="text-align:center;color:#082D5C;">أرشيف المباريات</h2>
+                <p style="text-align:center;color:#888;">أكاديمية ASSARU — ${new Date().toLocaleDateString('ar-EG')}</p>`;
+            wrapper.appendChild(clone);
+            html2pdf().set({ margin: 10, filename: `أرشيف_المباريات.pdf`, html2canvas: { scale: 2 }, jsPDF: { orientation: 'portrait' } })
+                .from(wrapper).save().then(hideLoading).catch(() => { hideLoading(); showToast('❌ فشل إنشاء PDF', 'error'); });
+        }
+
+        function exportMatchFilePDF() {
+            const body = document.getElementById('matchCardBody');
+            const m = getCurrentMatch();
+            if (!body || !m) return;
+            showLoading('جاري تجهيز ملف PDF...');
+            const clone = body.cloneNode(true);
+            clone.querySelectorAll('input, select').forEach(el => {
+                const span = document.createElement('span');
+                span.textContent = el.tagName === 'SELECT' ? (el.selectedOptions[0]?.textContent || '') : (el.value || '-');
+                span.style.cssText = 'font-weight:700; margin-inline-end:10px;';
+                el.replaceWith(span);
+            });
+            clone.querySelectorAll('button').forEach(el => el.remove());
+            const wrapper = document.createElement('div');
+            wrapper.style.cssText = 'padding:20px; direction:rtl; font-family:Cairo,sans-serif;';
+            wrapper.innerHTML = `<h2 style="text-align:center;color:#082D5C;">مباراة ضد ${m.opponent} — ${m.categoryId}</h2>
+                <p style="text-align:center;color:#888;">${m.date}</p>`;
+            wrapper.appendChild(clone);
+            html2pdf().set({ margin: 10, filename: `مباراة_${m.opponent}_${m.date}.pdf`, html2canvas: { scale: 2 }, jsPDF: { orientation: 'portrait' } })
+                .from(wrapper).save().then(hideLoading).catch(() => { hideLoading(); showToast('❌ فشل إنشاء PDF', 'error'); });
         }
 
         // ================================================================
@@ -4503,11 +4605,10 @@
         // 24. دوال تحديث البيانات وولي الأمر والرجوع
         // ================================================================
         function refreshDashboardData() {
-            showProgress('جاري تحديث البيانات...', 0);
             loadAllData(true, false).then(() => {
-                showToast('✅ تم تحديث البيانات', 'success');
+                showToast('✅ تم تحديث البيانات بنجاح', 'success');
                 refreshCurrentView();
-            }).catch(err => { hideProgress(); showToast('❌ خطأ: ' + err.message, 'error'); });
+            }).catch(err => { showToast('❌ خطأ: ' + err.message, 'error'); });
         }
 
         function showParentHome() {
@@ -5678,11 +5779,15 @@
             EventManager.register('openCreateMatchModal', function () { openCreateMatchModal(); });
             EventManager.register('saveMatchDetailed', function () { saveMatchDetailed(); });
             EventManager.register('showMatchesArchive', function () { showMatchesArchive(); });
+            EventManager.register('exportMatchesArchivePDF', function () { exportMatchesArchivePDF(); });
+            EventManager.register('exportMatchFilePDF', function () { exportMatchFilePDF(); });
             EventManager.register('showMatchDetailPage', function (c) { showMatchDetailPage(c.dataset.id); });
             EventManager.register('switchMatchTab', function (c) { switchMatchTab(c); });
             EventManager.register('updateMatchStatus', function (c) { updateMatchStatus(c); });
-            EventManager.register('toggleCallup', function (c) { toggleCallup(c); });
-            EventManager.register('setCallupReason', function (c) { setCallupReason(c); });
+            EventManager.register('toggleMatchCallup', function (c) { toggleMatchCallup(c); });
+            EventManager.register('selectAllMatchCallups', function () { selectAllMatchCallups(); });
+            EventManager.register('deselectAllMatchCallups', function () { deselectAllMatchCallups(); });
+            EventManager.register('saveMatchCallupRow', function (c) { saveMatchCallupRow(c); });
             EventManager.register('addPlayerToPitch', function (c) { addPlayerToPitch(c); });
             EventManager.register('changeFormation', function (c) { changeFormation(c); });
             EventManager.register('applySubstitution', function () { applySubstitution(); });
@@ -5693,10 +5798,6 @@
             EventManager.register('saveMatchStats', function () { saveMatchStats(); });
             EventManager.register('saveMatchPlayerRating', function (c) { saveMatchPlayerRating(c); });
             EventManager.register('saveMatchReport', function () { saveMatchReport(); });
-            EventManager.register('uploadMatchPhotos', function () { uploadMatchPhotos(); });
-            EventManager.register('uploadMatchPdf', function () { uploadMatchPdf(); });
-            EventManager.register('addMatchVideoLink', function () { addMatchVideoLink(); });
-            EventManager.register('removeMatchMedia', function (c) { removeMatchMedia(c); });
             EventManager.register('saveMatchResult', function () { saveMatchResult(); });
             EventManager.register('showAdminCoaches', function () { showAdminCoaches(); });
             EventManager.register('addCoach', function () { addCoach(); });
@@ -5720,6 +5821,7 @@
             EventManager.register('closeEditModal', function () { closeEditModal(); });
             EventManager.register('submitEditModal', function () { submitEditModal(); });
             EventManager.register('filterTrainingSessionsByCategoryUI', function (c) { filterTrainingSessionsByCategoryUI(c); });
+            EventManager.register('filterMatchesByCategoryUI', function (c) { filterMatchesByCategoryUI(c); });
 
             /* ---- إضافات نظام الدورات ---- */
             EventManager.register('showAdminTournaments', function () { showAdminTournaments(); });
