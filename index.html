@@ -361,7 +361,11 @@
         .popup-overlay.active { display: flex; }
         .popup-box { background: #fff; border-radius: 30px; padding: 40px 35px; max-width:520px; width:100%; text-align: center; box-shadow: 0 30px 80px rgba(0,0,0,0.3); animation: popupIn 0.5s ease; }
         @keyframes popupIn { 0% { transform: scale(0.85) rotate(-2deg); opacity:0; } 100% { transform: scale(1) rotate(0); opacity:1; } }
-        .popup-box .icon { font-size: 3.5rem; color: #2ecc71; margin-bottom:8px; }
+        .popup-box .icon-wrap { position:relative; width:90px; height:90px; margin:0 auto 6px; display:flex; align-items:center; justify-content:center; }
+        .popup-box .icon-wrap::before, .popup-box .icon-wrap::after { content:''; position:absolute; inset:0; border-radius:50%; background: rgba(46,204,113,0.18); animation: ringPulse 1.8s ease-out infinite; }
+        .popup-box .icon-wrap::after { animation-delay: 0.6s; }
+        @keyframes ringPulse { 0% { transform: scale(0.6); opacity:0.9; } 100% { transform: scale(1.7); opacity:0; } }
+        .popup-box .icon-wrap .icon { position:relative; z-index:2; margin-bottom:0; }
         .popup-box h3 { font-size: 1.6rem; font-weight: 800; color: var(--dark-navy); margin-bottom:6px; }
         .popup-box .sub { color: #888; font-size: 0.95rem; margin-bottom:12px; }
         .popup-box .info-grid { text-align: right; padding:14px; background: var(--light-bg); border-radius:14px; font-size:0.9rem; line-height:2; margin-bottom:14px; }
@@ -1032,7 +1036,7 @@
                                 <div class="icon"><i class="fas fa-camera"></i></div>
                                 <div class="text">انقر لاختيار صورة</div>
                                 <div class="file-name" id="photoFileName"></div>
-                                <input type="file" accept="image/*" required />
+                                <input type="file" id="regPhoto" accept="image/*" required />
                             </div>
                         </div>
                         <div class="form-group full-width">
@@ -1041,7 +1045,7 @@
                                 <div class="icon"><i class="fas fa-file-signature"></i></div>
                                 <div class="text">انقر لرفع ملف الترخيص</div>
                                 <div class="file-name" id="parentalFileName"></div>
-                                <input type="file" accept="image/*,application/pdf" required />
+                                <input type="file" id="regParental" accept="image/*,application/pdf" required />
                             </div>
                         </div>
                         <div class="form-group full-width">
@@ -1050,11 +1054,11 @@
                                 <div class="icon"><i class="fas fa-file-contract"></i></div>
                                 <div class="text">انقر لرفع القانون الداخلي</div>
                                 <div class="file-name" id="internalFileName"></div>
-                                <input type="file" accept="image/*,application/pdf" required />
+                                <input type="file" id="regInternal" accept="image/*,application/pdf" required />
                             </div>
                         </div>
                         <div class="form-group full-width">
-                            <button type="submit" class="btn-submit-reg"><i class="fas fa-paper-plane"></i> إرسال الطلب</button>
+                            <button type="submit" class="btn-submit-reg" id="regSubmitBtn"><i class="fas fa-paper-plane"></i> إرسال الطلب</button>
                         </div>
                     </div>
                 </form>
@@ -1168,7 +1172,9 @@
     <!-- ===== POPUPS ===== -->
     <div class="popup-overlay" id="confirmPopup">
         <div class="popup-box">
-            <div class="icon"><i class="fas fa-check-circle"></i></div>
+            <div class="icon-wrap">
+                <div class="icon"><i class="fas fa-check-circle"></i></div>
+            </div>
             <h3>✅ تم التسجيل بنجاح</h3>
             <p class="sub">تم استلام طلبك، سيتم الاتصال بك قريباً.</p>
             <div class="info-grid" id="confirmInfo"></div>
@@ -1587,6 +1593,12 @@
             });
         }
 
+        // يحوّل أي كود نصي إلى مفتاح صالح لمسار مباشر في Firebase
+        // (لإنشاء فهرس بحث فوري بدل البحث البطيء عبر orderByChild)
+        function sanitizeCodeKey(code) {
+            return (code || '').toString().trim().replace(/[.#$\[\]\/]/g, '_').replace(/\s+/g, '_');
+        }
+
         function closeConfirmPopup() {
             document.getElementById('confirmPopup').classList.remove('active');
         }
@@ -1957,19 +1969,49 @@
 
             try {
                 let user = null;
+                const codeKey = sanitizeCodeKey(code);
 
                 if (role === 'admin') {
                     const snap = await db.ref('academy/admins/adminId').once('value');
                     const data = snap.val();
                     if (data && data.code === code) user = { role: 'admin', data, id: 'adminId' };
+
                 } else if (role === 'coach') {
-                    const snap = await db.ref('academy/coaches').orderByChild('code').equalTo(code).once('value');
-                    if (snap.val()) { const key = Object.keys(snap.val())[0];
-                        user = { role: 'coach', data: snap.val()[key], id: key }; }
+                    // 🚀 مسار سريع: قراءة مباشرة عبر الفهرس (بدون فحص كامل قائمة المدربين)
+                    const indexSnap = await db.ref('academy/coachCodeIndex/' + codeKey).once('value');
+                    const coachId = indexSnap.val();
+                    if (coachId) {
+                        const dataSnap = await db.ref('academy/coaches/' + coachId).once('value');
+                        const data = dataSnap.val();
+                        if (data && data.code === code) user = { role: 'coach', data, id: coachId };
+                    }
+                    if (!user) {
+                        // مسار احتياطي للحسابات القديمة غير المفهرسة بعد + إصلاح ذاتي للفهرس
+                        const snap = await db.ref('academy/coaches').orderByChild('code').equalTo(code).once('value');
+                        if (snap.val()) {
+                            const key = Object.keys(snap.val())[0];
+                            user = { role: 'coach', data: snap.val()[key], id: key };
+                            db.ref('academy/coachCodeIndex/' + codeKey).set(key);
+                        }
+                    }
+
                 } else if (role === 'parent') {
-                    const snap = await db.ref('academy/players').orderByChild('parentCode').equalTo(code).once('value');
-                    if (snap.val()) { const key = Object.keys(snap.val())[0];
-                        user = { role: 'parent', data: snap.val()[key], id: key }; }
+                    // 🚀 مسار سريع: قراءة مباشرة عبر الفهرس (بدون فحص كامل قائمة اللاعبين)
+                    const indexSnap = await db.ref('academy/playerCodeIndex/' + codeKey).once('value');
+                    const playerId = indexSnap.val();
+                    if (playerId) {
+                        const dataSnap = await db.ref('academy/players/' + playerId).once('value');
+                        const data = dataSnap.val();
+                        if (data && data.parentCode === code) user = { role: 'parent', data, id: playerId };
+                    }
+                    if (!user) {
+                        const snap = await db.ref('academy/players').orderByChild('parentCode').equalTo(code).once('value');
+                        if (snap.val()) {
+                            const key = Object.keys(snap.val())[0];
+                            user = { role: 'parent', data: snap.val()[key], id: key };
+                            db.ref('academy/playerCodeIndex/' + codeKey).set(key);
+                        }
+                    }
                 }
 
                 if (user) {
@@ -4682,6 +4724,7 @@
             db.ref('academy/coaches').push(data)
                 .then((snap) => {
                     allCoaches.push({ id: snap.key, ...data });
+                    db.ref('academy/coachCodeIndex/' + sanitizeCodeKey(code)).set(snap.key);
                     addLog('إضافة حساب', `تم إضافة ${roleType === 'admin' ? 'إداري' : 'مدرب'}: ${name}`, currentUser?.role);
                     showToast('✅ تم إضافة الحساب بنجاح', 'success');
                     showAdminCoaches();
@@ -4808,6 +4851,10 @@
                         .then(() => {
                             const idx = allCoaches.findIndex(x => x.id === id);
                             if (idx !== -1) allCoaches[idx][field] = newVal;
+                            if (field === 'code') {
+                                if (currentValue) db.ref('academy/coachCodeIndex/' + sanitizeCodeKey(currentValue)).remove();
+                                db.ref('academy/coachCodeIndex/' + sanitizeCodeKey(newVal)).set(id);
+                            }
                             showToast('✅ تم التحديث فورًا', 'success');
                             if (cameFromCoachFile) showCoachDetailPage(id); else showAdminCoaches();
                         })
@@ -4936,9 +4983,16 @@
             if (!input || !nameDisplay || !container) return;
             input.addEventListener('change', function() {
                 const file = this.files[0];
-                if (file) { nameDisplay.textContent = '✅ ' + file.name;
-                    container.classList.add('has-file'); } else { nameDisplay.textContent = '';
-                    container.classList.remove('has-file'); }
+                if (file) {
+                    nameDisplay.textContent = '✅ تم رفع: ' + file.name;
+                    container.classList.add('has-file');
+                    container.style.borderColor = '#28a745';
+                    showToast('✅ تم رفع الملف بنجاح', 'success');
+                } else {
+                    nameDisplay.textContent = '';
+                    container.classList.remove('has-file');
+                    container.style.borderColor = '';
+                }
             });
         }
 
@@ -6161,10 +6215,32 @@
             setupUpload('regInternal', 'internalFileName', 'uploadInternal');
             setupUpload('matchOpponentLogo', 'matchOpponentLogoName', 'matchOpponentLogoUpload');
 
+            // معاينة فورية للصورة الشخصية عند رفعها في استمارة التسجيل
+            const regPhotoInputEl = document.getElementById('regPhoto');
+            if (regPhotoInputEl) {
+                regPhotoInputEl.addEventListener('change', function() {
+                    const file = this.files[0];
+                    const iconBox = document.querySelector('#uploadPhoto .icon');
+                    if (!iconBox) return;
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = e => {
+                            iconBox.innerHTML = `<img src="${e.target.result}" style="width:50px;height:50px;border-radius:50%;object-fit:cover;border:2px solid #2ecc71;" />`;
+                        };
+                        reader.readAsDataURL(file);
+                    } else {
+                        iconBox.innerHTML = '<i class="fas fa-camera"></i>';
+                    }
+                });
+            }
+
             const regForm = document.getElementById('registrationForm');
             if (regForm) {
                 regForm.addEventListener('submit', async function(e) {
                     e.preventDefault();
+                    const submitBtn = document.getElementById('regSubmitBtn');
+                    if (submitBtn.disabled) return; // منع تكرار الإرسال بضغطات متتالية
+
                     const firstName = document.getElementById('regFirstName').value.trim();
                     const lastName = document.getElementById('regLastName').value.trim();
                     const categoryId = document.getElementById('regCategory').value;
@@ -6185,7 +6261,11 @@
                     }
                     if (!db) { showToast('❌ لا يوجد اتصال بقاعدة البيانات', 'error'); return; }
 
-                    showLoading('جاري إرسال طلب التسجيل...');
+                    // تحميل قصير المدى على الزر فقط (بدون حجب الشاشة بالكامل)
+                    const originalBtnHtml = submitBtn.innerHTML;
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الإرسال...';
+
                     try {
                         const [photoData, parentalData, internalData] = await Promise.all([
                             readFileAsBase64(photoFile), readFileAsBase64(parentalFile), readFileAsBase64(internalFile)
@@ -6197,10 +6277,15 @@
                             parentCode, status: 'pending', registrationDate: new Date().toISOString(),
                             photo: photoData, parentalDoc: parentalData, internalDoc: internalData
                         };
-                        await db.ref('academy/players').push(newPlayer);
-                        hideLoading();
+                        const newPlayerRef = db.ref('academy/players').push();
+                        await newPlayerRef.set(newPlayer);
+                        // فهرسة كود ولي الأمر لتفعيل دخول فوري لاحقاً
+                        await db.ref('academy/playerCodeIndex/' + sanitizeCodeKey(parentCode)).set(newPlayerRef.key);
+
                         regForm.reset();
                         document.querySelectorAll('.upload-area').forEach(el => el.classList.remove('has-file'));
+                        const photoIconBox = document.querySelector('#uploadPhoto .icon');
+                        if (photoIconBox) photoIconBox.innerHTML = '<i class="fas fa-camera"></i>';
                         document.getElementById('confirmInfo').innerHTML = `
                             <p><strong>الاسم:</strong> ${firstName} ${lastName}</p>
                             <p><strong>الفئة:</strong> ${categoryId}</p>
@@ -6209,8 +6294,10 @@
                         `;
                         document.getElementById('confirmPopup').classList.add('active');
                     } catch (err) {
-                        hideLoading();
                         showToast('❌ خطأ أثناء الإرسال: ' + err.message, 'error');
+                    } finally {
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = originalBtnHtml;
                     }
                 });
             }
