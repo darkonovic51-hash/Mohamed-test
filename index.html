@@ -494,6 +494,22 @@
         .match-info-hero-badge { position:absolute; top:14px; left:14px; padding:5px 16px; border-radius:20px; font-weight:800; font-size:0.75rem; }
         .match-info-notes { margin-top:14px; background:var(--light-bg); padding:12px 16px; border-radius:12px; color:#555; font-size:0.9rem; border-right:4px solid var(--primary-blue); }
 
+        /* ===== ملف المدرب ===== */
+        .coach-file-header { display:flex; align-items:center; gap:20px; background:linear-gradient(135deg, var(--dark-navy), var(--navy-blue)); border-radius:22px; padding:26px; margin-bottom:18px; color:#fff; flex-wrap:wrap; }
+        .coach-file-avatar { width:80px; height:80px; border-radius:20px; background:rgba(69,179,255,0.15); border:2px solid var(--primary-blue); display:flex; align-items:center; justify-content:center; font-size:2rem; color:var(--primary-blue); flex-shrink:0; }
+        .coach-file-info h2 { font-size:1.5rem; font-weight:900; margin-bottom:6px; }
+        .coach-file-jobtitle { color:rgba(255,255,255,0.7); font-size:0.85rem; margin-top:6px; }
+        .coach-stats-template { background:linear-gradient(180deg,#fff,#fbfcfe); border:2px solid var(--primary-blue); border-radius:22px; padding:24px; box-shadow:0 10px 30px rgba(69,179,255,0.1); }
+
+        /* ===== رسائل أولياء الأمور ===== */
+        .parent-msg-list { display:flex; flex-direction:column; gap:10px; max-height:340px; overflow-y:auto; padding:4px; }
+        .parent-msg-item { background:#fbfcfe; border:1px solid #eef2f7; border-right:5px solid var(--primary-blue); border-radius:14px; padding:12px 16px; }
+        .parent-msg-item.unread { background:#fff8f0; border-right-color:var(--gold); box-shadow:0 4px 15px rgba(212,160,23,0.15); }
+        .parent-msg-head { display:flex; justify-content:space-between; align-items:center; font-weight:700; color:var(--dark-navy); font-size:0.9rem; margin-bottom:6px; }
+        .parent-msg-date { font-size:0.7rem; color:#888; font-weight:500; }
+        .parent-msg-text { color:#333; font-size:0.92rem; line-height:1.7; margin-bottom:8px; }
+        .parent-msg-footer { display:flex; justify-content:space-between; align-items:center; font-size:0.75rem; color:#888; }
+
         .parent-dashboard { max-width: 900px; margin:0 auto; background:#fff; border-radius:20px; padding:30px; box-shadow:var(--shadow); }
         .parent-dashboard .player-card { display: flex; align-items: center; gap:20px; border-bottom:1px solid #eee; padding-bottom:16px; margin-bottom:16px; }
         .parent-dashboard .player-card img { width:80px; height:80px; border-radius:50%; object-fit:cover; border:3px solid var(--primary-blue); }
@@ -1617,6 +1633,7 @@
         let allMatchReports = [];
         let allPaymentArchive = [];
         let allLogs = [];
+        let allPlayerMessages = {};
         let currentUser = null;
         let currentViewFunction = null;
         let currentViewArgs = [];
@@ -1719,7 +1736,8 @@
                     { key: 'attendanceArchive', path: 'academy/attendanceArchive', label: 'أرشيف الحضور' },
                     { key: 'matchReports', path: 'academy/matchReports', label: 'تقارير المباريات' },
                     { key: 'paymentArchive', path: 'academy/paymentArchive', label: 'أرشيف المدفوعات' },
-                    { key: 'logs', path: 'academy/logs', label: 'السجل' }
+                    { key: 'logs', path: 'academy/logs', label: 'السجل' },
+                    { key: 'playerMessages', path: 'academy/playerMessages', label: 'رسائل أولياء الأمور' }
                 ];
 
                 const results = {};
@@ -1741,6 +1759,7 @@
                     allMatchReports = toArray(results.matchReports);
                     allPaymentArchive = toArray(results.paymentArchive);
                     allLogs = toArray(results.logs);
+                    allPlayerMessages = results.playerMessages || {};
 
                     const duration = Math.round(performance.now() - startTime);
                     dataLoaded = true;
@@ -1778,6 +1797,142 @@
                 db.ref('academy/logs').push(logEntry).catch(err => console.error('فشل تسجيل السجل:', err));
             }
             allLogs.push({ id: Date.now(), ...logEntry });
+        }
+
+        // ================================================================
+        // 8.5 نظام رسائل أولياء الأمور
+        // ================================================================
+        function getPlayerMessagesArray(playerId) {
+            const msgs = allPlayerMessages[playerId] || {};
+            return Object.keys(msgs).map(k => ({ id: k, ...msgs[k] })).sort((a, b) => new Date(b.date) - new Date(a.date));
+        }
+
+        function getUnreadMessagesCount(playerId) {
+            return getPlayerMessagesArray(playerId).filter(m => !m.read).length;
+        }
+
+        function showSendMessageModal(playerId) {
+            if (!requireRole('admin', 'coach')) return;
+            const p = allPlayers.find(x => x.id === playerId);
+            if (!p) return;
+            showEditModal({
+                title: `📩 إرسال رسالة لولي أمر ${p.firstName} ${p.lastName}`,
+                icon: 'fa-paper-plane',
+                fields: [
+                    { id: 'msgType', label: 'نوع الرسالة', type: 'select', value: 'عام', options: [
+                        { value: 'عام', label: '📢 عام' }, { value: 'دفع', label: '💳 متعلق بالدفع' },
+                        { value: 'حضور', label: '📋 متعلق بالحضور' }, { value: 'صحي', label: '🩺 متعلق بالحالة الصحية' },
+                        { value: 'استدعاء', label: '⚽ استدعاء أو مناسبة' }, { value: 'تنبيه', label: '⚠️ تنبيه هام' }
+                    ]},
+                    { id: 'msgText', label: 'نص الرسالة', type: 'textarea', value: '' }
+                ],
+                onSave: (values) => {
+                    const text = (values.msgText || '').trim();
+                    if (!text) { showToast('الرجاء كتابة نص الرسالة', 'warning'); return; }
+                    const message = {
+                        type: values.msgType || 'عام',
+                        text,
+                        date: new Date().toISOString(),
+                        from: currentUser?.data?.name || (currentUser?.role === 'admin' ? 'الإدارة' : 'المدرب'),
+                        fromRole: currentUser?.role,
+                        read: false
+                    };
+                    db.ref('academy/playerMessages/' + playerId).push(message)
+                        .then((snap) => {
+                            if (!allPlayerMessages[playerId]) allPlayerMessages[playerId] = {};
+                            allPlayerMessages[playerId][snap.key] = message;
+                            addLog('إرسال رسالة', `تم إرسال رسالة لولي أمر ${p.firstName} ${p.lastName}`, currentUser?.role);
+                            showToast('✅ تم إرسال الرسالة بنجاح', 'success');
+                            showPlayerDetailPage(playerId);
+                        })
+                        .catch(err => showToast('❌ خطأ: ' + err.message, 'error'));
+                }
+            });
+        }
+
+        function deletePlayerMessage(context) {
+            if (!requireRole('admin', 'coach')) return;
+            const playerId = context.dataset.playerId;
+            const msgId = context.dataset.msgId;
+            if (!confirm('حذف هذه الرسالة؟')) return;
+            db.ref('academy/playerMessages/' + playerId + '/' + msgId).remove()
+                .then(() => {
+                    if (allPlayerMessages[playerId]) delete allPlayerMessages[playerId][msgId];
+                    showToast('✅ تم حذف الرسالة', 'success');
+                    showPlayerDetailPage(playerId);
+                })
+                .catch(err => showToast('❌ خطأ: ' + err.message, 'error'));
+        }
+
+        function renderMessagesHistoryHtml(playerId) {
+            const msgs = getPlayerMessagesArray(playerId);
+            const typeIcons = { 'عام': '📢', 'دفع': '💳', 'حضور': '📋', 'صحي': '🩺', 'استدعاء': '⚽', 'تنبيه': '⚠️' };
+            const canManage = currentUser?.role === 'admin' || currentUser?.role === 'coach';
+            if (msgs.length === 0) return '<p class="text-muted text-center" style="padding:14px;">لا توجد رسائل بعد</p>';
+            return msgs.map(m => `
+                <div class="parent-msg-item ${m.read ? '' : 'unread'}">
+                    <div class="parent-msg-head">
+                        <span>${typeIcons[m.type] || '📢'} ${m.type || 'عام'}</span>
+                        <span class="parent-msg-date">${new Date(m.date).toLocaleString('ar-EG')}</span>
+                    </div>
+                    <div class="parent-msg-text">${m.text}</div>
+                    <div class="parent-msg-footer">
+                        <span>من: ${m.from || ''}</span>
+                        ${canManage ? `<button class="btn-sm btn-sm-danger" data-action="deletePlayerMessage" data-player-id="${playerId}" data-msg-id="${m.id}"><i class="fas fa-trash"></i></button>` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function markAllMessagesRead(playerId) {
+            const msgs = allPlayerMessages[playerId] || {};
+            const unreadIds = Object.keys(msgs).filter(k => !msgs[k].read);
+            if (unreadIds.length === 0) return;
+            const updates = {};
+            unreadIds.forEach(id => { updates[id + '/read'] = true; });
+            db.ref('academy/playerMessages/' + playerId).update(updates).then(() => {
+                unreadIds.forEach(id => { allPlayerMessages[playerId][id].read = true; });
+            }).catch(() => {});
+        }
+
+        function showParentMessagesModal(playerId) {
+            const unread = getPlayerMessagesArray(playerId).filter(m => !m.read);
+            if (unread.length === 0) return;
+            const p = allPlayers.find(x => x.id === playerId);
+            const typeIcons = { 'عام': '📢', 'دفع': '💳', 'حضور': '📋', 'صحي': '🩺', 'استدعاء': '⚽', 'تنبيه': '⚠️' };
+            const container = document.createElement('div');
+            container.className = 'session-detail-modal';
+            container.id = 'parentMessagesModal';
+            container.innerHTML = `
+                <div class="modal-content" style="max-width:560px;">
+                    <div class="modal-header">
+                        <h2>📩 لديك ${unread.length} رسالة جديدة بخصوص ${p ? p.firstName + ' ' + p.lastName : 'ابنك'}</h2>
+                    </div>
+                    <div style="max-height:50vh; overflow-y:auto;">
+                        ${unread.map(m => `
+                            <div class="parent-msg-item unread">
+                                <div class="parent-msg-head">
+                                    <span>${typeIcons[m.type] || '📢'} ${m.type || 'عام'}</span>
+                                    <span class="parent-msg-date">${new Date(m.date).toLocaleString('ar-EG')}</span>
+                                </div>
+                                <div class="parent-msg-text">${m.text}</div>
+                                <div class="parent-msg-footer"><span>من: ${m.from || ''}</span></div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div style="margin-top:16px; text-align:center;">
+                        <button class="btn-sm btn-sm-primary" data-action="closeParentMessagesModal" data-id="${playerId}"><i class="fas fa-check"></i> تم الاطلاع</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(container);
+            EventManager.bindButtons(container);
+        }
+
+        function closeParentMessagesModal(context) {
+            const playerId = context.dataset.id;
+            markAllMessagesRead(playerId);
+            closeModal('parentMessagesModal');
         }
 
         // ================================================================
@@ -2389,6 +2544,9 @@
                     ${paymentHtml}
                     <div class="section-title-detail">📋 سجل الحضور</div>
                     ${attendHtml}
+                    <div class="section-title-detail">📩 الرسائل الموجهة لولي الأمر</div>
+                    ${canEdit ? `<button class="btn-sm btn-sm-primary" data-action="showSendMessageModal" data-id="${playerId}" style="margin-bottom:10px;"><i class="fas fa-paper-plane"></i> إرسال رسالة جديدة</button>` : ''}
+                    <div class="parent-msg-list">${renderMessagesHistoryHtml(playerId)}</div>
                     ${currentUser?.role === 'parent' ? '' : `
                         <div class="section-title-detail">📎 الوثائق</div>
                         <div style="display:flex; gap:16px; flex-wrap:wrap; margin-bottom:16px;">
@@ -2403,6 +2561,9 @@
             EventManager.bindButtons(content);
             updateDashboardActionBar();
             animatePageTransition();
+            if (currentUser?.role === 'parent') {
+                setTimeout(() => showParentMessagesModal(playerId), 400);
+            }
         }
 
         // ================================================================
@@ -4445,15 +4606,20 @@
         function renderCoachesTable() {
             const tbody = document.getElementById('coachesTableBody');
             if (!tbody) return;
-            if (allCoaches.length === 0) { tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:#888;padding:20px;">لا يوجد مدربون</td></tr>`; return; }
+            if (allCoaches.length === 0) { tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:#888;padding:20px;">لا يوجد مدربون</td></tr>`; return; }
             let html = '';
             allCoaches.forEach((c, idx) => {
+                const isAdmin = c.roleType === 'admin';
                 html += `<tr>
                     <td>${idx + 1}</td>
                     <td class="editable-field" data-action="editCoachField" data-id="${c.id}" data-field="name" data-current="${c.name || ''}">${c.name || ''}</td>
-                    <td class="editable-field" data-action="editCoachField" data-id="${c.id}" data-field="categoryId" data-current="${c.categoryId || ''}">${c.categoryId || ''}</td>
+                    <td><span class="badge-status ${isAdmin ? 'unpaid' : 'paid'}">${isAdmin ? '🗂️ إداري عام' : '🧑‍🏫 مدرب ' + (c.categoryId || '')}</span></td>
                     <td class="editable-field" data-action="editCoachField" data-id="${c.id}" data-field="phone" data-current="${c.phone || ''}">${c.phone || '-'}</td>
-                    <td><button class="btn-sm btn-sm-danger" data-action="deleteCoach" data-id="${c.id}"><i class="fas fa-trash"></i></button></td>
+                    <td>${c.jobTitle || '-'}</td>
+                    <td>
+                        <button class="btn-sm btn-sm-info" data-action="showCoachDetailPage" data-id="${c.id}"><i class="fas fa-folder-open"></i> فتح الملف</button>
+                        <button class="btn-sm btn-sm-danger" data-action="deleteCoach" data-id="${c.id}"><i class="fas fa-trash"></i></button>
+                    </td>
                 </tr>`;
             });
             tbody.innerHTML = html;
@@ -4468,39 +4634,56 @@
                 <h2 class="page-title">🧑‍🏫 المدربون</h2>
                 <p class="page-sub">إدارة مدربي الأكاديمية (الكود لا يظهر لحمايته، يمكن تعيينه فقط عند الإضافة)</p>
                 <div class="table-wrap"><table>
-                    <thead><tr><th>#</th><th>الاسم</th><th>الفئة</th><th>الهاتف</th><th>إجراءات</th></tr></thead>
+                    <thead><tr><th>#</th><th>الاسم</th><th>نوع الحساب</th><th>الهاتف</th><th>الصفة</th><th>إجراءات</th></tr></thead>
                     <tbody id="coachesTableBody"></tbody>
                 </table></div>
                 <div class="form-card">
-                    <h3>➕ إضافة مدرب جديد</h3>
+                    <h3>➕ إضافة حساب جديد (مدرب فئة أو إداري عام)</h3>
                     <div class="form-grid">
+                        <div class="form-group"><label>نوع الحساب</label>
+                            <select id="newCoachRoleType" onchange="toggleNewCoachCategoryField()">
+                                <option value="coach">🧑‍🏫 مدرب فئة معينة</option>
+                                <option value="admin">🗂️ إداري عام (بدون فئة)</option>
+                            </select>
+                        </div>
                         <div class="form-group"><label>الاسم الكامل</label><input type="text" id="newCoachName" /></div>
-                        <div class="form-group"><label>الفئة</label><select id="newCoachCategory">${categories.map(c => `<option value="${c}">${c}</option>`).join('')}</select></div>
+                        <div class="form-group" id="newCoachCategoryWrap"><label>الفئة</label><select id="newCoachCategory">${categories.map(c => `<option value="${c}">${c}</option>`).join('')}</select></div>
                         <div class="form-group"><label>كود الدخول</label><input type="text" id="newCoachCode" /></div>
                         <div class="form-group"><label>الهاتف</label><input type="text" id="newCoachPhone" /></div>
+                        <div class="form-group"><label>الصفة الوظيفية</label><input type="text" id="newCoachJobTitle" placeholder="مثال: مدرب رئيسي / إداري الأكاديمية" /></div>
                         <div class="form-group full"><button class="btn-submit" data-action="addCoach"><i class="fas fa-save"></i> حفظ</button></div>
                     </div>
                 </div>
             `;
             setActiveMenu(5);
             renderCoachesTable();
+            setTimeout(toggleNewCoachCategoryField, 50);
             window.addDebugLog(`🧑‍🏫 عرض المدربين (${allCoaches.length})`, 'info');
             EventManager.bindButtons(content);
         }
 
+        function toggleNewCoachCategoryField() {
+            const roleType = document.getElementById('newCoachRoleType')?.value;
+            const wrap = document.getElementById('newCoachCategoryWrap');
+            if (wrap) wrap.style.display = roleType === 'admin' ? 'none' : 'flex';
+        }
+        window.toggleNewCoachCategoryField = toggleNewCoachCategoryField;
+
         function addCoach() {
             if (!requireRole('admin')) return;
+            const roleType = document.getElementById('newCoachRoleType').value;
             const name = document.getElementById('newCoachName').value.trim();
-            const categoryId = document.getElementById('newCoachCategory').value;
+            const categoryId = roleType === 'admin' ? '' : document.getElementById('newCoachCategory').value;
             const code = document.getElementById('newCoachCode').value.trim();
             const phone = document.getElementById('newCoachPhone').value.trim();
+            const jobTitle = document.getElementById('newCoachJobTitle').value.trim();
             if (!name || !code) { showToast('الرجاء ملء الاسم والكود', 'warning'); return; }
-            const data = { name, categoryId, code, phone };
+            const data = { name, categoryId, code, phone, roleType, jobTitle };
             db.ref('academy/coaches').push(data)
                 .then((snap) => {
                     allCoaches.push({ id: snap.key, ...data });
-                    addLog('إضافة مدرب', `تم إضافة المدرب ${name}`, currentUser?.role);
-                    showToast('✅ تم إضافة المدرب', 'success');
+                    addLog('إضافة حساب', `تم إضافة ${roleType === 'admin' ? 'إداري' : 'مدرب'}: ${name}`, currentUser?.role);
+                    showToast('✅ تم إضافة الحساب بنجاح', 'success');
                     showAdminCoaches();
                 })
                 .catch(err => showToast('❌ خطأ: ' + err.message, 'error'));
@@ -4508,22 +4691,114 @@
 
         function deleteCoach(id) {
             if (!requireRole('admin')) return;
-            if (!confirm('حذف هذا المدرب؟')) return;
+            if (!confirm('حذف هذا الحساب؟')) return;
             db.ref('academy/coaches/' + id).remove()
                 .then(() => { allCoaches = allCoaches.filter(c => c.id !== id); showToast('✅ تم الحذف', 'success'); showAdminCoaches(); })
                 .catch(err => showToast('❌ خطأ: ' + err.message, 'error'));
         }
 
+        function computeCoachStats(coach) {
+            const isAdmin = coach.roleType === 'admin';
+            const matches = isAdmin ? [] : allMatches.filter(m => m.coachId === coach.id || m.coachName === coach.name);
+            const sessions = isAdmin ? [] : allTrainingSessions.filter(s => s.coachId === coach.id || s.coachName === coach.name);
+            const finishedMatches = matches.filter(m => m.status === 'منتهية');
+            const wins = finishedMatches.filter(m => m.result?.winner === 'الأكاديمية').length;
+            const winRate = finishedMatches.length ? Math.round((wins / finishedMatches.length) * 100) : 0;
+
+            const completedSessions = sessions.filter(s => s.status === 'مكتملة');
+            let totalPresent = 0, totalMarked = 0;
+            completedSessions.forEach(s => {
+                const att = s.attendance || {};
+                Object.values(att).forEach(v => { totalMarked++; if (v === 'present') totalPresent++; });
+            });
+            const attendanceRate = totalMarked ? Math.round((totalPresent / totalMarked) * 100) : 0;
+
+            const formationCount = {};
+            matches.forEach(m => { const f = m.lineup?.formation; if (f) formationCount[f] = (formationCount[f] || 0) + 1; });
+            let preferredFormation = '-';
+            let maxCount = 0;
+            Object.entries(formationCount).forEach(([f, cnt]) => { if (cnt > maxCount) { maxCount = cnt; preferredFormation = f; } });
+
+            return {
+                matchesCount: matches.length, finishedCount: finishedMatches.length, wins, winRate,
+                sessionsCount: sessions.length, completedSessionsCount: completedSessions.length,
+                attendanceRate, preferredFormation
+            };
+        }
+
+        function showCoachDetailPage(coachId) {
+            previousViewFunction = currentViewFunction;
+            previousViewArgs = currentViewArgs;
+            const c = allCoaches.find(x => x.id === coachId);
+            if (!c) { showToast('الحساب غير موجود', 'error'); return; }
+            currentViewFunction = showCoachDetailPage;
+            currentViewArgs = [coachId];
+            const isAdmin = c.roleType === 'admin';
+            const s = computeCoachStats(c);
+            const content = document.getElementById('pageContent');
+
+            content.innerHTML = `
+                <button class="btn-sm btn-sm-secondary" data-action="goBackToPrevious" style="margin-bottom:16px;"><i class="fas fa-arrow-right"></i> رجوع</button>
+                <div class="coach-file-header">
+                    <div class="coach-file-avatar"><i class="fas ${isAdmin ? 'fa-user-tie' : 'fa-chalkboard-teacher'}"></i></div>
+                    <div class="coach-file-info">
+                        <h2>${c.name}</h2>
+                        <span class="badge-status ${isAdmin ? 'unpaid' : 'paid'}">${isAdmin ? '🗂️ إداري عام' : '🧑‍🏫 مدرب فئة ' + (c.categoryId || '')}</span>
+                        ${c.jobTitle ? `<div class="coach-file-jobtitle">${c.jobTitle}</div>` : ''}
+                    </div>
+                </div>
+
+                <div class="form-card">
+                    <h3>🔐 معلومات الحساب</h3>
+                    <div class="info-grid-detail">
+                        <div class="item"><div class="label">الاسم الكامل</div><div class="value" data-action="editCoachField" data-id="${c.id}" data-field="name" data-current="${c.name || ''}" style="cursor:pointer;">${c.name || ''}</div></div>
+                        <div class="item"><div class="label">الهاتف</div><div class="value" data-action="editCoachField" data-id="${c.id}" data-field="phone" data-current="${c.phone || ''}" style="cursor:pointer;">${c.phone || '-'}</div></div>
+                        <div class="item"><div class="label">الصفة الوظيفية</div><div class="value" data-action="editCoachField" data-id="${c.id}" data-field="jobTitle" data-current="${c.jobTitle || ''}" style="cursor:pointer;">${c.jobTitle || '-'}</div></div>
+                        ${!isAdmin ? `<div class="item"><div class="label">الفئة</div><div class="value" data-action="editCoachField" data-id="${c.id}" data-field="categoryId" data-current="${c.categoryId || ''}" style="cursor:pointer;">${c.categoryId || ''}</div></div>` : ''}
+                        <div class="item" style="border:2px solid var(--gold);"><div class="label">🔑 كود الدخول</div><div class="value" data-action="editCoachField" data-id="${c.id}" data-field="code" data-current="${c.code || ''}" style="cursor:pointer; color:var(--gold); font-weight:900;">${c.code || '-'}</div></div>
+                    </div>
+                    <p class="text-muted" style="margin-top:8px;">انقر على أي خانة لتعديلها فورًا.</p>
+                </div>
+
+                ${!isAdmin ? `
+                <div class="coach-stats-template">
+                    <h3 style="text-align:center; color:var(--dark-navy); margin-bottom:16px;">📊 إحصائيات الأداء — فئة ${c.categoryId}</h3>
+                    <div class="stats-row">
+                        <div class="tour-mini-stat"><div class="num">${s.matchesCount}</div><div class="lbl">⚽ إجمالي المباريات</div></div>
+                        <div class="tour-mini-stat"><div class="num">${s.finishedCount}</div><div class="lbl">🏁 مباريات منتهية</div></div>
+                        <div class="tour-mini-stat"><div class="num">${s.wins}</div><div class="lbl">🏆 الانتصارات</div></div>
+                        <div class="tour-mini-stat"><div class="num">${s.winRate}%</div><div class="lbl">📈 نسبة الفوز</div></div>
+                        <div class="tour-mini-stat"><div class="num">${s.sessionsCount}</div><div class="lbl">🏃 إجمالي الحصص</div></div>
+                        <div class="tour-mini-stat"><div class="num">${s.completedSessionsCount}</div><div class="lbl">✅ حصص مكتملة</div></div>
+                        <div class="tour-mini-stat"><div class="num">${s.attendanceRate}%</div><div class="lbl">👥 نسبة حضور اللاعبين</div></div>
+                        <div class="tour-mini-stat"><div class="num" style="font-size:1.1rem;">${s.preferredFormation}</div><div class="lbl">🧩 الخطة المفضلة</div></div>
+                    </div>
+                </div>` : `
+                <div class="form-card"><p class="text-muted text-center">هذا حساب إداري عام، لا توجد إحصائيات تدريبية مرتبطة به.</p></div>
+                `}
+
+                <div style="text-align:center; margin-top:10px;">
+                    <button class="btn-sm btn-sm-danger" data-action="deleteCoach" data-id="${c.id}"><i class="fas fa-trash"></i> حذف الحساب</button>
+                </div>
+            `;
+            window.addDebugLog(`👤 عرض ملف ${isAdmin ? 'الإداري' : 'المدرب'} ${c.name}`, 'info');
+            EventManager.bindButtons(content);
+            updateDashboardActionBar();
+            animatePageTransition();
+        }
+
         function editCoachField(id, field, currentValue) {
             if (!requireRole('admin')) return;
-            const labels = { name: 'الاسم الكامل', categoryId: 'الفئة', phone: 'الهاتف' };
+            const labels = { name: 'الاسم الكامل', categoryId: 'الفئة', phone: 'الهاتف', jobTitle: 'الصفة الوظيفية', code: 'كود الدخول' };
             const label = labels[field] || field;
             const config = field === 'categoryId'
                 ? { type: 'select', options: categories.map(c => ({ value: c, label: c })) }
                 : { type: 'text' };
+            const c = allCoaches.find(x => x.id === id);
+            const cameFromCoachFile = document.querySelector('.coach-file-header') !== null;
             showEditModal({
                 title: `تعديل ${label}`,
-                icon: 'fa-chalkboard-teacher',
+                icon: field === 'code' ? 'fa-key' : 'fa-chalkboard-teacher',
                 fields: [{ id: 'value', label, value: currentValue, ...config }],
                 onSave: (values) => {
                     const newVal = values.value;
@@ -4531,10 +4806,10 @@
                     const update = {}; update[field] = newVal;
                     db.ref('academy/coaches/' + id).update(update)
                         .then(() => {
-                            const idx = allCoaches.findIndex(c => c.id === id);
+                            const idx = allCoaches.findIndex(x => x.id === id);
                             if (idx !== -1) allCoaches[idx][field] = newVal;
-                            showToast('✅ تم التحديث', 'success');
-                            showAdminCoaches();
+                            showToast('✅ تم التحديث فورًا', 'success');
+                            if (cameFromCoachFile) showCoachDetailPage(id); else showAdminCoaches();
                         })
                         .catch(err => showToast('❌ خطأ: ' + err.message, 'error'));
                 }
@@ -5803,6 +6078,7 @@
             EventManager.register('addCoach', function () { addCoach(); });
             EventManager.register('deleteCoach', function (c) { deleteCoach(c.dataset.id); });
             EventManager.register('editCoachField', function (c) { editCoachField(c.dataset.id, c.dataset.field, c.dataset.current); });
+            EventManager.register('showCoachDetailPage', function (c) { showCoachDetailPage(c.dataset.id); });
             EventManager.register('showAdminLogs', function () { showAdminLogs(); });
             EventManager.register('refreshLogs', function () { refreshLogs(); });
             EventManager.register('clearLogs', function () { clearLogs(); });
@@ -5816,6 +6092,9 @@
             EventManager.register('toggleMonthPaymentSimple', function (c) { toggleMonthPaymentSimple(c.dataset.playerId, c.dataset.monthKey); });
             EventManager.register('editPlayerField', function (c) { editPlayerField(c.dataset.id, c.dataset.field, c.dataset.current, c.dataset.label); });
             EventManager.register('editPlayerStat', function (c) { editPlayerStat(c.dataset.id, c.dataset.key, c.dataset.current, c.dataset.label); });
+            EventManager.register('showSendMessageModal', function (c) { showSendMessageModal(c.dataset.id); });
+            EventManager.register('deletePlayerMessage', function (c) { deletePlayerMessage(c); });
+            EventManager.register('closeParentMessagesModal', function (c) { closeParentMessagesModal(c); });
             EventManager.register('goBackToPrevious', function () { goBackToPrevious(); });
             EventManager.register('closeModal', function (c) { closeModal(c.dataset.id); });
             EventManager.register('closeEditModal', function () { closeEditModal(); });
