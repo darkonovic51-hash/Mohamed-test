@@ -10,7 +10,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
-        /* ===== جميع الأنماط كما هي ===== */
+        /* ===== جميع الأنماط كما هي مع التعديلات السابقة ===== */
         :root {
             --primary-blue: #45B3FF;
             --secondary-blue: #2196F3;
@@ -28,6 +28,19 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Cairo', sans-serif; background: var(--white); color: #1a1a2e; overflow-x: hidden; direction: rtl; }
         .container { max-width: 1300px; margin: 0 auto; padding: 0 20px; }
+
+        /* ===== حركية الظهور عند التمرير ===== */
+        .reveal { opacity:0; transform:translateY(36px); transition: opacity 0.85s cubic-bezier(0.2,0.9,0.4,1), transform 0.85s cubic-bezier(0.2,0.9,0.4,1); will-change:opacity, transform; }
+        .reveal.reveal-visible { opacity:1; transform:translateY(0); }
+        .reveal-stagger > * { opacity:0; transform:translateY(30px); transition: opacity 0.7s cubic-bezier(0.2,0.9,0.4,1), transform 0.7s cubic-bezier(0.2,0.9,0.4,1); }
+        .reveal-stagger.reveal-visible > *:nth-child(1) { transition-delay:0.05s; }
+        .reveal-stagger.reveal-visible > *:nth-child(2) { transition-delay:0.15s; }
+        .reveal-stagger.reveal-visible > *:nth-child(3) { transition-delay:0.25s; }
+        .reveal-stagger.reveal-visible > *:nth-child(4) { transition-delay:0.35s; }
+        .reveal-stagger.reveal-visible > *:nth-child(5) { transition-delay:0.45s; }
+        .reveal-stagger.reveal-visible > *:nth-child(6) { transition-delay:0.55s; }
+        .reveal-stagger.reveal-visible > * { opacity:1; transform:translateY(0); }
+        .hero-bg { transition: transform 0.1s linear; }
 
         .loading-overlay, .progress-overlay {
             display: none;
@@ -259,32 +272,6 @@
         .player-card-simple .info .role { font-size: 0.95rem; color: var(--primary-blue); font-weight: 600; }
         .player-card-simple .info .category { font-size: 0.8rem; color: #888; margin-top: 2px; }
 
-        .staff-director { display: flex; flex-direction: column; align-items: center; text-align: center; margin-bottom: 40px; }
-        .staff-director .staff-image-wrap { width: 100%; max-width: 380px; border-radius: var(--radius); overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.15); margin-bottom: 16px; animation: directorPulse 3s ease-in-out infinite; }
-        @keyframes directorPulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.02); } }
-        .staff-director .staff-image-wrap img { width: 100%; height: auto; display: block; }
-        .staff-director .staff-title { font-size: 1.6rem; font-weight: 800; color: var(--dark-navy); }
-        .staff-director .staff-role { font-size: 1.1rem; color: var(--primary-blue); font-weight: 600; }
-        .staff-founder { display: flex; flex-direction: column; align-items: center; text-align: center; margin-bottom: 50px; padding: 20px; background: var(--light-bg); border-radius: var(--radius); border-right: 5px solid var(--gold); }
-        .staff-founder .staff-image-wrap { width: 100%; max-width: 320px; border-radius: var(--radius); overflow: hidden; box-shadow: 0 15px 40px rgba(0,0,0,0.1); margin-bottom: 14px; animation: founderFloat 4s ease-in-out infinite; }
-        @keyframes founderFloat { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
-        .staff-founder .staff-image-wrap img { width: 100%; height: auto; display: block; }
-        .staff-founder .staff-title { font-size: 1.4rem; font-weight: 800; color: var(--dark-navy); }
-        .staff-founder .staff-role { font-size: 1rem; color: var(--secondary-blue); font-weight: 600; }
-        .coaches-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:25px; }
-        .coach-card { background: transparent; border-radius: var(--radius); overflow: hidden; text-align: center; transition: var(--transition); padding:0; animation: coachFloat 4.5s ease-in-out infinite; }
-        .coach-card:nth-child(2) { animation-delay: 0.3s; }
-        .coach-card:nth-child(3) { animation-delay: 0.6s; }
-        .coach-card:nth-child(4) { animation-delay: 0.9s; }
-        .coach-card:nth-child(5) { animation-delay: 1.2s; }
-        .coach-card:nth-child(6) { animation-delay: 1.5s; }
-        @keyframes coachFloat { 0%,100% { transform:translateY(0); } 50% { transform:translateY(-8px); } }
-        .coach-card:hover { transform: translateY(-8px); animation-play-state: paused; }
-        .coach-card img { width: 100%; height: auto; display: block; border-radius: var(--radius); transition: transform 0.6s ease; box-shadow: var(--shadow); }
-        .coach-card:hover img { transform: scale(1.04); }
-        .coach-card .coach-name { font-size: 1rem; font-weight: 700; color: var(--dark-navy); margin-top: 8px; margin-bottom: 2px; }
-        .coach-card .coach-desc { font-size: 0.8rem; color: #666; line-height: 1.6; margin-top: 2px; }
-
         .gallery-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:16px; }
         .gallery-item { border-radius: 16px; overflow: hidden; position: relative; cursor: pointer; box-shadow: var(--shadow); transition: var(--transition); aspect-ratio: 4/3; animation: galleryFloat 5s ease-in-out infinite; }
         .gallery-item:nth-child(2) { animation-delay: 0.6s; }
@@ -299,9 +286,6 @@
         .gallery-item .overlay { position: absolute; bottom:0; left:0; width:100%; padding:20px; background: linear-gradient(0deg, rgba(4,26,56,0.8), transparent); opacity:0; transition: var(--transition); }
         .gallery-item:hover .overlay { opacity:1; }
         .gallery-item .overlay span { color:#fff; font-weight:600; font-size:0.95rem; }
-
-        .video-wrapper { max-width: 900px; margin: 0 auto; border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); background: #000; }
-        .video-wrapper video { width: 100%; display: block; }
 
         .registration-wrapper { max-width: 900px; margin: 0 auto; background: #fff; border-radius: var(--radius); padding: 45px 50px 50px; box-shadow: var(--shadow); border: 1px solid rgba(0,0,0,0.05); position: relative; overflow: hidden; }
         .registration-wrapper::before { content: ''; position: absolute; top:0; right:0; width:100%; height:5px; background: linear-gradient(90deg, var(--primary-blue), var(--secondary-blue), var(--primary-blue)); background-size:300% 100%; animation: shimmer 3s infinite linear; }
@@ -326,6 +310,31 @@
         .upload-area .file-name { font-size: 0.8rem; color: #2ecc71; margin-top: 4px; display: none; }
         .upload-area.has-file .file-name { display: block; }
         .upload-area.has-file .text { display: none; }
+
+        /* ===== قسم التسجيل الاحترافي الجديد ===== */
+        .reg-pro-grid { display:grid; grid-template-columns: 0.85fr 1.4fr; gap:36px; align-items:start; max-width:1200px; margin:0 auto; }
+        .reg-pro-side { position:sticky; top:100px; background:linear-gradient(160deg, var(--dark-navy), var(--navy-blue) 60%, #0a1f42); border-radius:28px; padding:36px 30px; color:#fff; box-shadow:0 20px 55px rgba(4,26,56,0.3); overflow:hidden; position:relative; }
+        .reg-pro-side::before { content:''; position:absolute; top:-40%; left:-20%; width:220px; height:220px; background:radial-gradient(circle, rgba(69,179,255,0.18) 0%, transparent 70%); }
+        .reg-pro-side-inner { position:relative; z-index:2; }
+        .reg-pro-badge { display:inline-flex; align-items:center; gap:8px; background:rgba(69,179,255,0.15); border:1px solid rgba(69,179,255,0.35); padding:6px 18px; border-radius:40px; font-size:0.8rem; font-weight:700; color:var(--primary-blue); margin-bottom:18px; }
+        .reg-pro-side h3 { font-size:1.5rem; font-weight:800; margin-bottom:18px; line-height:1.5; }
+        .reg-pro-side h3 span { color:var(--primary-blue); }
+        .reg-pro-points { list-style:none; display:flex; flex-direction:column; gap:14px; margin-bottom:26px; }
+        .reg-pro-points li { display:flex; align-items:flex-start; gap:10px; color:rgba(255,255,255,0.85); font-size:0.95rem; line-height:1.6; }
+        .reg-pro-points li i { color:#2ed573; margin-top:3px; }
+        .reg-pro-steps { display:flex; flex-direction:column; gap:10px; border-top:1px solid rgba(255,255,255,0.1); padding-top:20px; }
+        .reg-pro-step { display:flex; align-items:center; gap:12px; color:rgba(255,255,255,0.75); font-size:0.9rem; font-weight:600; }
+        .reg-pro-step span { width:28px; height:28px; border-radius:50%; background:linear-gradient(135deg, var(--primary-blue), var(--secondary-blue)); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:0.85rem; flex-shrink:0; }
+        .reg-pro-subcard { background:#fff; border:1px solid #eef2f7; border-radius:22px; padding:26px 28px; margin-bottom:22px; box-shadow:0 10px 30px rgba(4,26,56,0.05); position:relative; overflow:hidden; }
+        .reg-pro-subcard::before { content:''; position:absolute; top:0; right:0; width:6px; height:100%; background:linear-gradient(180deg, var(--primary-blue), var(--secondary-blue)); }
+        .reg-pro-subcard-title { display:flex; align-items:center; gap:10px; font-size:1.15rem; font-weight:800; color:var(--dark-navy); margin-bottom:20px; padding-bottom:12px; border-bottom:2px solid var(--light-bg); }
+        .reg-pro-subcard-title i { color:var(--primary-blue); }
+        .reg-pro-main .form-group label { display:flex; align-items:center; gap:6px; }
+        .reg-pro-main .form-group label i { color:var(--primary-blue); font-size:0.85rem; width:16px; text-align:center; }
+        @media (max-width:1024px) {
+            .reg-pro-grid { grid-template-columns:1fr; }
+            .reg-pro-side { position:static; }
+        }
 
         .testimonials-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:25px; }
         .testimonial-card { background: #fff; border-radius: var(--radius); padding: 28px 24px; box-shadow: var(--shadow); border: 1px solid rgba(0,0,0,0.04); transition: var(--transition); animation: testimonialFloat 4.5s ease-in-out infinite; }
@@ -951,8 +960,6 @@
             <li><a href="#about">عن الأكاديمية</a></li>
             <li><a href="#players">اللاعبون</a></li>
             <li><a href="#gallery">المعرض</a></li>
-            <li><a href="#video-section">الفيديو</a></li>
-            <li><a href="#staff">الطاقم</a></li>
             <li><a href="#registration">التسجيل</a></li>
             <li><a href="#contact">اتصل بنا</a></li>
             <li><a href="#registration" class="btn-primary" style="padding:8px 24px; font-size:0.8rem;">سجل الآن</a></li>
@@ -983,9 +990,9 @@
     <!-- ===== ABOUT ===== -->
     <section id="about" class="section-white">
         <div class="container">
-            <h2 class="section-title">عن <span>الأكاديمية</span></h2>
-            <p class="section-subtitle">نحن نصنع الفرق بين الموهبة والاحتراف، من خلال برامج تدريبية متطورة وبيئة احترافية.</p>
-            <div class="about-grid">
+            <h2 class="section-title reveal">عن <span>الأكاديمية</span></h2>
+            <p class="section-subtitle reveal">نحن نصنع الفرق بين الموهبة والاحتراف، من خلال برامج تدريبية متطورة وبيئة احترافية.</p>
+            <div class="about-grid reveal">
                 <div class="about-content">
                     <h2>رؤيتنا <span>للنجاح</span></h2>
                     <p>أكاديمية ASSARU لكرة القدم هي منصة متكاملة لاكتشاف وتطوير المواهب الشابة، حيث نقدم برامج تدريبية على أعلى مستوى، بإشراف مدربين معتمدين وذوي خبرة.</p>
@@ -1003,9 +1010,9 @@
     <!-- ===== PLAYERS ===== -->
     <section id="players" class="section-light">
         <div class="container">
-            <h2 class="section-title">أبرز <span>اللاعبين</span></h2>
-            <p class="section-subtitle">نخبة من المواهب الشابة التي تصنع الفارق في الملاعب.</p>
-            <div class="players-grid" id="playersGrid">
+            <h2 class="section-title reveal">أبرز <span>اللاعبين</span></h2>
+            <p class="section-subtitle reveal">نخبة من المواهب الشابة التي تصنع الفارق في الملاعب.</p>
+            <div class="players-grid reveal" id="playersGrid">
                 <!-- سيتم تعبئتها بواسطة JavaScript -->
             </div>
         </div>
@@ -1014,136 +1021,135 @@
     <!-- ===== GALLERY ===== -->
     <section id="gallery" class="section-white">
         <div class="container">
-            <h2 class="section-title">📸 <span>المعرض</span></h2>
-            <p class="section-subtitle">لحظات من التدريبات والمباريات والبطولات.</p>
-            <div class="gallery-grid" id="galleryGrid"></div>
-        </div>
-    </section>
-
-    <!-- ===== VIDEO ===== -->
-    <section id="video-section" class="section-dark">
-        <div class="container">
-            <h2 class="section-title">🎥 <span>فيديو</span> تعريفي</h2>
-            <p class="section-subtitle" style="color:rgba(255,255,255,0.7);">تعرف على أجواء التدريبات والروح الجماعية في الأكاديمية.</p>
-            <div class="video-wrapper">
-                <video controls poster="https://raw.githubusercontent.com/darkonovic51-hash/Mohamed-test/4a065c0a8a951b1d39707aa5eb90a5ce7512bec4/file_00000000d8b87243ba967177f2617619.png">
-                    <source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4" />
-                    متصفحك لا يدعم عرض الفيديو.
-                </video>
-            </div>
-        </div>
-    </section>
-
-    <!-- ===== STAFF ===== -->
-    <section id="staff" class="section-light">
-        <div class="container">
-            <h2 class="section-title">🧑‍🏫 <span>الطاقم</span> التدريبي</h2>
-            <p class="section-subtitle">نخبة من المدربين المحترفين والكوادر الإدارية.</p>
-
-            <div class="staff-founder">
-                <div class="staff-image-wrap">
-                    <img src="https://raw.githubusercontent.com/darkonovic51-hash/Mohamed-test/4a065c0a8a951b1d39707aa5eb90a5ce7512bec4/1792752194532.jpg" alt="المؤسس" />
-                </div>
-                <div class="staff-title">محمد الحاج</div>
-                <div class="staff-role">المؤسس والمدير الفني</div>
-            </div>
-
-            <div class="coaches-grid" id="coachesGrid">
-                <!-- سيتم تعبئتها بواسطة JavaScript -->
-            </div>
+            <h2 class="section-title reveal">📸 <span>المعرض</span></h2>
+            <p class="section-subtitle reveal">لحظات من التدريبات والمباريات والبطولات.</p>
+            <div class="gallery-grid reveal-stagger" id="galleryGrid"></div>
         </div>
     </section>
 
     <!-- ===== REGISTRATION ===== -->
     <section id="registration" class="section-white">
         <div class="container">
-            <h2 class="section-title">📝 <span>التسجيل</span></h2>
-            <p class="section-subtitle">سجل ابنك الآن في أكاديمية ASSARU وابدأ رحلة الاحتراف.</p>
-            <div class="registration-wrapper">
-                <div class="form-header">
-                    <h2>استمارة <span>التسجيل</span></h2>
-                    <p>املأ البيانات بدقة، وسيتم التواصل معك خلال 48 ساعة.</p>
-                </div>
-                <form id="registrationForm">
-                    <div class="reg-form-grid">
-                        <div class="form-group">
-                            <label>الاسم الأول <span class="required">*</span></label>
-                            <input type="text" id="regFirstName" required />
-                        </div>
-                        <div class="form-group">
-                            <label>اللقب <span class="required">*</span></label>
-                            <input type="text" id="regLastName" required />
-                        </div>
-                        <div class="form-group">
-                            <label>الفئة العمرية <span class="required">*</span></label>
-                            <select id="regCategory" required>
-                                <option value="">اختر</option>
-                                <option value="U07">U07</option>
-                                <option value="U09">U09</option>
-                                <option value="U11">U11</option>
-                                <option value="U13">U13</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>تاريخ الميلاد <span class="required">*</span></label>
-                            <input type="date" id="regBirthDate" required />
-                        </div>
-                        <div class="form-group">
-                            <label>مكان الميلاد <span class="required">*</span></label>
-                            <input type="text" id="regBirthPlace" required />
-                        </div>
-                        <div class="form-group">
-                            <label>المستوى الدراسي <span class="required">*</span></label>
-                            <input type="text" id="regStudyLevel" required placeholder="مثال: سنة أولى متوسط" />
-                        </div>
-                        <div class="form-group">
-                            <label>الحالة الصحية</label>
-                            <input type="text" id="regHealth" placeholder="سليم / يعاني من..." />
-                        </div>
-                        <div class="form-group">
-                            <label>الزمرة الدموية</label>
-                            <input type="text" id="regBloodType" placeholder="A+ / O- ..." />
-                        </div>
-                        <div class="form-group">
-                            <label>اسم ولي الأمر <span class="required">*</span></label>
-                            <input type="text" id="regGuardianName" required />
-                        </div>
-                        <div class="form-group">
-                            <label>هاتف ولي الأمر <span class="required">*</span></label>
-                            <input type="tel" id="regGuardianPhone" required />
-                        </div>
-                        <div class="form-group full-width">
-                            <label>صورة شخصية <span class="required">*</span></label>
-                            <div class="upload-area" id="uploadPhoto">
-                                <div class="icon"><i class="fas fa-camera"></i></div>
-                                <div class="text">انقر لاختيار صورة</div>
-                                <div class="file-name" id="photoFileName"></div>
-                                <input type="file" id="regPhoto" accept="image/*" required />
-                            </div>
-                        </div>
-                        <div class="form-group full-width">
-                            <label>الترخيص الأبوي <span class="required">*</span></label>
-                            <div class="upload-area" id="uploadParental">
-                                <div class="icon"><i class="fas fa-file-signature"></i></div>
-                                <div class="text">انقر لرفع ملف الترخيص</div>
-                                <div class="file-name" id="parentalFileName"></div>
-                                <input type="file" id="regParental" accept="image/*,application/pdf" required />
-                            </div>
-                        </div>
-                        <div class="form-group full-width">
-                            <label>القانون الداخلي <span class="required">*</span></label>
-                            <div class="upload-area" id="uploadInternal">
-                                <div class="icon"><i class="fas fa-file-contract"></i></div>
-                                <div class="text">انقر لرفع القانون الداخلي</div>
-                                <div class="file-name" id="internalFileName"></div>
-                                <input type="file" id="regInternal" accept="image/*,application/pdf" required />
-                            </div>
-                        </div>
-                        <div class="form-group full-width">
-                            <button type="submit" class="btn-submit-reg" id="regSubmitBtn"><i class="fas fa-paper-plane"></i> إرسال الطلب</button>
+            <h2 class="section-title reveal">📝 <span>التسجيل</span></h2>
+            <p class="section-subtitle reveal">سجل ابنك الآن في أكاديمية ASSARU وابدأ رحلة الاحتراف.</p>
+            <div class="reg-pro-grid reveal">
+                <div class="reg-pro-side">
+                    <div class="reg-pro-side-inner">
+                        <div class="reg-pro-badge"><i class="fas fa-shield-alt"></i> تسجيل موثوق وآمن</div>
+                        <h3>لماذا تنضم إلى <span>ASSARU؟</span></h3>
+                        <ul class="reg-pro-points">
+                            <li><i class="fas fa-check-circle"></i> مدربون معتمدون وذوو خبرة عالية</li>
+                            <li><i class="fas fa-check-circle"></i> متابعة فردية دقيقة لكل لاعب</li>
+                            <li><i class="fas fa-check-circle"></i> برامج بدنية وتقنية وتكتيكية متكاملة</li>
+                            <li><i class="fas fa-check-circle"></i> مشاركة في مباريات ودية ودورات رسمية</li>
+                            <li><i class="fas fa-check-circle"></i> رد على طلبك خلال 48 ساعة فقط</li>
+                        </ul>
+                        <div class="reg-pro-steps">
+                            <div class="reg-pro-step"><span>1</span> املأ الاستمارة بدقة</div>
+                            <div class="reg-pro-step"><span>2</span> ارفع الوثائق المطلوبة</div>
+                            <div class="reg-pro-step"><span>3</span> انتظر تأكيد الإدارة</div>
                         </div>
                     </div>
-                </form>
+                </div>
+                <div class="reg-pro-main">
+                    <div class="registration-wrapper" style="box-shadow:none; border:none; padding:0;">
+                        <form id="registrationForm">
+                            <div class="reg-pro-subcard">
+                                <div class="reg-pro-subcard-title"><i class="fas fa-user"></i> المعلومات الشخصية للاعب</div>
+                                <div class="reg-form-grid">
+                                    <div class="form-group">
+                                        <label><i class="fas fa-signature"></i> الاسم الأول <span class="required">*</span></label>
+                                        <input type="text" id="regFirstName" required />
+                                    </div>
+                                    <div class="form-group">
+                                        <label><i class="fas fa-signature"></i> اللقب <span class="required">*</span></label>
+                                        <input type="text" id="regLastName" required />
+                                    </div>
+                                    <div class="form-group">
+                                        <label><i class="fas fa-layer-group"></i> الفئة العمرية <span class="required">*</span></label>
+                                        <select id="regCategory" required>
+                                            <option value="">اختر</option>
+                                            <option value="U07">U07</option>
+                                            <option value="U09">U09</option>
+                                            <option value="U11">U11</option>
+                                            <option value="U13">U13</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label><i class="fas fa-cake-candles"></i> تاريخ الميلاد <span class="required">*</span></label>
+                                        <input type="date" id="regBirthDate" required />
+                                    </div>
+                                    <div class="form-group">
+                                        <label><i class="fas fa-map-marker-alt"></i> مكان الميلاد <span class="required">*</span></label>
+                                        <input type="text" id="regBirthPlace" required />
+                                    </div>
+                                    <div class="form-group">
+                                        <label><i class="fas fa-graduation-cap"></i> المستوى الدراسي <span class="required">*</span></label>
+                                        <input type="text" id="regStudyLevel" required placeholder="مثال: سنة أولى متوسط" />
+                                    </div>
+                                    <div class="form-group">
+                                        <label><i class="fas fa-heart-pulse"></i> الحالة الصحية</label>
+                                        <input type="text" id="regHealth" placeholder="سليم / يعاني من..." />
+                                    </div>
+                                    <div class="form-group">
+                                        <label><i class="fas fa-droplet"></i> الزمرة الدموية</label>
+                                        <input type="text" id="regBloodType" placeholder="A+ / O- ..." />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="reg-pro-subcard">
+                                <div class="reg-pro-subcard-title"><i class="fas fa-user-shield"></i> معلومات ولي الأمر</div>
+                                <div class="reg-form-grid">
+                                    <div class="form-group">
+                                        <label><i class="fas fa-id-badge"></i> اسم ولي الأمر <span class="required">*</span></label>
+                                        <input type="text" id="regGuardianName" required />
+                                    </div>
+                                    <div class="form-group">
+                                        <label><i class="fas fa-phone"></i> هاتف ولي الأمر <span class="required">*</span></label>
+                                        <input type="tel" id="regGuardianPhone" required />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="reg-pro-subcard">
+                                <div class="reg-pro-subcard-title"><i class="fas fa-folder-open"></i> الوثائق المطلوبة</div>
+                                <div class="reg-form-grid">
+                                    <div class="form-group full-width">
+                                        <label>صورة شخصية <span class="required">*</span></label>
+                                        <div class="upload-area" id="uploadPhoto">
+                                            <div class="icon"><i class="fas fa-camera"></i></div>
+                                            <div class="text">انقر لاختيار صورة</div>
+                                            <div class="file-name" id="photoFileName"></div>
+                                            <input type="file" id="regPhoto" accept="image/*" required />
+                                        </div>
+                                    </div>
+                                    <div class="form-group full-width">
+                                        <label>الترخيص الأبوي <span class="required">*</span></label>
+                                        <div class="upload-area" id="uploadParental">
+                                            <div class="icon"><i class="fas fa-file-signature"></i></div>
+                                            <div class="text">انقر لرفع ملف الترخيص</div>
+                                            <div class="file-name" id="parentalFileName"></div>
+                                            <input type="file" id="regParental" accept="image/*,application/pdf" required />
+                                        </div>
+                                    </div>
+                                    <div class="form-group full-width">
+                                        <label>القانون الداخلي <span class="required">*</span></label>
+                                        <div class="upload-area" id="uploadInternal">
+                                            <div class="icon"><i class="fas fa-file-contract"></i></div>
+                                            <div class="text">انقر لرفع القانون الداخلي</div>
+                                            <div class="file-name" id="internalFileName"></div>
+                                            <input type="file" id="regInternal" accept="image/*,application/pdf" required />
+                                        </div>
+                                    </div>
+                                    <div class="form-group full-width">
+                                        <button type="submit" class="btn-submit-reg" id="regSubmitBtn"><i class="fas fa-paper-plane"></i> إرسال الطلب</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
@@ -1151,9 +1157,9 @@
     <!-- ===== TESTIMONIALS ===== -->
     <section id="testimonials" class="section-light">
         <div class="container">
-            <h2 class="section-title">💬 <span>آراء</span> الأولياء</h2>
-            <p class="section-subtitle">ما يقوله آباء وأمهات لاعبينا عن تجربتهم مع الأكاديمية.</p>
-            <div class="testimonials-grid">
+            <h2 class="section-title reveal">💬 <span>آراء</span> الأولياء</h2>
+            <p class="section-subtitle reveal">ما يقوله آباء وأمهات لاعبينا عن تجربتهم مع الأكاديمية.</p>
+            <div class="testimonials-grid reveal-stagger">
                 <div class="testimonial-card">
                     <div class="stars">★★★★★</div>
                     <p>"أكاديمية ASSARU غيّرت حياة ابني، أصبح أكثر انضباطاً وثقة، والمدربون محترفون جداً."</p>
@@ -1176,9 +1182,9 @@
     <!-- ===== CONTACT ===== -->
     <section id="contact" class="section-white">
         <div class="container">
-            <h2 class="section-title">📞 <span>اتصل</span> بنا</h2>
-            <p class="section-subtitle">نحن هنا للإجابة عن استفساراتكم.</p>
-            <div class="contact-grid">
+            <h2 class="section-title reveal">📞 <span>اتصل</span> بنا</h2>
+            <p class="section-subtitle reveal">نحن هنا للإجابة عن استفساراتكم.</p>
+            <div class="contact-grid reveal">
                 <div>
                     <div class="contact-info-item">
                         <div class="icon"><i class="fas fa-map-marker-alt"></i></div>
@@ -1236,7 +1242,6 @@
                     <a href="#registration">تسجيل جديد</a>
                     <a href="#contact">استشارة مجانية</a>
                     <a href="#gallery">معرض الصور</a>
-                    <a href="#video-section">فيديوهات</a>
                 </div>
                 <div class="footer-col">
                     <h4>اتصل بنا</h4>
@@ -3349,43 +3354,47 @@
             EventManager.bindButtons(content);
         }
 
-        function renderSessionsList(container, sessions) {
+        function renderSessionsList(container, sessions, isArchive) {
             if (!container) return;
             if (sessions.length === 0) {
                 container.innerHTML = `<p class="text-muted text-center">لا توجد حصص تدريبية</p>`;
                 return;
             }
             const sorted = [...sessions].sort((a, b) => new Date(a.date) - new Date(b.date));
+            const canPermanentDelete = isArchive && currentUser?.role === 'admin';
             let listHtml = '';
             sorted.forEach(s => {
-                let cardClass = '',
-                    color = '#45B3FF';
-                if (s.status === 'مجدولة') { cardClass = 'session-card-scheduled';
-                    color = '#dc3545'; } else if (s.status === 'مكتملة') { cardClass =
-                        'session-card-completed';
-                    color = '#28a745'; } else if (s.status === 'مؤجلة') { color = '#ffc107'; } else if (s
-                    .status === 'ملغاة') { color = '#6c757d'; }
+                let cardClass = '', color = '#45B3FF';
+                if (s.status === 'مجدولة') { cardClass = 'session-card-scheduled'; color = '#dc3545'; }
+                else if (s.status === 'مكتملة') { cardClass = 'session-card-completed'; color = '#28a745'; }
+                else if (s.status === 'مؤجلة') { color = '#ffc107'; }
+                else if (s.status === 'ملغاة') { color = '#6c757d'; }
                 let dayName = '';
-                try { dayName = new Date(s.date + 'T00:00:00').toLocaleDateString('ar-EG', { weekday: 'long' }); } catch (
-                e) {}
+                try { dayName = new Date(s.date + 'T00:00:00').toLocaleDateString('ar-EG', { weekday: 'long' }); } catch (e) {}
                 const playersCount = (s.playersList || []).length;
                 const attended = s.attendance ? Object.values(s.attendance).filter(v => v === 'present').length : 0;
                 listHtml += `
-                        <div class="session-card ${cardClass}" style="border-right-color:${color};" data-action="openSessionDetail" data-id="${s.id}">
-                            <div class="session-header">
-                                <span class="session-title">${s.status === 'مجدولة' ? '🔴' : s.status === 'مكتملة' ? '🟢' : ''} ${s.title || 'حصة تدريبية'}</span>
-                                <span class="badge-status" style="background:${color}22; color:${color};">${s.status}</span>
-                            </div>
-                            <div class="session-meta" style="margin-top:8px;">
-                                <span><i class="fas fa-calendar-alt"></i> ${s.date} - ${dayName}</span>
-                                <span><i class="fas fa-clock"></i> ${s.startTime} - ${s.endTime}</span>
-                                <span><i class="fas fa-tag"></i> ${s.categoryId}</span>
-                                <span><i class="fas fa-user-tie"></i> ${s.coachName}</span>
-                                <span><i class="fas fa-map-pin"></i> ${s.field}</span>
-                                <span><i class="fas fa-users"></i> ${playersCount} لاعب (${attended} حاضر)</span>
-                            </div>
+                    <div class="session-card ${cardClass}" style="border-right-color:${color};" data-action="openSessionDetail" data-id="${s.id}">
+                        <div class="session-header">
+                            <span class="session-title">${s.status === 'مجدولة' ? '🔴' : s.status === 'مكتملة' ? '🟢' : ''} ${s.title || 'حصة تدريبية'}</span>
+                            <span class="badge-status" style="background:${color}22; color:${color};">${s.status}</span>
                         </div>
-                    `;
+                        <div class="session-meta" style="margin-top:8px;">
+                            <span><i class="fas fa-calendar-alt"></i> ${s.date} - ${dayName}</span>
+                            <span><i class="fas fa-clock"></i> ${s.startTime} - ${s.endTime}</span>
+                            <span><i class="fas fa-tag"></i> ${s.categoryId}</span>
+                            <span><i class="fas fa-user-tie"></i> ${s.coachName}</span>
+                            <span><i class="fas fa-map-pin"></i> ${s.field}</span>
+                            <span><i class="fas fa-users"></i> ${playersCount} لاعب (${attended} حاضر)</span>
+                        </div>
+                        ${canPermanentDelete ? `
+                            <div style="margin-top:10px; text-align:left;">
+                                <button class="btn-sm btn-sm-danger" data-action="permanentDeleteSession" data-id="${s.id}">
+                                    <i class="fas fa-trash-alt"></i> حذف نهائي
+                                </button>
+                            </div>` : ''}
+                    </div>
+                `;
             });
             container.innerHTML = listHtml;
             EventManager.bindButtons(container);
@@ -3865,6 +3874,23 @@
                 .catch(err => showToast('❌ خطأ: ' + err.message, 'error'));
         }
 
+        // دالة الحذف النهائي للحصص (للمدير فقط)
+        function permanentDeleteSession(context) {
+            if (!requireRole('admin')) return;
+            const sessionId = context.dataset.id;
+            const s = allTrainingSessions.find(x => x.id === sessionId);
+            if (!confirm(`⚠️ سيتم حذف الحصة "${s?.title || 'حصة تدريبية'}" نهائيًا ولا يمكن التراجع عن هذا الإجراء. هل أنت متأكد؟`)) return;
+            if (!confirm('تأكيد أخير: هذا حذف نهائي دائم. متابعة؟')) return;
+            db.ref('academy/trainingSessions/' + sessionId).remove()
+                .then(() => {
+                    allTrainingSessions = allTrainingSessions.filter(x => x.id !== sessionId);
+                    addLog('حذف نهائي لحصة', `تم حذف الحصة "${s?.title || ''}" نهائيًا من الأرشيف`, currentUser?.role);
+                    showToast('✅ تم الحذف النهائي', 'success');
+                    refreshCurrentView();
+                })
+                .catch(err => showToast('❌ خطأ: ' + err.message, 'error'));
+        }
+
         function showTrainingSessionsArchive() {
             currentViewFunction = showTrainingSessionsArchive;
             currentViewArgs = [];
@@ -3895,7 +3921,7 @@
                     <button class="btn-sm btn-sm-info" data-action="exportSessionsArchivePDF" style="margin-bottom:14px;"><i class="fas fa-file-pdf"></i> تحميل أرشيف الحصص PDF</button>
                     <div id="archiveSessionsList"></div>
                 `;
-            renderSessionsList(document.getElementById('archiveSessionsList'), completedList);
+            renderSessionsList(document.getElementById('archiveSessionsList'), completedList, true);
             window.addDebugLog(`🗄️ عرض أرشيف الحصص (${completedList.length})`, 'info');
             EventManager.bindButtons(content);
             updateDashboardActionBar();
@@ -3923,7 +3949,7 @@
             if (from) list = list.filter(s => s.date >= from);
             if (to) list = list.filter(s => s.date <= to);
 
-            renderSessionsList(document.getElementById('archiveSessionsList'), list);
+            renderSessionsList(document.getElementById('archiveSessionsList'), list, true);
         }
         window.applySessionArchiveFilters = applySessionArchiveFilters;
 
@@ -7022,6 +7048,7 @@
             EventManager.register('completeSessionWithAttendance', function(c) { completeSessionWithAttendance(c.dataset.id); });
             EventManager.register('exportSessionDetailPDF', function(c) { exportSessionDetailPDF(c); });
             EventManager.register('deleteSession', function(c) { deleteSession(c.dataset.id); });
+            EventManager.register('permanentDeleteSession', function(c) { permanentDeleteSession(c); });
             EventManager.register('showTrainingSessionsArchive', function() { showTrainingSessionsArchive(); });
             EventManager.register('exportSessionsArchivePDF', function() { exportSessionsArchivePDF(); });
             EventManager.register('showAdminMatches', function() { showAdminMatches(); });
@@ -7260,7 +7287,11 @@
             renderGallery();
 
             const navbar = document.getElementById('navbar');
-            window.addEventListener('scroll', () => { if (navbar) navbar.classList.toggle('scrolled', window.scrollY > 60); });
+            const heroBgEl = document.querySelector('.hero-bg');
+            window.addEventListener('scroll', () => {
+                if (navbar) navbar.classList.toggle('scrolled', window.scrollY > 60);
+                if (heroBgEl) heroBgEl.style.transform = `translateY(${window.scrollY * 0.25}px) scale(1.05)`;
+            });
 
             const menuBtn = document.getElementById('menuBtn');
             if (menuBtn) {
@@ -7306,8 +7337,26 @@
                 confirmPopup.addEventListener('click', function(e) { if (e.target === this) closeConfirmPopup(); });
             }
 
+            // تفعيل حركية الظهور
+            initScrollReveal();
+
             window.addDebugLog('✅ تم تهيئة النظام بالكامل', 'success');
             console.log('✅ النظام جاهز مع Event Manager وتسجيل دخول سريع');
+        }
+
+        // دالة حركية الظهور
+        function initScrollReveal() {
+            const revealEls = document.querySelectorAll('.reveal, .reveal-stagger');
+            if (!revealEls.length) return;
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('reveal-visible');
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.15, rootMargin: '0px 0px -60px 0px' });
+            revealEls.forEach(el => observer.observe(el));
         }
 
         // ================================================================
