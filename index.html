@@ -10,7 +10,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
-        /* ===== جميع الأنماط كما هي مع التعديلات السابقة ===== */
+        /* ===== جميع الأنماط كما هي ===== */
         :root {
             --primary-blue: #45B3FF;
             --secondary-blue: #2196F3;
@@ -6185,40 +6185,150 @@
             updateTourInFirebase({ parentsConsent: consent });
         }
 
-        /* ===== المعنيون (participants) ===== */
+        /* ===== المعنيون (participants) — استبدال الدالة بالكامل ===== */
         function renderTourParticipantsCard(t) {
+            const canEdit = currentUser?.role === 'admin' || currentUser?.role === 'coach';
             const rows = [];
             Object.entries(t.players || {}).forEach(([pid, info]) => {
                 if (!info.called) return;
                 const p = allPlayers.find(x => x.id === pid);
                 if (!p) return;
-                rows.push({ type: 'لاعب', color: '#45B3FF', name: `${p.firstName} ${p.lastName}`, role: p.categoryId });
+                rows.push({ type: 'لاعب', color: '#45B3FF', name: `${p.firstName} ${p.lastName}`, role: p.categoryId, removeAction: 'removeParticipantPlayer', removeId: pid });
             });
-            Object.entries(t.coaches || {}).forEach(([roleKey, cid]) => {
-                if (!cid) return;
+            Object.entries(t.participantStaff || {}).forEach(([cid, roleLabel]) => {
                 const c = allCoaches.find(x => x.id === cid);
                 if (!c) return;
-                rows.push({ type: 'طاقم فني', color: '#D4A017', name: c.name, role: COACH_ROLES.find(r => r.key === roleKey)?.label || roleKey });
+                const rt = c.roleType || 'coach';
+                const rtLabels = { coach: '🧑‍🏫 مدرب فئة ' + (c.categoryId || ''), staffAdmin: '🗂️ إداري عام', technicalDirector: '🧭 مدير تقني', companion: '🧳 مرافق' };
+                rows.push({ type: 'طاقم', color: '#D4A017', name: c.name, role: (typeof roleLabel === 'string' && roleLabel) || rtLabels[rt] || 'طاقم', removeAction: 'removeParticipantStaff', removeId: cid });
             });
-            (t.companions || []).forEach(comp => {
+            (t.companions || []).forEach((comp, i) => {
                 const name = typeof comp === 'string' ? comp : comp.name;
                 const role = (typeof comp === 'object' && comp.role) || 'مرافق';
-                rows.push({ type: 'مرافق', color: '#28a745', name, role });
+                rows.push({ type: 'مرافق', color: '#28a745', name, role, removeAction: 'removeCompanion', removeId: i });
             });
 
             const bodyRows = rows.map(r => `
-                    <tr style="border-right:5px solid ${r.color};">
-                        <td><span class="badge-status" style="background:${r.color}22;color:${r.color};">${r.type}</span></td>
-                        <td style="font-weight:700;">${r.name}</td>
-                        <td>${r.role}</td>
-                    </tr>`).join('') || '<tr><td colspan="3" class="text-muted" style="padding:16px;">لا يوجد معنيون بعد</td></tr>';
+                <tr style="border-right:5px solid ${r.color};">
+                    <td><span class="badge-status" style="background:${r.color}22;color:${r.color};">${r.type}</span></td>
+                    <td style="font-weight:700;">${r.name}</td>
+                    <td>${r.role}</td>
+                    <td>${canEdit ? `<button class="btn-sm btn-sm-danger" data-action="${r.removeAction}" data-id="${r.removeId}"><i class="fas fa-times"></i></button>` : ''}</td>
+                </tr>`).join('') || '<tr><td colspan="4" class="text-muted" style="padding:16px;">لا يوجد معنيون بعد</td></tr>';
+
+            const alreadyIds = new Set(Object.entries(t.players || {}).filter(([, v]) => v.called).map(([pid]) => pid));
+            const playerOptionsHtml = categories.map(cat => {
+                const opts = allPlayers.filter(p => p.categoryId === cat && p.status === 'approved' && !alreadyIds.has(p.id))
+                    .map(p => `<option value="${p.id}">${p.firstName} ${p.lastName}</option>`).join('');
+                return opts ? `<optgroup label="فئة ${cat}">${opts}</optgroup>` : '';
+            }).join('');
+
+            const alreadyStaffIds = new Set(Object.keys(t.participantStaff || {}));
+            const staffOptionsHtml = allCoaches.filter(c => !alreadyStaffIds.has(c.id)).map(c => {
+                const rt = c.roleType || 'coach';
+                const rtLabels = { coach: 'مدرب ' + (c.categoryId || ''), staffAdmin: 'إداري عام', technicalDirector: 'مدير تقني', companion: 'مرافق' };
+                return `<option value="${c.id}">${c.name} — ${rtLabels[rt]}</option>`;
+            }).join('');
 
             return `
-                    <div class="form-card">
-                        <h3>📋 قائمة المعنيين بالدورة (${rows.length})</h3>
-                        <div class="table-wrap"><table class="callup-table"><thead><tr><th>الصفة</th><th>الاسم</th><th>التفاصيل</th></tr></thead><tbody>${bodyRows}</tbody></table></div>
+                <div class="form-card">
+                    <h3>📋 قائمة المعنيين بالدورة (${rows.length})</h3>
+                    <div class="table-wrap"><table class="callup-table"><thead><tr><th>الصفة</th><th>الاسم</th><th>التفاصيل</th><th>إزالة</th></tr></thead><tbody>${bodyRows}</tbody></table></div>
+                </div>
+                ${canEdit ? `
+                <div class="form-card">
+                    <h3>➕ إضافة لاعب يدويًا من أي فئة</h3>
+                    <p class="text-muted" style="margin-bottom:10px;">لإضافة لاعب لا ينتمي بالضرورة لفئة الدورة الرئيسية أو الفئات المستدعاة.</p>
+                    <div class="form-grid">
+                        <div class="form-group full"><label>اختر اللاعب</label><select id="participantPlayerSelect">${playerOptionsHtml || '<option value="">لا يوجد لاعبون متاحون</option>'}</select></div>
+                        <div class="form-group full"><button class="btn-sm btn-sm-primary" data-action="addParticipantPlayer"><i class="fas fa-user-plus"></i> إضافة اللاعب للمعنيين</button></div>
                     </div>
-                `;
+                </div>
+                <div class="form-card">
+                    <h3>➕ إضافة إداري أو مدرب من قائمة المدربين</h3>
+                    <p class="text-muted" style="margin-bottom:10px;">يشمل المدربين والإداريين والمدير التقني والمرافقين الذين لديهم ملف في خانة المدربون.</p>
+                    <div class="form-grid">
+                        <div class="form-group"><label>اختر العضو</label><select id="participantStaffSelect">${staffOptionsHtml || '<option value="">لا يوجد أعضاء متاحون</option>'}</select></div>
+                        <div class="form-group"><label>الصفة داخل الدورة (اختياري)</label><input type="text" id="participantStaffRole" placeholder="مثال: المسؤول عن اللوجستيك" /></div>
+                        <div class="form-group full"><button class="btn-sm btn-sm-primary" data-action="addParticipantStaff"><i class="fas fa-user-plus"></i> إضافة العضو للمعنيين</button></div>
+                    </div>
+                </div>` : ''}
+            `;
+        }
+
+        // دوال إدارة المعنيين الجديدة
+        function addParticipantPlayer() {
+            if (!requireOpsRole()) return;
+            const select = document.getElementById('participantPlayerSelect');
+            const playerId = select?.value;
+            if (!playerId) { showToast('اختر لاعبًا أولاً', 'warning'); return; }
+            guardedAction('addParticipantPlayer_' + playerId, () => {
+                const t = getTournamentById(currentTournamentId);
+                const players = { ...(t.players || {}) };
+                if (players[playerId]?.called) { showToast('ℹ️ اللاعب مضاف بالفعل', 'info'); return; }
+                players[playerId] = { ...(players[playerId] || { healthStatus: 'ready' }), called: true, manual: true };
+                updateTourInFirebase({ players }, '✅ تمت إضافة اللاعب لقائمة المعنيين').then(() => {
+                    const p = allPlayers.find(x => x.id === playerId);
+                    pushTourTimeline(`تمت إضافة اللاعب ${p ? p.firstName + ' ' + p.lastName : ''} يدويًا لقائمة المعنيين`);
+                    const current = allPlayerDetails[playerId]?.tournamentsCount || 0;
+                    db.ref('academy/playerDetails/' + playerId + '/tournamentsCount').set(current + 1);
+                    if (!allPlayerDetails[playerId]) allPlayerDetails[playerId] = {};
+                    allPlayerDetails[playerId].tournamentsCount = current + 1;
+                    renderTourCard();
+                });
+            });
+        }
+
+        function removeParticipantPlayer(context) {
+            if (!requireOpsRole()) return;
+            const playerId = context.dataset.id;
+            guardedAction('removeParticipantPlayer_' + playerId, () => {
+                const t = getTournamentById(currentTournamentId);
+                const players = { ...(t.players || {}) };
+                if (!players[playerId]?.called) { showToast('ℹ️ اللاعب غير مدرج أصلاً', 'info'); return; }
+                players[playerId] = { ...(players[playerId] || {}), called: false };
+                updateTourInFirebase({ players }, '✅ تمت إزالة اللاعب من المعنيين').then(() => {
+                    const current = allPlayerDetails[playerId]?.tournamentsCount || 0;
+                    db.ref('academy/playerDetails/' + playerId + '/tournamentsCount').set(Math.max(0, current - 1));
+                    if (!allPlayerDetails[playerId]) allPlayerDetails[playerId] = {};
+                    allPlayerDetails[playerId].tournamentsCount = Math.max(0, current - 1);
+                    renderTourCard();
+                });
+            });
+        }
+
+        function addParticipantStaff() {
+            if (!requireOpsRole()) return;
+            const select = document.getElementById('participantStaffSelect');
+            const coachId = select?.value;
+            if (!coachId) { showToast('اختر عضوًا أولاً', 'warning'); return; }
+            const roleText = document.getElementById('participantStaffRole')?.value.trim() || '';
+            guardedAction('addParticipantStaff_' + coachId, () => {
+                const t = getTournamentById(currentTournamentId);
+                const participantStaff = { ...(t.participantStaff || {}) };
+                if (participantStaff[coachId]) { showToast('ℹ️ العضو مضاف بالفعل', 'info'); return; }
+                participantStaff[coachId] = roleText || true;
+                updateTourInFirebase({ participantStaff }, '✅ تمت إضافة العضو لقائمة المعنيين').then(() => {
+                    db.ref('academy/coaches/' + coachId + '/tournaments/' + t.id).set(true);
+                    const c = allCoaches.find(x => x.id === coachId);
+                    pushTourTimeline(`تمت إضافة ${c ? c.name : ''} لقائمة المعنيين بالدورة`);
+                    renderTourCard();
+                });
+            });
+        }
+
+        function removeParticipantStaff(context) {
+            if (!requireOpsRole()) return;
+            const coachId = context.dataset.id;
+            guardedAction('removeParticipantStaff_' + coachId, () => {
+                const t = getTournamentById(currentTournamentId);
+                const participantStaff = { ...(t.participantStaff || {}) };
+                delete participantStaff[coachId];
+                updateTourInFirebase({ participantStaff }, '✅ تمت إزالة العضو من المعنيين').then(() => {
+                    db.ref('academy/coaches/' + coachId + '/tournaments/' + t.id).remove();
+                    renderTourCard();
+                });
+            });
         }
 
         /* ===== المباريات (إعادة استخدام نظام المباريات الحالي بالكامل) ===== */
@@ -6992,6 +7102,10 @@
             EventManager.register('assignTourCoachRole', function(c) { assignTourCoachRole(c); });
             EventManager.register('setParentApproval', function(c) { setParentApproval(c); });
             EventManager.register('setDocReceived', function(c) { setDocReceived(c); });
+            EventManager.register('addParticipantPlayer', function() { addParticipantPlayer(); });
+            EventManager.register('removeParticipantPlayer', function(c) { removeParticipantPlayer(c); });
+            EventManager.register('addParticipantStaff', function() { addParticipantStaff(); });
+            EventManager.register('removeParticipantStaff', function(c) { removeParticipantStaff(c); });
             EventManager.register('createMatchInsideTournament', function() { createMatchInsideTournament(); });
             EventManager.register('addStandingsGroup', function() { addStandingsGroup(); });
             EventManager.register('removeGroup', function(c) { removeGroup(c); });
