@@ -1760,7 +1760,26 @@
                 window.addDebugLog('🚫 محاولة وصول غير مصرح: ' + roles.join(','), 'warning');
                 return false;
             }
+            // المدير التقني والمرافق للاطلاع فقط، لا صلاحية تعديل في أي قسم
+            if (currentUser.role === 'coach' && ['technicalDirector', 'companion'].includes(currentUser.data?.roleType)) {
+                showToast('❌ هذا الحساب مخصص للاطلاع فقط ولا يملك صلاحية التعديل', 'error');
+                return false;
+            }
             return true;
+        }
+
+        // صلاحية خاصة بالتعديل على الحصص التدريبية / المباريات / الدورات فقط
+        // مسموحة للمدير العام والمدرب صاحب الفئة، ممنوعة عن الإداري العام والمدير التقني والمرافق
+        function requireOpsRole() {
+            if (currentUser?.role === 'admin') return true;
+            if (currentUser?.role === 'coach' && (currentUser.data?.roleType || 'coach') === 'coach') return true;
+            if (!currentUser) { showToast('❌ ليس لديك صلاحية لهذا الإجراء', 'error'); return false; }
+            showToast('❌ ليس لديك صلاحية التعديل في الحصص/المباريات/الدورات', 'error');
+            return false;
+        }
+
+        function isReadOnlyStaff() {
+            return currentUser?.role === 'coach' && ['technicalDirector', 'companion'].includes(currentUser?.data?.roleType);
         }
 
         // ================================================================
@@ -2073,21 +2092,20 @@
                     if (data && data.code === code) user = { role: 'admin', data, id: 'adminId' };
 
                 } else if (role === 'coach') {
-                    // 🚀 مسار سريع: قراءة مباشرة عبر الفهرس (بدون فحص كامل قائمة المدربين)
+                    // 🚀 مسار سريع جدًا: قراءة واحدة فقط (البيانات مخزّنة كاملة داخل الفهرس)
                     const indexSnap = await db.ref('academy/coachCodeIndex/' + codeKey).once('value');
-                    const coachId = indexSnap.val();
-                    if (coachId) {
-                        const dataSnap = await db.ref('academy/coaches/' + coachId).once('value');
-                        const data = dataSnap.val();
-                        if (data && data.code === code) user = { role: 'coach', data, id: coachId };
+                    const indexVal = indexSnap.val();
+                    if (indexVal && indexVal.id && indexVal.code === code) {
+                        user = { role: 'coach', data: indexVal, id: indexVal.id };
                     }
                     if (!user) {
-                        // مسار احتياطي للحسابات القديمة غير المفهرسة بعد + إصلاح ذاتي للفهرس
+                        // مسار احتياطي للحسابات القديمة غير المفهرسة بعد + إصلاح ذاتي للفهرس (يشمل تحديثه للمرة القادمة)
                         const snap = await db.ref('academy/coaches').orderByChild('code').equalTo(code).once('value');
                         if (snap.val()) {
                             const key = Object.keys(snap.val())[0];
-                            user = { role: 'coach', data: snap.val()[key], id: key };
-                            db.ref('academy/coachCodeIndex/' + codeKey).set(key);
+                            const data = snap.val()[key];
+                            user = { role: 'coach', data, id: key };
+                            db.ref('academy/coachCodeIndex/' + codeKey).set({ id: key, ...data });
                         }
                     }
 
@@ -2131,10 +2149,8 @@
                     showToast(`✅ مرحباً ${user.data.name || user.data.firstName || ''}`, 'success');
                     addLog('تسجيل دخول', `دخل ${user.data.name || user.data.firstName || 'مستخدم'} كـ ${role}`, role);
 
-                    setTimeout(() => {
-                        EventManager.reinitialize();
-                        EventManager.bindButtons();
-                    }, 200);
+                    // حذف setTimeout غير الضروري
+                    // تم حذف: setTimeout(() => { EventManager.reinitialize(); EventManager.bindButtons(); }, 200);
                 } else {
                     const errorEl = document.getElementById('loginError');
                     if (errorEl) errorEl.style.display = 'block';
@@ -2195,15 +2211,33 @@
                 showAdminHome();
                 window.addDebugLog('👑 تم تحميل لوحة المدير', 'info');
             } else if (currentUser.role === 'coach') {
-                sidebar.innerHTML = `
-                    <div class="menu-item active" data-action="showCoachHome"><i class="fas fa-tachometer-alt"></i> <span>الرئيسية</span></div>
-                    <div class="menu-item" data-action="showCoachPlayers"><i class="fas fa-users"></i> <span>لاعبي فئتي</span></div>
-                    <div class="menu-item" data-action="showCoachTrainingSessions"><i class="fas fa-futbol"></i> <span>حصصي التدريبية</span></div>
-                    <div class="menu-item" data-action="showCoachMatches"><i class="fas fa-handshake"></i> <span>مبارياتي</span></div>
-                    <div class="menu-item" data-action="refreshDashboardData" style="border-right-color:var(--gold);"><i class="fas fa-sync-alt"></i> <span>🔄 تحديث البيانات</span></div>
-                `;
-                showCoachHome();
-                window.addDebugLog('🧑‍🏫 تم تحميل لوحة المدرب', 'info');
+                const rt = currentUser.data?.roleType || 'coach';
+                if (rt === 'coach') {
+                    sidebar.innerHTML = `
+                        <div class="menu-item active" data-action="showCoachHome"><i class="fas fa-tachometer-alt"></i> <span>الرئيسية</span></div>
+                        <div class="menu-item" data-action="showCoachPlayers"><i class="fas fa-users"></i> <span>لاعبي فئتي</span></div>
+                        <div class="menu-item" data-action="showCoachTrainingSessions"><i class="fas fa-futbol"></i> <span>حصصي التدريبية</span></div>
+                        <div class="menu-item" data-action="showCoachMatches"><i class="fas fa-handshake"></i> <span>مبارياتي</span></div>
+                        <div class="menu-item" data-action="refreshDashboardData" style="border-right-color:var(--gold);"><i class="fas fa-sync-alt"></i> <span>🔄 تحديث البيانات</span></div>
+                    `;
+                    showCoachHome();
+                    window.addDebugLog('🧑‍🏫 تم تحميل لوحة المدرب', 'info');
+                } else {
+                    // إداري عام / مدير تقني / مرافق: يعاين نفس شاشات المدير الكاملة (القيود مطبقة داخل أزرار التعديل نفسها)
+                    const roleTitle = rt === 'staffAdmin' ? '🗂️ إداري عام' : rt === 'technicalDirector' ? '🧭 مدير تقني (اطلاع فقط)' : '🧳 مرافق (اطلاع فقط)';
+                    sidebar.innerHTML = `
+                        <div class="menu-item" style="opacity:0.6; cursor:default; font-size:0.8rem; border-right:none;"><i class="fas fa-id-badge"></i> <span>${roleTitle}</span></div>
+                        <div class="menu-item active" data-action="showAdminHome"><i class="fas fa-tachometer-alt"></i> <span>الرئيسية</span></div>
+                        <div class="menu-item" data-action="showAdminPlayers"><i class="fas fa-users"></i> <span>اللاعبون</span></div>
+                        <div class="menu-item" data-action="showAdminTrainingSessions"><i class="fas fa-futbol"></i> <span>الحصص التدريبية</span></div>
+                        <div class="menu-item" data-action="showAdminMatches"><i class="fas fa-handshake"></i> <span>المباريات</span></div>
+                        <div class="menu-item" data-action="showAdminTournaments"><i class="fas fa-trophy"></i> <span>الدورات</span></div>
+                        <div class="menu-item" data-action="showAdminCoaches"><i class="fas fa-chalkboard-teacher"></i> <span>المدربون والطاقم</span></div>
+                        <div class="menu-item" data-action="refreshDashboardData" style="border-right-color:var(--gold);"><i class="fas fa-sync-alt"></i> <span>🔄 تحديث البيانات</span></div>
+                    `;
+                    showAdminHome();
+                    window.addDebugLog(`👁️ تم تحميل لوحة اطلاع (${roleTitle})`, 'info');
+                }
             } else if (currentUser.role === 'parent') {
                 sidebar.innerHTML = `
                     <div class="menu-item active" data-action="showParentHome"><i class="fas fa-user"></i> <span>حالة ابني</span></div>
@@ -2535,6 +2569,7 @@
                                 <div class="callup-card-title">🏆 دورة: ${t.name}</div>
                                 <div class="callup-card-meta"><i class="fas fa-calendar"></i> ${t.startDate || ''}${t.endDate ? ' → ' + t.endDate : ''} ${t.city ? '· ' + t.city : ''}</div>
                                 <span class="badge-status ${t.status === 'جارية' ? 'present' : 'excused'}">${t.status}</span>
+                                <button class="btn-sm btn-sm-primary" data-action="showParentTournamentFile" data-id="${t.id}" style="margin-top:8px;"><i class="fas fa-folder-open"></i> ملف الدورة</button>
                             </div>
                         </div>`);
                 }
@@ -2569,6 +2604,46 @@
             });
             if (cards.length === 0) return '';
             return `<div class="section-title-detail">🔔 الاستدعاءات الحالية</div><div class="callups-wrap">${cards.join('')}</div>`;
+        }
+
+        function showParentTournamentFile(tournamentId) {
+            const t = getTournamentById(tournamentId);
+            if (!t) { showToast('الدورة غير موجودة', 'error'); return; }
+            const playerId = currentUser?.role === 'parent' ? currentUser.id : (previousViewArgs?.[0] || null);
+            const info = playerId ? (t.players || {})[playerId] || {} : {};
+            const roomInfo = (t.accommodation?.rooms || []).find(r => (r.occupants || []).includes(playerId));
+            const busInfo = (t.transport?.buses || []).find(b => (b.assignedPlayers || []).includes(playerId));
+            const container = document.createElement('div');
+            container.className = 'session-detail-modal';
+            container.id = 'parentTourFileModal';
+            container.innerHTML = `
+                <div class="modal-content" style="max-width:640px;">
+                    <button class="icon-close-btn abs-top-right" data-action="closeModal" data-id="parentTourFileModal" title="إغلاق"><i class="fas fa-times"></i></button>
+                    <div class="trn-banner" style="${t.coverImage ? `background-image:url('${t.coverImage}');` : `background:linear-gradient(135deg, ${t.color || '#45B3FF'}, var(--dark-navy));`}">
+                        <div class="trn-banner-content">
+                            <div class="trn-banner-main">
+                                ${t.logo ? `<img src="${t.logo}" class="trn-banner-logo" />` : `<div class="trn-banner-logo" style="display:flex;align-items:center;justify-content:center;"><i class="fas fa-trophy" style="color:#fff;"></i></div>`}
+                                <div>
+                                    <h2>${t.name}</h2>
+                                    <div class="trn-sub">${t.categoryId} · ${t.tourType || ''} · ${t.city || ''}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="info-grid-detail">
+                        <div class="item"><div class="label">تاريخ البداية</div><div class="value">${t.startDate || '-'}</div></div>
+                        <div class="item"><div class="label">تاريخ النهاية</div><div class="value">${t.endDate || '-'}</div></div>
+                        <div class="item"><div class="label">الملاعب</div><div class="value">${t.venues || '-'}</div></div>
+                        <div class="item"><div class="label">المدينة</div><div class="value">${t.city || '-'}</div></div>
+                        <div class="item"><div class="label">الحالة الصحية لابنك</div><div class="value">${HEALTH_STATUS_LIST.find(h => h.key === (info.healthStatus || 'ready'))?.label || '-'}</div></div>
+                        ${busInfo ? `<div class="item"><div class="label">🚌 النقل</div><div class="value">${busInfo.name} — ${busInfo.departureTime || ''} — ${busInfo.meetingPoint || ''}</div></div>` : ''}
+                        ${roomInfo ? `<div class="item"><div class="label">🏨 الإقامة</div><div class="value">غرفة ${roomInfo.number} — ${t.accommodation?.hotelName || ''}</div></div>` : ''}
+                    </div>
+                    ${t.description ? `<div class="match-info-notes"><i class="fas fa-info-circle"></i> ${t.description}</div>` : ''}
+                </div>`;
+            document.body.appendChild(container);
+            container.addEventListener('click', e => { if (e.target === container) container.remove(); });
+            EventManager.bindButtons(container);
         }
 
         function showPlayerDetailPage(playerId) {
@@ -3449,7 +3524,7 @@
         }
 
         function toggleSessionPlayerCall(context) {
-            if (!requireRole('admin', 'coach')) return;
+            if (!requireOpsRole()) return;
             const playerId = context.dataset.playerId;
             if (sessionSelectedPlayers.includes(playerId)) {
                 sessionSelectedPlayers = sessionSelectedPlayers.filter(id => id !== playerId);
@@ -3460,7 +3535,7 @@
         }
 
         function selectAllSessionPlayers() {
-            if (!requireRole('admin', 'coach')) return;
+            if (!requireOpsRole()) return;
             const container = document.getElementById('playersListContainer');
             if (!container) return;
             const ids = Array.from(container.querySelectorAll('.sp-row')).map(r => r.dataset.playerId);
@@ -3469,7 +3544,7 @@
         }
 
         function deselectAllSessionPlayers() {
-            if (!requireRole('admin', 'coach')) return;
+            if (!requireOpsRole()) return;
             const container = document.getElementById('playersListContainer');
             if (!container) return;
             const ids = Array.from(container.querySelectorAll('.sp-row')).map(r => r.dataset.playerId);
@@ -3486,7 +3561,7 @@
         }
 
         function saveTrainingSession() {
-            if (!requireRole('admin', 'coach')) return;
+            if (!requireOpsRole()) return;
             const title = document.getElementById('sessionTitle').value.trim();
             const date = document.getElementById('sessionDate').value;
             const startTime = document.getElementById('sessionStartTime').value;
@@ -3599,9 +3674,11 @@
             EventManager.bindButtons(content);
         }
 
+        // --- استبدال openSessionDetail بالكامل ---
         function openSessionDetail(sessionId) {
             const s = allTrainingSessions.find(x => x.id === sessionId);
             if (!s) { showToast('الحصة غير موجودة', 'error'); return; }
+            const isLocked = s.status === 'مكتملة';
             const players = allPlayers.filter(p => (s.playersList || []).includes(p.id));
             const container = document.createElement('div');
             container.className = 'session-detail-modal';
@@ -3614,109 +3691,110 @@
                     const attStatus = (s.attendance || {})[p.id] || '';
                     const rating = (s.ratings || {})[p.id] || '';
                     const note = (s.notes || {})[p.id] || '';
-                    const imgSrc = p.photo && p.photo.startsWith('data:image') ? p.photo :
-                        'https://via.placeholder.com/36';
+                    const imgSrc = p.photo && p.photo.startsWith('data:image') ? p.photo : 'https://via.placeholder.com/36';
+                    const dis = isLocked ? 'disabled' : '';
                     rowsHtml += `
-                            <div class="session-player-card" id="spCard_${p.id}">
-                                <div class="session-player-head">
-                                    <img src="${imgSrc}" class="sp-avatar" />
-                                    <span class="sp-name">${p.firstName} ${p.lastName}</span>
+                        <div class="session-player-card" id="spCard_${p.id}">
+                            <div class="session-player-head">
+                                <img src="${imgSrc}" class="sp-avatar" />
+                                <span class="sp-name">${p.firstName} ${p.lastName}</span>
+                            </div>
+                            <div class="session-player-fields">
+                                <div class="spf-group">
+                                    <label>الحضور</label>
+                                    <select class="attendance-select" ${dis} data-action="autoSaveSessionField" data-session-id="${s.id}" data-player-id="${p.id}" data-field="attendance">
+                                        <option value="">-- الحالة --</option>
+                                        <option value="present" ${attStatus === 'present' ? 'selected' : ''}>✅ حاضر</option>
+                                        <option value="absent" ${attStatus === 'absent' ? 'selected' : ''}>❌ غائب</option>
+                                        <option value="excused" ${attStatus === 'excused' ? 'selected' : ''}>⚠️ معذور</option>
+                                    </select>
                                 </div>
-                                <div class="session-player-fields">
-                                    <div class="spf-group">
-                                        <label>الحضور</label>
-                                        <select class="attendance-select" id="att_${p.id}">
-                                            <option value="">-- الحالة --</option>
-                                            <option value="present" ${attStatus === 'present' ? 'selected' : ''}>✅ حاضر</option>
-                                            <option value="absent" ${attStatus === 'absent' ? 'selected' : ''}>❌ غائب</option>
-                                            <option value="excused" ${attStatus === 'excused' ? 'selected' : ''}>⚠️ معذور</option>
-                                        </select>
-                                    </div>
-                                    <div class="spf-group">
-                                        <label>التقييم /5</label>
-                                        <input type="number" min="0" max="5" step="0.5" id="rt_${p.id}" value="${rating}" placeholder="0-5" />
-                                    </div>
-                                    <div class="spf-group spf-note">
-                                        <label>ملاحظة اختيارية</label>
-                                        <input type="text" id="note_${p.id}" value="${note}" placeholder="اكتب ملاحظة عن أداء اللاعب..." />
-                                    </div>
-                                    <button class="btn-sm btn-sm-primary spf-save" data-action="saveSessionPlayerRow" data-session-id="${s.id}" data-player-id="${p.id}">
-                                        <i class="fas fa-save"></i> حفظ
-                                    </button>
+                                <div class="spf-group">
+                                    <label>التقييم /5</label>
+                                    <input type="number" min="0" max="5" step="0.5" value="${rating}" placeholder="0-5" ${dis} data-action="autoSaveSessionField" data-session-id="${s.id}" data-player-id="${p.id}" data-field="rating" />
+                                </div>
+                                <div class="spf-group spf-note">
+                                    <label>ملاحظة اختيارية</label>
+                                    <input type="text" value="${note}" placeholder="اكتب ملاحظة عن أداء اللاعب..." ${dis} data-action="autoSaveSessionField" data-session-id="${s.id}" data-player-id="${p.id}" data-field="note" />
                                 </div>
                             </div>
-                        `;
+                        </div>
+                    `;
                 });
             }
             container.innerHTML = `
-                    <div class="modal-content">
-                        <button class="icon-close-btn abs-top-right" data-action="closeModal" data-id="sessionDetailModal" title="إغلاق"><i class="fas fa-times"></i></button>
-                        <div class="modal-header">
-                            <h2>${s.title || 'حصة تدريبية'}</h2>
-                        </div>
-                        <div class="info-grid-session">
-                            <div class="item"><div class="label">التاريخ</div><div class="value">${s.date}</div></div>
-                            <div class="item"><div class="label">الوقت</div><div class="value">${s.startTime} - ${s.endTime}</div></div>
-                            <div class="item"><div class="label">الفئة</div><div class="value">${s.categoryId}</div></div>
-                            <div class="item"><div class="label">المدرب</div><div class="value">${s.coachName}</div></div>
-                            <div class="item"><div class="label">الملعب</div><div class="value">${s.field}</div></div>
-                            <div class="item"><div class="label">نوع التدريب</div><div class="value">${s.trainingType}</div></div>
-                            <div class="item"><div class="label">الحالة</div><div class="value">${s.status}</div></div>
-                        </div>
-                        <div class="section-title-sm">👥 الحضور والتقييم والملاحظات ${s.status === 'مجدولة' ? '<span style="color:#dc3545; font-size:0.75rem;">(يجب تسجيل حضور جميع اللاعبين قبل إنهاء الحصة)</span>' : ''}</div>
-                        <div id="sessionPlayersDetailWrap">${rowsHtml}</div>
-                        <div style="display:flex; gap:10px; margin-top:20px; flex-wrap:wrap; justify-content:center;">
-                            ${s.status !== 'مكتملة' ? `<button class="btn-sm btn-sm-success" data-action="completeSessionWithAttendance" data-id="${s.id}"><i class="fas fa-check"></i> إنهاء الحصة</button>` : ''}
-                            <button class="btn-sm btn-sm-info" data-action="exportSessionDetailPDF" data-id="${s.id}"><i class="fas fa-file-pdf"></i> تحميل PDF</button>
-                            <button class="btn-sm btn-sm-danger" data-action="deleteSession" data-id="${s.id}"><i class="fas fa-trash"></i> حذف الحصة</button>
-                            <button class="btn-sm btn-sm-secondary" data-action="closeModal" data-id="sessionDetailModal">إغلاق</button>
-                        </div>
+                <div class="modal-content">
+                    <button class="icon-close-btn abs-top-right" data-action="closeModal" data-id="sessionDetailModal" title="إغلاق"><i class="fas fa-times"></i></button>
+                    <div class="modal-header">
+                        <h2>${s.title || 'حصة تدريبية'}</h2>
                     </div>
-                `;
+                    <div class="info-grid-session">
+                        <div class="item"><div class="label">التاريخ</div><div class="value">${s.date}</div></div>
+                        <div class="item"><div class="label">الوقت</div><div class="value">${s.startTime} - ${s.endTime}</div></div>
+                        <div class="item"><div class="label">الفئة</div><div class="value">${s.categoryId}</div></div>
+                        <div class="item"><div class="label">المدرب</div><div class="value">${s.coachName}</div></div>
+                        <div class="item"><div class="label">الملعب</div><div class="value">${s.field}</div></div>
+                        <div class="item"><div class="label">نوع التدريب</div><div class="value">${s.trainingType}</div></div>
+                        <div class="item"><div class="label">الحالة</div><div class="value">${s.status}</div></div>
+                    </div>
+                    <div class="section-title-sm">
+                        👥 الحضور والتقييم والملاحظات
+                        ${isLocked ? '<span style="color:#28a745; font-size:0.75rem;">🔒 الحصة منتهية — للاطلاع فقط</span>' : '<span style="color:#888; font-size:0.7rem;">(يُحفظ تلقائيًا فور اختيار الحالة)</span>'}
+                    </div>
+                    <div id="sessionPlayersDetailWrap">${rowsHtml}</div>
+                    <div style="display:flex; gap:10px; margin-top:20px; flex-wrap:wrap; justify-content:center;">
+                        ${!isLocked ? `<button class="btn-sm btn-sm-success" data-action="completeSessionWithAttendance" data-id="${s.id}"><i class="fas fa-check"></i> حفظ الحضور وإنهاء الحصة</button>` : ''}
+                        <button class="btn-sm btn-sm-info" data-action="exportSessionDetailPDF" data-id="${s.id}"><i class="fas fa-file-pdf"></i> تحميل PDF</button>
+                        ${!isLocked ? `<button class="btn-sm btn-sm-danger" data-action="deleteSession" data-id="${s.id}"><i class="fas fa-trash"></i> حذف الحصة</button>` : ''}
+                        <button class="btn-sm btn-sm-secondary" data-action="closeModal" data-id="sessionDetailModal">إغلاق</button>
+                    </div>
+                </div>
+            `;
             document.body.appendChild(container);
             container.addEventListener('click', function(e) { if (e.target === this) this.remove(); });
             EventManager.bindButtons(container);
         }
 
-        function saveSessionPlayerRow(context) {
-            if (!requireRole('admin', 'coach')) return;
+        // حذف saveSessionPlayerRow بالكامل (لم تعد مستخدمة)
+        // وأضف autoSaveSessionField مكانها
+        function autoSaveSessionField(context) {
             const sessionId = context.dataset.sessionId;
             const playerId = context.dataset.playerId;
+            const field = context.dataset.field;
             const idx = allTrainingSessions.findIndex(s => s.id === sessionId);
             if (idx === -1) return;
+            const session = allTrainingSessions[idx];
+            if (session.status === 'مكتملة') { showToast('❌ لا يمكن التعديل، الحصة منتهية', 'warning'); return; }
+            if (!requireOpsRole()) return;
 
-            const attStatus = document.getElementById('att_' + playerId).value;
-            const ratingVal = document.getElementById('rt_' + playerId).value;
-            const noteVal = document.getElementById('note_' + playerId).value.trim();
+            const card = document.getElementById('spCard_' + playerId);
+            const flash = (ok) => { if (card) { card.style.background = ok ? 'rgba(40,167,69,0.08)' : 'rgba(220,53,69,0.08)'; setTimeout(() => { if (card) card.style.background = ''; }, 700); } };
 
-            const attendance = { ...(allTrainingSessions[idx].attendance || {}) };
-            if (attStatus) attendance[playerId] = attStatus;
-            else delete attendance[playerId];
-
-            const ratings = { ...(allTrainingSessions[idx].ratings || {}) };
-            const r = parseFloat(ratingVal);
-            if (!isNaN(r)) ratings[playerId] = r;
-            else delete ratings[playerId];
-
-            const notes = { ...(allTrainingSessions[idx].notes || {}) };
-            if (noteVal) notes[playerId] = noteVal;
-            else delete notes[playerId];
-
-            db.ref('academy/trainingSessions/' + sessionId).update({ attendance, ratings, notes })
-                .then(() => {
-                    allTrainingSessions[idx].attendance = attendance;
-                    allTrainingSessions[idx].ratings = ratings;
-                    allTrainingSessions[idx].notes = notes;
-                    const card = document.getElementById('spCard_' + playerId);
-                    if (card) { card.style.background = 'rgba(40,167,69,0.06)';
-                        setTimeout(() => { if (card) card.style.background = ''; }, 900); }
-                    showToast('✅ تم الحفظ', 'success');
-                })
-                .catch(err => showToast('❌ خطأ: ' + err.message, 'error'));
+            if (field === 'attendance') {
+                const attendance = { ...(session.attendance || {}) };
+                if (context.value) attendance[playerId] = context.value; else delete attendance[playerId];
+                db.ref('academy/trainingSessions/' + sessionId + '/attendance').set(attendance)
+                    .then(() => { session.attendance = attendance; flash(true); })
+                    .catch(() => { flash(false); showToast('❌ فشل الحفظ', 'error'); });
+            } else if (field === 'rating') {
+                const ratings = { ...(session.ratings || {}) };
+                const r = parseFloat(context.value);
+                if (!isNaN(r)) ratings[playerId] = r; else delete ratings[playerId];
+                db.ref('academy/trainingSessions/' + sessionId + '/ratings').set(ratings)
+                    .then(() => { session.ratings = ratings; flash(true); })
+                    .catch(() => { flash(false); });
+            } else if (field === 'note') {
+                const notes = { ...(session.notes || {}) };
+                const v = context.value.trim();
+                if (v) notes[playerId] = v; else delete notes[playerId];
+                db.ref('academy/trainingSessions/' + sessionId + '/notes').set(notes)
+                    .then(() => { session.notes = notes; flash(true); })
+                    .catch(() => { flash(false); });
+            }
         }
 
         function completeSessionWithAttendance(sessionId) {
-            if (!requireRole('admin', 'coach')) return;
+            if (!requireOpsRole()) return;
             const idx = allTrainingSessions.findIndex(s => s.id === sessionId);
             if (idx === -1) return;
             const session = allTrainingSessions[idx];
@@ -3755,7 +3833,7 @@
         }
 
         function deleteSession(sessionId) {
-            if (!requireRole('admin', 'coach')) return;
+            if (!requireOpsRole()) return;
             if (!confirm('حذف هذه الحصة؟')) return;
             db.ref('academy/trainingSessions/' + sessionId).remove()
                 .then(() => {
@@ -3953,7 +4031,7 @@
         }
 
         function deleteMatchUI(matchId) {
-            if (!requireRole('admin')) return;
+            if (!requireOpsRole()) return;
             if (!confirm('حذف هذه المباراة؟ لا يمكن التراجع.')) return;
             db.ref('academy/matches/' + matchId).remove()
                 .then(() => {
@@ -3967,7 +4045,7 @@
 
         // ---------- إنشاء مباراة جديدة (التعديلات 4 و 5) ----------
         function openCreateMatchModal() {
-            if (!requireRole('admin', 'coach')) return;
+            if (!requireOpsRole()) return;
             const coachCategory = currentUser.role === 'coach' ? currentUser.data.categoryId : '';
             const activeTournaments = allTournaments.filter(t => t.status !== 'منتهية');
             const container = document.createElement('div');
@@ -4063,7 +4141,7 @@
         let isSavingMatch = false;
 
         function saveMatchDetailed() {
-            if (!requireRole('admin', 'coach')) return;
+            if (!requireOpsRole()) return;
             if (isSavingMatch) return;
 
             const opponent = document.getElementById('cmOpponent').value.trim();
@@ -4293,7 +4371,7 @@
         }
 
         function updateMatchStatus(context) {
-            if (!requireRole('admin', 'coach')) return;
+            if (!requireOpsRole()) return;
             const status = context.value;
             updateMatchInFirebase({ status }, '✅ تم تحديث الحالة').then(() => {
                 pushMatchTimeline(`تم تغيير حالة المباراة إلى ${status}`);
@@ -4358,7 +4436,7 @@
         }
 
         function toggleMatchCallup(context) {
-            if (!requireRole('admin', 'coach')) return;
+            if (!requireOpsRole()) return;
             const m = getCurrentMatch();
             const playerId = context.dataset.playerId;
             const callups = { ...(m.callups || {}) };
@@ -4371,7 +4449,7 @@
         }
 
         function updateMatchCallupAttendance(context) {
-            if (!requireRole('admin', 'coach')) return;
+            if (!requireOpsRole()) return;
             const m = getCurrentMatch();
             const callups = { ...(m.callups || {}) };
             const playerId = context.dataset.playerId;
@@ -4380,7 +4458,7 @@
         }
 
         function updateMatchCallupReason(context) {
-            if (!requireRole('admin', 'coach')) return;
+            if (!requireOpsRole()) return;
             const m = getCurrentMatch();
             const callups = { ...(m.callups || {}) };
             const playerId = context.dataset.playerId;
@@ -4389,7 +4467,7 @@
         }
 
         function selectAllMatchCallups() {
-            if (!requireRole('admin', 'coach')) return;
+            if (!requireOpsRole()) return;
             const m = getCurrentMatch();
             const players = allPlayers.filter(p => p.categoryId === m.categoryId && p.status === 'approved');
             const callups = { ...(m.callups || {}) };
@@ -4399,7 +4477,7 @@
         }
 
         function deselectAllMatchCallups() {
-            if (!requireRole('admin', 'coach')) return;
+            if (!requireOpsRole()) return;
             const m = getCurrentMatch();
             const players = allPlayers.filter(p => p.categoryId === m.categoryId && p.status === 'approved');
             const callups = { ...(m.callups || {}) };
@@ -4445,7 +4523,7 @@
         }
 
         function addPlayerToPitch(context) {
-            if (!requireRole('admin', 'coach')) return;
+            if (!requireOpsRole()) return;
             const m = getCurrentMatch();
             const playerId = context.dataset.playerId;
             const lineup = { formation: '4-3-3', positions: {}, starters: [], ...(m.lineup || {}) };
@@ -4465,7 +4543,7 @@
         }
 
         function changeFormation(context) {
-            if (!requireRole('admin', 'coach')) return;
+            if (!requireOpsRole()) return;
             const m = getCurrentMatch();
             const formation = context.value;
             const slots = FORMATIONS[formation] || FORMATIONS['4-3-3'];
@@ -4542,7 +4620,7 @@
             const bench = calledPlayers.filter(p => !(lineup.starters || []).includes(p.id));
             const subEvents = m.subEvents || [];
             const benchHtml = bench.map(p => `<span class="player-tag">${p.firstName} ${p.lastName}</span>`).join(
-            '') || '<span class="text-muted">لا يوجد بدلاء</span>';
+                '') || '<span class="text-muted">لا يوجد بدلاء</span>';
             const subFormHtml = `
                     <div class="form-grid" style="margin-top:12px;">
                         <div class="form-group"><label>اللاعب الخارج</label><select id="subOutPlayer">${(lineup.starters || []).map(pid => { const p = allPlayers.find(x => x.id === pid); return p ? `<option value="${pid}">${p.firstName} ${p.lastName}</option>` : ''; }).join('')}</select></div>
@@ -4559,7 +4637,7 @@
         }
 
         function applySubstitution() {
-            if (!requireRole('admin', 'coach')) return;
+            if (!requireOpsRole()) return;
             const outId = document.getElementById('subOutPlayer').value;
             const inId = document.getElementById('subInPlayer').value;
             const minute = parseInt(document.getElementById('subMinute').value) || 0;
@@ -4597,10 +4675,10 @@
                     </div>`;
         }
 
-        function setCaptain(context) { if (!requireRole('admin', 'coach')) return;
+        function setCaptain(context) { if (!requireOpsRole()) return;
             updateMatchInFirebase({ captain: context.value }, '✅ تم التحديد'); }
 
-        function setViceCaptain(context) { if (!requireRole('admin', 'coach')) return;
+        function setViceCaptain(context) { if (!requireOpsRole()) return;
             updateMatchInFirebase({ viceCaptain: context.value }, '✅ تم التحديد'); }
 
         // ===== بطاقة 6: الأحداث =====
@@ -4608,7 +4686,7 @@
             const events = m.events || [];
             const players = allPlayers.filter(p => p.categoryId === m.categoryId);
             const playerOptions = players.map(p => `<option value="${p.id}">${p.firstName} ${p.lastName}</option>`).join(
-            '');
+                '');
             const formHtml = `
                     <div class="form-grid">
                         <div class="form-group"><label>نوع الحدث</label><select id="evType">${MATCH_EVENT_TYPES.map(e => `<option value="${e.key}">${e.label}</option>`).join('')}</select></div>
@@ -4627,7 +4705,7 @@
         }
 
         function addMatchEvent() {
-            if (!requireRole('admin', 'coach')) return;
+            if (!requireOpsRole()) return;
             const type = document.getElementById('evType').value;
             const playerId = document.getElementById('evPlayer').value;
             const minute = parseInt(document.getElementById('evMinute').value) || 0;
@@ -4643,7 +4721,7 @@
         }
 
         function deleteMatchEvent(context) {
-            if (!requireRole('admin', 'coach')) return;
+            if (!requireOpsRole()) return;
             const idx = parseInt(context.dataset.index);
             const m = getCurrentMatch();
             const events = [...(m.events || [])];
@@ -4673,7 +4751,7 @@
         }
 
         function saveMatchStats() {
-            if (!requireRole('admin', 'coach')) return;
+            if (!requireOpsRole()) return;
             const fields = ['possession', 'shots', 'shotsOnTarget', 'corners', 'fouls', 'offsides', 'yellowCards',
                 'redCards'
             ];
@@ -4713,7 +4791,7 @@
         }
 
         function saveMatchPlayerRating(context) {
-            if (!requireRole('admin', 'coach')) return;
+            if (!requireOpsRole()) return;
             const pid = context.dataset.playerId;
             const rating = {
                 overall: parseFloat(document.getElementById('rt_overall_' + pid).value) || 0,
@@ -4751,7 +4829,7 @@
         }
 
         function saveMatchReport() {
-            if (!requireRole('admin', 'coach')) return;
+            if (!requireOpsRole()) return;
             const report = {
                 positives: document.getElementById('repPositives').value.trim(),
                 negatives: document.getElementById('repNegatives').value.trim(),
@@ -4784,7 +4862,7 @@
         }
 
         function saveMatchResult() {
-            if (!requireRole('admin', 'coach')) return;
+            if (!requireOpsRole()) return;
             const scoreHome = parseInt(document.getElementById('resScoreHome').value) || 0;
             const scoreAway = parseInt(document.getElementById('resScoreAway').value) || 0;
             const manOfMatch = document.getElementById('resManOfMatch').value;
@@ -4883,13 +4961,20 @@
             if (!tbody) return;
             if (allCoaches.length === 0) { tbody.innerHTML =
                     `<tr><td colspan="6" style="text-align:center;color:#888;padding:20px;">لا يوجد مدربون</td></tr>`; return; }
+            const roleLabels = {
+                coach: c => '🧑‍🏫 مدرب ' + (c.categoryId || ''),
+                staffAdmin: () => '🗂️ إداري عام',
+                technicalDirector: () => '🧭 مدير تقني',
+                companion: () => '🧳 مرافق'
+            };
             let html = '';
             allCoaches.forEach((c, idx) => {
-                const isAdmin = c.roleType === 'admin';
+                const rt = c.roleType || 'coach';
+                const badgeCls = rt === 'coach' ? 'paid' : rt === 'staffAdmin' ? 'unpaid' : 'excused';
                 html += `<tr>
                         <td>${idx + 1}</td>
                         <td class="editable-field" data-action="editCoachField" data-id="${c.id}" data-field="name" data-current="${c.name || ''}">${c.name || ''}</td>
-                        <td><span class="badge-status ${isAdmin ? 'unpaid' : 'paid'}">${isAdmin ? '🗂️ إداري عام' : '🧑‍🏫 مدرب ' + (c.categoryId || '')}</span></td>
+                        <td><span class="badge-status ${badgeCls}">${(roleLabels[rt] || roleLabels.coach)(c)}</span></td>
                         <td class="editable-field" data-action="editCoachField" data-id="${c.id}" data-field="phone" data-current="${c.phone || ''}">${c.phone || '-'}</td>
                         <td>${c.jobTitle || '-'}</td>
                         <td>
@@ -4914,12 +4999,14 @@
                         <tbody id="coachesTableBody"></tbody>
                     </table></div>
                     <div class="form-card">
-                        <h3>➕ إضافة حساب جديد (مدرب فئة أو إداري عام)</h3>
+                        <h3>➕ إضافة حساب جديد (مدرب فئة أو إداري عام أو مدير تقني أو مرافق)</h3>
                         <div class="form-grid">
                             <div class="form-group"><label>نوع الحساب</label>
                                 <select id="newCoachRoleType" onchange="toggleNewCoachCategoryField()">
                                     <option value="coach">🧑‍🏫 مدرب فئة معينة</option>
-                                    <option value="admin">🗂️ إداري عام (بدون فئة)</option>
+                                    <option value="staffAdmin">🗂️ إداري عام (اطلاع كامل + تعديل عدا الحصص/المباريات/الدورات)</option>
+                                    <option value="technicalDirector">🧭 مدير تقني (اطلاع فقط)</option>
+                                    <option value="companion">🧳 مرافق (ملف + اطلاع فقط)</option>
                                 </select>
                             </div>
                             <div class="form-group"><label>الاسم الكامل</label><input type="text" id="newCoachName" /></div>
@@ -4941,7 +5028,7 @@
         function toggleNewCoachCategoryField() {
             const roleType = document.getElementById('newCoachRoleType')?.value;
             const wrap = document.getElementById('newCoachCategoryWrap');
-            if (wrap) wrap.style.display = roleType === 'admin' ? 'none' : 'flex';
+            if (wrap) wrap.style.display = roleType === 'coach' ? 'flex' : 'none';
         }
         window.toggleNewCoachCategoryField = toggleNewCoachCategoryField;
 
@@ -4949,7 +5036,7 @@
             if (!requireRole('admin')) return;
             const roleType = document.getElementById('newCoachRoleType').value;
             const name = document.getElementById('newCoachName').value.trim();
-            const categoryId = roleType === 'admin' ? '' : document.getElementById('newCoachCategory').value;
+            const categoryId = roleType === 'coach' ? document.getElementById('newCoachCategory').value : '';
             const code = document.getElementById('newCoachCode').value.trim();
             const phone = document.getElementById('newCoachPhone').value.trim();
             const jobTitle = document.getElementById('newCoachJobTitle').value.trim();
@@ -4958,8 +5045,8 @@
             db.ref('academy/coaches').push(data)
                 .then((snap) => {
                     allCoaches.push({ id: snap.key, ...data });
-                    db.ref('academy/coachCodeIndex/' + sanitizeCodeKey(code)).set(snap.key);
-                    addLog('إضافة حساب', `تم إضافة ${roleType === 'admin' ? 'إداري' : 'مدرب'}: ${name}`,
+                    db.ref('academy/coachCodeIndex/' + sanitizeCodeKey(code)).set({ id: snap.key, ...data });
+                    addLog('إضافة حساب', `تم إضافة ${roleType === 'coach' ? 'مدرب' : 'حساب إداري/تقني/مرافق'}: ${name}`,
                         currentUser?.role);
                     showToast('✅ تم إضافة الحساب بنجاح', 'success');
                     showAdminCoaches();
@@ -4978,7 +5065,7 @@
         }
 
         function computeCoachStats(coach) {
-            const isAdmin = coach.roleType === 'admin';
+            const isAdmin = (coach.roleType || 'coach') !== 'coach';
             const matches = isAdmin ? [] : allMatches.filter(m => m.coachId === coach.id || m.coachName === coach.name);
             const sessions = isAdmin ? [] : allTrainingSessions.filter(s => s.coachId === coach.id || s.coachName ===
                 coach.name);
@@ -5023,7 +5110,9 @@
             if (!c) { showToast('الحساب غير موجود', 'error'); return; }
             currentViewFunction = showCoachDetailPage;
             currentViewArgs = [coachId];
-            const isAdmin = c.roleType === 'admin';
+            const rt = c.roleType || 'coach';
+            const isAdmin = rt !== 'coach';
+            const roleLabelsFull = { staffAdmin: '🗂️ إداري عام', technicalDirector: '🧭 مدير تقني', companion: '🧳 مرافق' };
             const s = computeCoachStats(c);
             const content = document.getElementById('pageContent');
 
@@ -5033,7 +5122,7 @@
                         <div class="coach-file-avatar"><i class="fas ${isAdmin ? 'fa-user-tie' : 'fa-chalkboard-teacher'}"></i></div>
                         <div class="coach-file-info">
                             <h2>${c.name}</h2>
-                            <span class="badge-status ${isAdmin ? 'unpaid' : 'paid'}">${isAdmin ? '🗂️ إداري عام' : '🧑‍🏫 مدرب فئة ' + (c.categoryId || '')}</span>
+                            <span class="badge-status ${isAdmin ? 'unpaid' : 'paid'}">${isAdmin ? (roleLabelsFull[rt] || '🗂️ إداري عام') : '🧑‍🏫 مدرب فئة ' + (c.categoryId || '')}</span>
                             ${c.jobTitle ? `<div class="coach-file-jobtitle">${c.jobTitle}</div>` : ''}
                         </div>
                     </div>
@@ -5100,11 +5189,13 @@
                         .then(() => {
                             const idx = allCoaches.findIndex(x => x.id === id);
                             if (idx !== -1) allCoaches[idx][field] = newVal;
-                            if (field === 'code') {
-                                if (currentValue) db.ref('academy/coachCodeIndex/' + sanitizeCodeKey(
-                                    currentValue)).remove();
-                                db.ref('academy/coachCodeIndex/' + sanitizeCodeKey(newVal)).set(id);
+                            const freshData = allCoaches[idx];
+                            const oldCodeKey = sanitizeCodeKey(field === 'code' ? currentValue : freshData.code);
+                            const newCodeKey = sanitizeCodeKey(freshData.code);
+                            if (field === 'code' && oldCodeKey !== newCodeKey) {
+                                db.ref('academy/coachCodeIndex/' + oldCodeKey).remove();
                             }
+                            db.ref('academy/coachCodeIndex/' + newCodeKey).set({ id, ...freshData });
                             showToast('✅ تم التحديث فورًا', 'success');
                             if (cameFromCoachFile) showCoachDetailPage(id);
                             else showAdminCoaches();
@@ -5611,6 +5702,9 @@
                         </div>
                     </div>
                     <div class="trn-tabs" id="tourTabsBar"></div>
+                    <div class="dashboard-action-bar" style="margin-bottom:14px;">
+                        <button class="btn-sm btn-sm-info" data-action="exportCurrentTourTabPDF"><i class="fas fa-file-pdf"></i> تحميل هذه الخانة PDF</button>
+                    </div>
                     <div id="tourCardBody"></div>
                 `;
             EventManager.bindButtons(content);
@@ -5806,7 +5900,7 @@
         }
 
         function toggleTourCategory(context) {
-            if (!requireRole('admin', 'coach')) return;
+            if (!requireOpsRole()) return;
             const t = getTournamentById(currentTournamentId);
             const cat = context.dataset.cat;
             let extra = [...(t.extraCategories || [])];
@@ -5816,7 +5910,7 @@
         }
 
         function toggleTourCallup(context) {
-            if (!requireRole('admin', 'coach')) return;
+            if (!requireOpsRole()) return;
             const t = getTournamentById(currentTournamentId);
             const playerId = context.dataset.playerId;
             const players = { ...(t.players || {}) };
@@ -5838,7 +5932,7 @@
         }
 
         function setTourExclusionReason(context) {
-            if (!requireRole('admin', 'coach')) return;
+            if (!requireOpsRole()) return;
             const t = getTournamentById(currentTournamentId);
             const players = { ...(t.players || {}) };
             players[context.dataset.playerId] = { ...(players[context.dataset.playerId] || {}),
@@ -5847,7 +5941,7 @@
         }
 
         function setTourHealthStatus(context) {
-            if (!requireRole('admin', 'coach')) return;
+            if (!requireOpsRole()) return;
             const t = getTournamentById(currentTournamentId);
             const players = { ...(t.players || {}) };
             players[context.dataset.playerId] = { ...(players[context.dataset.playerId] || { called: true }),
@@ -5856,7 +5950,7 @@
         }
 
         function addCompanion() {
-            if (!requireRole('admin', 'coach')) return;
+            if (!requireOpsRole()) return;
             const name = document.getElementById('newCompanionName').value.trim();
             const role = document.getElementById('newCompanionRole').value.trim() || 'مرافق';
             const linkedCoachId = document.getElementById('newCompanionCoach')?.value || '';
@@ -5872,7 +5966,7 @@
         }
 
         function removeCompanion(context) {
-            if (!requireRole('admin', 'coach')) return;
+            if (!requireOpsRole()) return;
             const t = getTournamentById(currentTournamentId);
             const companions = [...(t.companions || [])];
             companions.splice(parseInt(context.dataset.index), 1);
@@ -5883,7 +5977,7 @@
         function renderTourCoachesCard(t) {
             const coaches = t.coaches || {};
             const options = allCoaches.map(c => `<option value="${c.id}">${c.name} (${c.categoryId})</option>`).join(
-            '');
+                '');
             return `
                     <div class="form-card">
                         <h3>🧑‍🏫 الطاقم الفني والإداري</h3>
@@ -5940,7 +6034,7 @@
         }
 
         function setParentApproval(context) {
-            if (!requireRole('admin', 'coach')) return;
+            if (!requireOpsRole()) return;
             const t = getTournamentById(currentTournamentId);
             const consent = { ...(t.parentsConsent || {}) };
             consent[context.dataset.playerId] = { ...(consent[context.dataset.playerId] || {}),
@@ -5949,7 +6043,7 @@
         }
 
         function setDocReceived(context) {
-            if (!requireRole('admin', 'coach')) return;
+            if (!requireOpsRole()) return;
             const t = getTournamentById(currentTournamentId);
             const consent = { ...(t.parentsConsent || {}) };
             consent[context.dataset.playerId] = { ...(consent[context.dataset.playerId] || {}),
@@ -5988,11 +6082,10 @@
                     </tr>`).join('') || '<tr><td colspan="3" class="text-muted" style="padding:16px;">لا يوجد معنيون بعد</td></tr>';
 
             return `
-                    <div class="form-card" id="tourParticipantsPrintArea">
+                    <div class="form-card">
                         <h3>📋 قائمة المعنيين بالدورة (${rows.length})</h3>
                         <div class="table-wrap"><table class="callup-table"><thead><tr><th>الصفة</th><th>الاسم</th><th>التفاصيل</th></tr></thead><tbody>${bodyRows}</tbody></table></div>
                     </div>
-                    <button class="btn-sm btn-sm-info" data-action="exportTourParticipantsPDF"><i class="fas fa-file-pdf"></i> تحميل قائمة المعنيين PDF</button>
                 `;
         }
 
@@ -6010,7 +6103,7 @@
         }
 
         function createMatchInsideTournament() {
-            if (!requireRole('admin', 'coach')) return;
+            if (!requireOpsRole()) return;
             pendingTournamentIdForMatch = currentTournamentId;
             openCreateMatchModal();
         }
@@ -6061,7 +6154,7 @@
         }
 
         function addStandingsGroup() {
-            if (!requireRole('admin', 'coach')) return;
+            if (!requireOpsRole()) return;
             const name = document.getElementById('newGroupName').value.trim();
             if (!name) { showToast('أدخل اسم المجموعة', 'warning'); return; }
             const t = getTournamentById(currentTournamentId);
@@ -6070,7 +6163,7 @@
         }
 
         function removeGroup(context) {
-            if (!requireRole('admin', 'coach')) return;
+            if (!requireOpsRole()) return;
             const t = getTournamentById(currentTournamentId);
             const groups = [...(t.groups || [])];
             groups.splice(parseInt(context.dataset.group), 1);
@@ -6078,7 +6171,7 @@
         }
 
         function addTeamToGroup(context) {
-            if (!requireRole('admin', 'coach')) return;
+            if (!requireOpsRole()) return;
             const gi = parseInt(context.dataset.group);
             const nameInput = document.getElementById('newTeamName_' + gi);
             const name = nameInput.value.trim();
@@ -6091,7 +6184,7 @@
         }
 
         function removeTeamFromGroup(context) {
-            if (!requireRole('admin', 'coach')) return;
+            if (!requireOpsRole()) return;
             const t = getTournamentById(currentTournamentId);
             const groups = [...(t.groups || [])];
             const gi = parseInt(context.dataset.group),
@@ -6101,7 +6194,7 @@
         }
 
         function updateTeamStat(context) {
-            if (!requireRole('admin', 'coach')) return;
+            if (!requireOpsRole()) return;
             const t = getTournamentById(currentTournamentId);
             const groups = [...(t.groups || [])];
             const gi = parseInt(context.dataset.group),
@@ -6139,7 +6232,7 @@
         }
 
         function addBus() {
-            if (!requireRole('admin', 'coach')) return;
+            if (!requireOpsRole()) return;
             const t = getTournamentById(currentTournamentId);
             const bus = {
                 name: document.getElementById('busName').value.trim() || 'حافلة',
@@ -6154,7 +6247,7 @@
         }
 
         function removeBus(context) {
-            if (!requireRole('admin', 'coach')) return;
+            if (!requireOpsRole()) return;
             const t = getTournamentById(currentTournamentId);
             const buses = [...(t.transport?.buses || [])];
             buses.splice(parseInt(context.dataset.index), 1);
@@ -6162,7 +6255,7 @@
         }
 
         function assignBusPlayers(context) {
-            if (!requireRole('admin', 'coach')) return;
+            if (!requireOpsRole()) return;
             const t = getTournamentById(currentTournamentId);
             const idx = parseInt(context.dataset.index);
             const bus = t.transport.buses[idx];
@@ -6205,13 +6298,13 @@
         }
 
         function saveHotelName(context) {
-            if (!requireRole('admin', 'coach')) return;
+            if (!requireOpsRole()) return;
             const t = getTournamentById(currentTournamentId);
             updateTourInFirebase({ accommodation: { ...(t.accommodation || {}), hotelName: context.value } });
         }
 
         function addRoom() {
-            if (!requireRole('admin', 'coach')) return;
+            if (!requireOpsRole()) return;
             const t = getTournamentById(currentTournamentId);
             const room = {
                 number: document.getElementById('roomNumber').value.trim(),
@@ -6224,7 +6317,7 @@
         }
 
         function removeRoom(context) {
-            if (!requireRole('admin', 'coach')) return;
+            if (!requireOpsRole()) return;
             const t = getTournamentById(currentTournamentId);
             const rooms = [...(t.accommodation?.rooms || [])];
             rooms.splice(parseInt(context.dataset.index), 1);
@@ -6233,7 +6326,7 @@
         }
 
         function assignRoomOccupants(context) {
-            if (!requireRole('admin', 'coach')) return;
+            if (!requireOpsRole()) return;
             const t = getTournamentById(currentTournamentId);
             const idx = parseInt(context.dataset.index);
             const room = t.accommodation.rooms[idx];
@@ -6313,7 +6406,7 @@
         }
 
         function uploadTourDocuments() {
-            if (!requireRole('admin', 'coach')) return;
+            if (!requireOpsRole()) return;
             const files = document.getElementById('tourDocInput').files;
             if (!files.length) { showToast('اختر ملفات أولاً', 'warning'); return; }
             const t = getTournamentById(currentTournamentId);
@@ -6331,7 +6424,7 @@
         }
 
         function removeTourDocument(context) {
-            if (!requireRole('admin', 'coach')) return;
+            if (!requireOpsRole()) return;
             const t = getTournamentById(currentTournamentId);
             const documents = [...(t.documents || [])];
             documents.splice(parseInt(context.dataset.index), 1);
@@ -6381,7 +6474,7 @@
         }
 
         function uploadGalleryPhotos() {
-            if (!requireRole('admin', 'coach')) return;
+            if (!requireOpsRole()) return;
             const cat = document.getElementById('galleryCategory').value;
             const files = document.getElementById('galleryPhotosInput').files;
             if (!files.length) { showToast('اختر صوراً أولاً', 'warning'); return; }
@@ -6401,7 +6494,7 @@
         }
 
         function removeGalleryPhoto(context) {
-            if (!requireRole('admin', 'coach')) return;
+            if (!requireOpsRole()) return;
             const t = getTournamentById(currentTournamentId);
             const gallery = { ...(t.gallery || {}) };
             const cat = context.dataset.category;
@@ -6411,7 +6504,7 @@
         }
 
         function uploadFreeGalleryPhotos(files) {
-            if (!requireRole('admin', 'coach')) return;
+            if (!requireOpsRole()) return;
             if (!files || !files.length) return;
             const t = getTournamentById(currentTournamentId);
             const readers = Array.from(files).map(f => new Promise((res, rej) => { const r = new FileReader();
@@ -6429,7 +6522,7 @@
         window.uploadFreeGalleryPhotos = uploadFreeGalleryPhotos;
 
         function removeFreeGalleryPhoto(context) {
-            if (!requireRole('admin', 'coach')) return;
+            if (!requireOpsRole()) return;
             const t = getTournamentById(currentTournamentId);
             const freeGallery = [...(t.freeGallery || [])];
             freeGallery.splice(parseInt(context.dataset.index), 1);
@@ -6643,6 +6736,17 @@
             }
         };
 
+        // --- دوال التصدير PDF للتبويبات ---
+        function exportCurrentTourTabPDF() {
+            const t = getTournamentById(currentTournamentId);
+            const tabInfo = TOUR_TABS.find(tb => tb.key === currentTournamentTab);
+            const body = document.getElementById('tourCardBody');
+            if (!body) { showToast('لا يوجد محتوى للتصدير', 'warning'); return; }
+            exportHtmlToPDF(body, `${(t?.name || 'دورة').replace(/\s+/g, '_')}_${tabInfo?.label || currentTournamentTab}`, {
+                title: `${t?.name || ''} — ${tabInfo?.label || ''}`
+            });
+        }
+
         /* =====================================================================
            إعادة تسجيل جميع الإجراءات (يشمل القديم بالكامل + إضافات الدورات)
            ===================================================================== */
@@ -6689,7 +6793,8 @@
             EventManager.register('deselectAllSessionPlayers', function() { deselectAllSessionPlayers(); });
             EventManager.register('toggleSessionPlayerCall', function(c) { toggleSessionPlayerCall(c); });
             EventManager.register('openSessionDetail', function(c) { openSessionDetail(c.dataset.id); });
-            EventManager.register('saveSessionPlayerRow', function(c) { saveSessionPlayerRow(c); });
+            // تم حذف تسجيل saveSessionPlayerRow واستبداله بـ autoSaveSessionField
+            EventManager.register('autoSaveSessionField', function(c) { autoSaveSessionField(c); });
             EventManager.register('completeSessionWithAttendance', function(c) { completeSessionWithAttendance(c
                     .dataset.id); });
             EventManager.register('exportSessionDetailPDF', function(c) { exportSessionDetailPDF(c); });
@@ -6798,10 +6903,10 @@
                     'استخدم زر إضافة الصورة في الألبوم الحر', 'info'); });
             EventManager.register('removeFreeGalleryPhoto', function(c) { removeFreeGalleryPhoto(c); });
             EventManager.register('saveTourFinalReport', function() { saveTourFinalReport(); });
-            EventManager.register('exportTourParticipantsPDF', function() {
-                exportHtmlToPDF(document.getElementById('tourParticipantsPrintArea'), 'قائمة_المعنيين_' + (
-                    getTournamentById(currentTournamentId)?.name || 'دورة'));
-            });
+            EventManager.register('exportCurrentTourTabPDF', function() { exportCurrentTourTabPDF(); });
+
+            // إضافة إظهار ملف الدورة لولي الأمر
+            EventManager.register('showParentTournamentFile', function(c) { showParentTournamentFile(c.dataset.id); });
 
             window.addDebugLog && window.addDebugLog('📝 تم تسجيل جميع الإجراءات (متضمنة نظام الدورات)', 'success');
         }
