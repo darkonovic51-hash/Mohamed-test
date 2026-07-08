@@ -29,19 +29,6 @@
         body { font-family: 'Cairo', sans-serif; background: var(--white); color: #1a1a2e; overflow-x: hidden; direction: rtl; }
         .container { max-width: 1300px; margin: 0 auto; padding: 0 20px; }
 
-        /* ===== حركية الظهور عند التمرير ===== */
-        .reveal { opacity:0; transform:translateY(36px); transition: opacity 0.85s cubic-bezier(0.2,0.9,0.4,1), transform 0.85s cubic-bezier(0.2,0.9,0.4,1); will-change:opacity, transform; }
-        .reveal.reveal-visible { opacity:1; transform:translateY(0); }
-        .reveal-stagger > * { opacity:0; transform:translateY(30px); transition: opacity 0.7s cubic-bezier(0.2,0.9,0.4,1), transform 0.7s cubic-bezier(0.2,0.9,0.4,1); }
-        .reveal-stagger.reveal-visible > *:nth-child(1) { transition-delay:0.05s; }
-        .reveal-stagger.reveal-visible > *:nth-child(2) { transition-delay:0.15s; }
-        .reveal-stagger.reveal-visible > *:nth-child(3) { transition-delay:0.25s; }
-        .reveal-stagger.reveal-visible > *:nth-child(4) { transition-delay:0.35s; }
-        .reveal-stagger.reveal-visible > *:nth-child(5) { transition-delay:0.45s; }
-        .reveal-stagger.reveal-visible > *:nth-child(6) { transition-delay:0.55s; }
-        .reveal-stagger.reveal-visible > * { opacity:1; transform:translateY(0); }
-        .hero-bg { transition: transform 0.1s linear; }
-
         .loading-overlay, .progress-overlay {
             display: none;
             position: fixed;
@@ -872,8 +859,8 @@
             .hero-content p { font-size:1rem; }
             .section-title { font-size:1.8rem; }
             section { padding:50px 0; }
-            .registration-wrapper { padding:24px 18px 30px; }
-            .reg-form-grid { grid-template-columns:1fr; }
+            .reg-pro-grid { grid-template-columns:1fr; }
+            .reg-pro-side { position:static; }
             .dashboard-sidebar { width:200px; }
             .dashboard-content { padding:16px; }
             .form-grid { grid-template-columns:1fr; }
@@ -990,9 +977,9 @@
     <!-- ===== ABOUT ===== -->
     <section id="about" class="section-white">
         <div class="container">
-            <h2 class="section-title reveal">عن <span>الأكاديمية</span></h2>
-            <p class="section-subtitle reveal">نحن نصنع الفرق بين الموهبة والاحتراف، من خلال برامج تدريبية متطورة وبيئة احترافية.</p>
-            <div class="about-grid reveal">
+            <h2 class="section-title">عن <span>الأكاديمية</span></h2>
+            <p class="section-subtitle">نحن نصنع الفرق بين الموهبة والاحتراف، من خلال برامج تدريبية متطورة وبيئة احترافية.</p>
+            <div class="about-grid">
                 <div class="about-content">
                     <h2>رؤيتنا <span>للنجاح</span></h2>
                     <p>أكاديمية ASSARU لكرة القدم هي منصة متكاملة لاكتشاف وتطوير المواهب الشابة، حيث نقدم برامج تدريبية على أعلى مستوى، بإشراف مدربين معتمدين وذوي خبرة.</p>
@@ -1010,9 +997,9 @@
     <!-- ===== PLAYERS ===== -->
     <section id="players" class="section-light">
         <div class="container">
-            <h2 class="section-title reveal">أبرز <span>اللاعبين</span></h2>
-            <p class="section-subtitle reveal">نخبة من المواهب الشابة التي تصنع الفارق في الملاعب.</p>
-            <div class="players-grid reveal" id="playersGrid">
+            <h2 class="section-title">أبرز <span>اللاعبين</span></h2>
+            <p class="section-subtitle">نخبة من المواهب الشابة التي تصنع الفارق في الملاعب.</p>
+            <div class="players-grid" id="playersGrid">
                 <!-- سيتم تعبئتها بواسطة JavaScript -->
             </div>
         </div>
@@ -1021,9 +1008,9 @@
     <!-- ===== GALLERY ===== -->
     <section id="gallery" class="section-white">
         <div class="container">
-            <h2 class="section-title reveal">📸 <span>المعرض</span></h2>
-            <p class="section-subtitle reveal">لحظات من التدريبات والمباريات والبطولات.</p>
-            <div class="gallery-grid reveal-stagger" id="galleryGrid"></div>
+            <h2 class="section-title">📸 <span>المعرض</span></h2>
+            <p class="section-subtitle">لحظات من التدريبات والمباريات والبطولات.</p>
+            <div class="gallery-grid" id="galleryGrid"></div>
         </div>
     </section>
 
@@ -1055,7 +1042,7 @@
                     <div class="registration-wrapper" style="box-shadow:none; border:none; padding:0;">
                         <form id="registrationForm">
                             <div class="reg-pro-subcard">
-                                <div class="reg-pro-subcard-title"><i class="fas fa-user"></i> المعلومات الشخصية للاعب</div>
+                                <div class="reg-pro-subcard-title"><i class="fas fa-user"></i> المعلومات الشخصية لللاعب</div>
                                 <div class="reg-form-grid">
                                     <div class="form-group">
                                         <label><i class="fas fa-signature"></i> الاسم الأول <span class="required">*</span></label>
@@ -1157,9 +1144,9 @@
     <!-- ===== TESTIMONIALS ===== -->
     <section id="testimonials" class="section-light">
         <div class="container">
-            <h2 class="section-title reveal">💬 <span>آراء</span> الأولياء</h2>
-            <p class="section-subtitle reveal">ما يقوله آباء وأمهات لاعبينا عن تجربتهم مع الأكاديمية.</p>
-            <div class="testimonials-grid reveal-stagger">
+            <h2 class="section-title">💬 <span>آراء</span> الأولياء</h2>
+            <p class="section-subtitle">ما يقوله آباء وأمهات لاعبينا عن تجربتهم مع الأكاديمية.</p>
+            <div class="testimonials-grid">
                 <div class="testimonial-card">
                     <div class="stars">★★★★★</div>
                     <p>"أكاديمية ASSARU غيّرت حياة ابني، أصبح أكثر انضباطاً وثقة، والمدربون محترفون جداً."</p>
@@ -1182,9 +1169,9 @@
     <!-- ===== CONTACT ===== -->
     <section id="contact" class="section-white">
         <div class="container">
-            <h2 class="section-title reveal">📞 <span>اتصل</span> بنا</h2>
-            <p class="section-subtitle reveal">نحن هنا للإجابة عن استفساراتكم.</p>
-            <div class="contact-grid reveal">
+            <h2 class="section-title">📞 <span>اتصل</span> بنا</h2>
+            <p class="section-subtitle">نحن هنا للإجابة عن استفساراتكم.</p>
+            <div class="contact-grid">
                 <div>
                     <div class="contact-info-item">
                         <div class="icon"><i class="fas fa-map-marker-alt"></i></div>
@@ -3374,27 +3361,27 @@
                 const playersCount = (s.playersList || []).length;
                 const attended = s.attendance ? Object.values(s.attendance).filter(v => v === 'present').length : 0;
                 listHtml += `
-                    <div class="session-card ${cardClass}" style="border-right-color:${color};" data-action="openSessionDetail" data-id="${s.id}">
-                        <div class="session-header">
-                            <span class="session-title">${s.status === 'مجدولة' ? '🔴' : s.status === 'مكتملة' ? '🟢' : ''} ${s.title || 'حصة تدريبية'}</span>
-                            <span class="badge-status" style="background:${color}22; color:${color};">${s.status}</span>
+                        <div class="session-card ${cardClass}" style="border-right-color:${color};" data-action="openSessionDetail" data-id="${s.id}">
+                            <div class="session-header">
+                                <span class="session-title">${s.status === 'مجدولة' ? '🔴' : s.status === 'مكتملة' ? '🟢' : ''} ${s.title || 'حصة تدريبية'}</span>
+                                <span class="badge-status" style="background:${color}22; color:${color};">${s.status}</span>
+                            </div>
+                            <div class="session-meta" style="margin-top:8px;">
+                                <span><i class="fas fa-calendar-alt"></i> ${s.date} - ${dayName}</span>
+                                <span><i class="fas fa-clock"></i> ${s.startTime} - ${s.endTime}</span>
+                                <span><i class="fas fa-tag"></i> ${s.categoryId}</span>
+                                <span><i class="fas fa-user-tie"></i> ${s.coachName}</span>
+                                <span><i class="fas fa-map-pin"></i> ${s.field}</span>
+                                <span><i class="fas fa-users"></i> ${playersCount} لاعب (${attended} حاضر)</span>
+                            </div>
+                            ${canPermanentDelete ? `
+                                <div style="margin-top:10px; text-align:left;">
+                                    <button class="btn-sm btn-sm-danger" data-action="permanentDeleteSession" data-id="${s.id}">
+                                        <i class="fas fa-trash-alt"></i> حذف نهائي
+                                    </button>
+                                </div>` : ''}
                         </div>
-                        <div class="session-meta" style="margin-top:8px;">
-                            <span><i class="fas fa-calendar-alt"></i> ${s.date} - ${dayName}</span>
-                            <span><i class="fas fa-clock"></i> ${s.startTime} - ${s.endTime}</span>
-                            <span><i class="fas fa-tag"></i> ${s.categoryId}</span>
-                            <span><i class="fas fa-user-tie"></i> ${s.coachName}</span>
-                            <span><i class="fas fa-map-pin"></i> ${s.field}</span>
-                            <span><i class="fas fa-users"></i> ${playersCount} لاعب (${attended} حاضر)</span>
-                        </div>
-                        ${canPermanentDelete ? `
-                            <div style="margin-top:10px; text-align:left;">
-                                <button class="btn-sm btn-sm-danger" data-action="permanentDeleteSession" data-id="${s.id}">
-                                    <i class="fas fa-trash-alt"></i> حذف نهائي
-                                </button>
-                            </div>` : ''}
-                    </div>
-                `;
+                    `;
             });
             container.innerHTML = listHtml;
             EventManager.bindButtons(container);
@@ -3874,7 +3861,6 @@
                 .catch(err => showToast('❌ خطأ: ' + err.message, 'error'));
         }
 
-        // دالة الحذف النهائي للحصص (للمدير فقط)
         function permanentDeleteSession(context) {
             if (!requireRole('admin')) return;
             const sessionId = context.dataset.id;
@@ -7287,11 +7273,7 @@
             renderGallery();
 
             const navbar = document.getElementById('navbar');
-            const heroBgEl = document.querySelector('.hero-bg');
-            window.addEventListener('scroll', () => {
-                if (navbar) navbar.classList.toggle('scrolled', window.scrollY > 60);
-                if (heroBgEl) heroBgEl.style.transform = `translateY(${window.scrollY * 0.25}px) scale(1.05)`;
-            });
+            window.addEventListener('scroll', () => { if (navbar) navbar.classList.toggle('scrolled', window.scrollY > 60); });
 
             const menuBtn = document.getElementById('menuBtn');
             if (menuBtn) {
@@ -7337,26 +7319,8 @@
                 confirmPopup.addEventListener('click', function(e) { if (e.target === this) closeConfirmPopup(); });
             }
 
-            // تفعيل حركية الظهور
-            initScrollReveal();
-
             window.addDebugLog('✅ تم تهيئة النظام بالكامل', 'success');
             console.log('✅ النظام جاهز مع Event Manager وتسجيل دخول سريع');
-        }
-
-        // دالة حركية الظهور
-        function initScrollReveal() {
-            const revealEls = document.querySelectorAll('.reveal, .reveal-stagger');
-            if (!revealEls.length) return;
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        entry.target.classList.add('reveal-visible');
-                        observer.unobserve(entry.target);
-                    }
-                });
-            }, { threshold: 0.15, rootMargin: '0px 0px -60px 0px' });
-            revealEls.forEach(el => observer.observe(el));
         }
 
         // ================================================================
