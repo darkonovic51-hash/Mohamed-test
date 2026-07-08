@@ -1585,6 +1585,21 @@
             debouncedSaveMap[key] = setTimeout(() => { db.ref(refPath).update(patch); }, 300);
         }
 
+        // ================================================================
+        // نظام حماية من الضغط المتتالي غير المقصود (استدعاء/استبعاد/حضور/غياب)
+        // ================================================================
+        const _guardedActionsInFlight = new Set();
+
+        function guardedAction(actionKey, executeFn, cooldownMs = 1200) {
+            if (_guardedActionsInFlight.has(actionKey)) {
+                showToast('ℹ️ تم تنفيذ هذا الإجراء للتو، الرجاء الانتظار لحظة قبل إعادة الضغط', 'info');
+                return;
+            }
+            _guardedActionsInFlight.add(actionKey);
+            setTimeout(() => _guardedActionsInFlight.delete(actionKey), cooldownMs);
+            executeFn();
+        }
+
         function showLoading(msg) {
             const overlay = document.getElementById('loadingOverlay');
             if (overlay) {
@@ -3771,11 +3786,15 @@
             const flash = (ok) => { if (card) { card.style.background = ok ? 'rgba(40,167,69,0.08)' : 'rgba(220,53,69,0.08)'; setTimeout(() => { if (card) card.style.background = ''; }, 700); } };
 
             if (field === 'attendance') {
-                const attendance = { ...(session.attendance || {}) };
-                if (context.value) attendance[playerId] = context.value; else delete attendance[playerId];
-                db.ref('academy/trainingSessions/' + sessionId + '/attendance').set(attendance)
-                    .then(() => { session.attendance = attendance; flash(true); })
-                    .catch(() => { flash(false); showToast('❌ فشل الحفظ', 'error'); });
+                const currentVal = (session.attendance || {})[playerId] || '';
+                if (currentVal === context.value) { showToast('ℹ️ تم تسجيل هذه الحالة بالفعل', 'info'); return; }
+                guardedAction('sessionAtt_' + sessionId + '_' + playerId, () => {
+                    const attendance = { ...(session.attendance || {}) };
+                    if (context.value) attendance[playerId] = context.value; else delete attendance[playerId];
+                    db.ref('academy/trainingSessions/' + sessionId + '/attendance').set(attendance)
+                        .then(() => { session.attendance = attendance; flash(true); })
+                        .catch(() => { flash(false); showToast('❌ فشل الحفظ', 'error'); });
+                }, 600);
             } else if (field === 'rating') {
                 const ratings = { ...(session.ratings || {}) };
                 const r = parseFloat(context.value);
@@ -4417,9 +4436,14 @@
                                     <option value="">سبب الاستبعاد</option>
                                     ${NO_CALLUP_REASONS.map(r => `<option value="${r}" ${c.reason === r ? 'selected' : ''}>${r}</option>`).join('')}
                                 </select>`}
-                            <button class="sp-toggle-btn ${c.called ? 'called' : 'excused'}" data-action="toggleMatchCallup" data-player-id="${p.id}">
-                                <i class="fas ${c.called ? 'fa-check-circle' : 'fa-user-slash'}"></i> ${c.called ? 'مستدعى' : 'مستبعد'}
-                            </button>
+                            <div style="display:flex; gap:6px; justify-content:center; flex-wrap:wrap;">
+                                <button class="sp-toggle-btn called" data-action="callupMatchPlayer" data-player-id="${p.id}" ${c.called ? 'disabled' : ''}>
+                                    <i class="fas fa-check-circle"></i> استدعاء
+                                </button>
+                                <button class="sp-toggle-btn excused" data-action="excludeMatchPlayer" data-player-id="${p.id}" ${!c.called ? 'disabled' : ''}>
+                                    <i class="fas fa-user-slash"></i> استبعاد
+                                </button>
+                            </div>
                         </div>`;
             }).join('') || '<p class="text-muted" style="padding:16px; text-align:center;">لا يوجد لاعبون في هذه الفئة</p>';
 
@@ -4435,17 +4459,57 @@
                     </div>`;
         }
 
-        function toggleMatchCallup(context) {
+        function callupMatchPlayer(context) {
             if (!requireOpsRole()) return;
-            const m = getCurrentMatch();
             const playerId = context.dataset.playerId;
-            const callups = { ...(m.callups || {}) };
-            const current = callups[playerId] || { called: true };
-            callups[playerId] = { ...current, called: !current.called };
-            if (callups[playerId].called) delete callups[playerId].reason;
-            updateMatchInFirebase({ callups }, callups[playerId].called ? '✅ تم استدعاء اللاعب' : '✅ تم استبعاد اللاعب')
-                .then(() => { pushMatchTimeline(`تحديث استدعاء لاعب في مباراة ${m.opponent}`);
-                    renderMatchCard(); });
+            guardedAction('matchCallup_' + playerId, () => {
+                const m = getCurrentMatch();
+                const callups = { ...(m.callups || {}) };
+                if (callups[playerId]?.called) { showToast('ℹ️ اللاعب مستدعى بالفعل', 'info'); return; }
+                callups[playerId] = { ...(callups[playerId] || {}), called: true };
+                delete callups[playerId].reason;
+                updateMatchInFirebase({ callups }, '✅ تم استدعاء اللاعب').then(() => {
+                    pushMatchTimeline(`تم استدعاء لاعب في مباراة ${m.opponent}`);
+                    renderMatchCard();
+                });
+            });
+        }
+
+        function excludeMatchPlayer(context) {
+            if (!requireOpsRole()) return;
+            const playerId = context.dataset.playerId;
+            guardedAction('matchCallup_' + playerId, () => {
+                const m = getCurrentMatch();
+                const callups = { ...(m.callups || {}) };
+                if (callups[playerId]?.called === false) { showToast('ℹ️ اللاعب مستبعد بالفعل', 'info'); return; }
+                callups[playerId] = { ...(callups[playerId] || { called: true }), called: false };
+                updateMatchInFirebase({ callups }, '✅ تم استبعاد اللاعب').then(() => {
+                    pushMatchTimeline(`تم استبعاد لاعب في مباراة ${m.opponent}`);
+                    renderMatchCard();
+                });
+            });
+        }
+
+        function selectAllMatchCallups() {
+            if (!requireOpsRole()) return;
+            guardedAction('matchCallupAll_' + currentMatchId, () => {
+                const m = getCurrentMatch();
+                const players = allPlayers.filter(p => p.categoryId === m.categoryId && p.status === 'approved');
+                const callups = { ...(m.callups || {}) };
+                players.forEach(p => { callups[p.id] = { ...(callups[p.id] || {}), called: true }; delete callups[p.id].reason; });
+                updateMatchInFirebase({ callups }, '✅ تم استدعاء جميع اللاعبين').then(() => renderMatchCard());
+            });
+        }
+
+        function deselectAllMatchCallups() {
+            if (!requireOpsRole()) return;
+            guardedAction('matchCallupAll_' + currentMatchId, () => {
+                const m = getCurrentMatch();
+                const players = allPlayers.filter(p => p.categoryId === m.categoryId && p.status === 'approved');
+                const callups = { ...(m.callups || {}) };
+                players.forEach(p => { callups[p.id] = { ...(callups[p.id] || {}), called: false }; });
+                updateMatchInFirebase({ callups }, '✅ تم استبعاد جميع اللاعبين').then(() => renderMatchCard());
+            });
         }
 
         function updateMatchCallupAttendance(context) {
@@ -4464,25 +4528,6 @@
             const playerId = context.dataset.playerId;
             callups[playerId] = { ...(callups[playerId] || {}), reason: context.value };
             updateMatchInFirebase({ callups }, '✅ تم الحفظ');
-        }
-
-        function selectAllMatchCallups() {
-            if (!requireOpsRole()) return;
-            const m = getCurrentMatch();
-            const players = allPlayers.filter(p => p.categoryId === m.categoryId && p.status === 'approved');
-            const callups = { ...(m.callups || {}) };
-            players.forEach(p => { callups[p.id] = { ...(callups[p.id] || {}), called: true };
-                delete callups[p.id].reason; });
-            updateMatchInFirebase({ callups }, '✅ تم استدعاء جميع اللاعبين').then(() => renderMatchCard());
-        }
-
-        function deselectAllMatchCallups() {
-            if (!requireOpsRole()) return;
-            const m = getCurrentMatch();
-            const players = allPlayers.filter(p => p.categoryId === m.categoryId && p.status === 'approved');
-            const callups = { ...(m.callups || {}) };
-            players.forEach(p => { callups[p.id] = { ...(callups[p.id] || {}), called: false }; });
-            updateMatchInFirebase({ callups }, '✅ تم استبعاد جميع اللاعبين').then(() => renderMatchCard());
         }
 
         // ===== بطاقة 3: التشكيلة (ملعب تفاعلي Drag & Drop) =====
@@ -5312,41 +5357,68 @@
         // ================================================================
         function exportHtmlToPDF(sourceEl, filenameBase, opts = {}) {
             if (!sourceEl) { showToast('لا يوجد محتوى للتصدير', 'warning'); return; }
-            showLoading('جاري تجهيز ملف PDF...');
+
             const clone = sourceEl.cloneNode(true);
             clone.querySelectorAll('input, select, textarea').forEach(el => {
                 const span = document.createElement('span');
-                span.textContent = (el.tagName === 'SELECT') ? (el.selectedOptions[0]?.textContent || '') : (el
-                    .value || '-');
+                span.textContent = (el.tagName === 'SELECT') ? (el.selectedOptions[0]?.textContent || '') : (el.value || '-');
                 span.style.cssText = 'font-weight:700; margin-inline-end:10px; display:inline-block;';
                 el.replaceWith(span);
             });
-            clone.querySelectorAll('button, .icon-close-btn').forEach(el => el.remove());
+            clone.querySelectorAll('button, .icon-close-btn, .dashboard-action-bar').forEach(el => el.remove());
 
-            const wrapper = document.createElement('div');
-            wrapper.style.cssText =
-                'position:fixed; top:0; left:-9999px; width:900px; padding:24px; direction:rtl; font-family:Cairo,sans-serif; background:#ffffff; z-index:-1;';
-            wrapper.innerHTML = `
-                    <div style="display:flex; align-items:center; gap:14px; margin-bottom:14px; border-bottom:3px solid #45B3FF; padding-bottom:12px;">
-                        <img src="https://raw.githubusercontent.com/darkonovic51-hash/Mohamed-test/4a065c0a8a951b1d39707aa5eb90a5ce7512bec4/1000015625-removebg-preview.png" style="height:50px;" />
-                        <div><h2 style="color:#082D5C; margin:0;">${opts.title || filenameBase}</h2><p style="color:#888; margin:2px 0 0; font-size:0.85rem;">أكاديمية ASSARU — ${new Date().toLocaleDateString('ar-EG')}</p></div>
-                    </div>`;
-            wrapper.appendChild(clone);
-            document.body.appendChild(wrapper);
+            const printWin = window.open('', '_blank');
+            if (!printWin) {
+                showToast('⚠️ الرجاء السماح بالنوافذ المنبثقة في المتصفح لتحميل PDF', 'warning');
+                return;
+            }
 
-            html2pdf().set({
-                margin: [10, 10, 10, 10],
-                filename: filenameBase + '.pdf',
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff', windowWidth: 900 },
-                jsPDF: { unit: 'mm', format: 'a4', orientation: opts.orientation || 'portrait' },
-                pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
-            }).from(wrapper).save()
-                .then(() => { hideLoading();
-                    wrapper.remove(); })
-                .catch(() => { hideLoading();
-                    wrapper.remove();
-                    showToast('❌ فشل إنشاء PDF', 'error'); });
+            printWin.document.write(`
+                <!DOCTYPE html>
+                <html lang="ar" dir="rtl">
+                <head>
+                    <meta charset="UTF-8" />
+                    <title>${opts.title || filenameBase}</title>
+                    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
+                    <style>
+                        * { box-sizing:border-box; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+                        body { font-family:'Cairo', sans-serif; direction:rtl; color:#1a1a2e; padding:24px; margin:0; }
+                        .print-header { display:flex; align-items:center; gap:14px; margin-bottom:18px; border-bottom:3px solid #45B3FF; padding-bottom:12px; }
+                        .print-header img { height:50px; }
+                        .print-header h1 { color:#082D5C; font-size:1.4rem; margin:0; }
+                        .print-header p { color:#888; font-size:0.85rem; margin:2px 0 0; }
+                        h3 { color:#082D5C; margin:14px 0 10px; }
+                        table { width:100%; border-collapse:collapse; font-size:0.85rem; margin-bottom:14px; }
+                        th { background:#041A38; color:#fff; padding:8px; }
+                        td { padding:8px; border-bottom:1px solid #eee; text-align:center; }
+                        .badge-status { display:inline-block; padding:2px 12px; border-radius:30px; font-size:0.7rem; font-weight:700; }
+                        .badge-status.paid, .badge-status.present { background:#d4edda; color:#155724; }
+                        .badge-status.unpaid, .badge-status.absent { background:#f8d7da; color:#721c24; }
+                        .badge-status.excused { background:#fff3cd; color:#856404; }
+                        .form-card, .log-entry-item, .tour-mini-stat, .callup-card, tr { break-inside:avoid; page-break-inside:avoid; }
+                        img { max-width:60px; }
+                        @media print {
+                            @page { margin:14mm; }
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="print-header">
+                        <img src="https://raw.githubusercontent.com/darkonovic51-hash/Mohamed-test/4a065c0a8a951b1d39707aa5eb90a5ce7512bec4/1000015625-removebg-preview.png" />
+                        <div>
+                            <h1>${opts.title || filenameBase}</h1>
+                            <p>أكاديمية ASSARU — ${new Date().toLocaleDateString('ar-EG')}</p>
+                        </div>
+                    </div>
+                    ${clone.outerHTML}
+                </body>
+                </html>
+            `);
+            printWin.document.close();
+
+            const triggerPrint = () => { try { printWin.focus(); printWin.print(); } catch (e) {} };
+            printWin.onload = () => setTimeout(triggerPrint, 500);
+            setTimeout(triggerPrint, 1000); // احتياط إن لم يُطلق onload في بعض المتصفحات
         }
 
         function setupUpload(inputId, nameDisplayId, containerId) {
@@ -5731,6 +5803,7 @@
                 `تم تغيير حالة الدورة إلى ${context.value}`));
         }
 
+        // استبدال renderTourCard بالكامل في وظيفة الدورات
         function renderTourCard() {
             const body = document.getElementById('tourCardBody');
             const t = getTournamentById(currentTournamentId);
@@ -5830,37 +5903,56 @@
         }
 
         /* ===== اللاعبون (استدعاء/استبعاد + الحالة الصحية + المرافقون) ===== */
+        // استبدال renderTourPlayersCard بالكامل
         function renderTourPlayersCard(t) {
             const canEdit = currentUser?.role === 'admin' || currentUser?.role === 'coach';
             const activeCats = [t.categoryId, ...(t.extraCategories || [])].filter((v, i, a) => v && a.indexOf(v) === i);
             const catsCheckboxes = categories.map(c => `
-                    <label style="display:inline-flex;align-items:center;gap:6px;margin:4px 14px 4px 0;">
-                        <input type="checkbox" data-action="toggleTourCategory" data-cat="${c}" ${activeCats.includes(c) ? 'checked' : ''} ${c === t.categoryId ? 'disabled' : ''} />
-                        ${c}${c === t.categoryId ? ' (الرئيسية)' : ''}
-                    </label>`).join('');
+                <label style="display:inline-flex;align-items:center;gap:6px;margin:4px 14px 4px 0;">
+                    <input type="checkbox" data-action="toggleTourCategory" data-cat="${c}" ${activeCats.includes(c) ? 'checked' : ''} ${c === t.categoryId ? 'disabled' : ''} />
+                    ${c}${c === t.categoryId ? ' (الرئيسية)' : ''}
+                </label>`).join('');
 
             let bodyRows = '';
             activeCats.forEach(cat => {
                 const players = allPlayers.filter(p => p.categoryId === cat && p.status === 'approved');
                 if (players.length === 0) return;
-                bodyRows += `<tr class="callup-cat-row"><td colspan="5"><i class="fas fa-layer-group"></i> فئة ${cat}</td></tr>`;
+                const roster = t.players || {};
+                const catCalledCount = players.filter(p => roster[p.id]?.called).length;
+                bodyRows += `
+                    <tr class="callup-cat-row">
+                        <td colspan="5">
+                            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+                                <span><i class="fas fa-layer-group"></i> فئة ${cat} <span style="font-weight:600; color:#888; font-size:0.75rem;">(${catCalledCount}/${players.length} مستدعى)</span></span>
+                                ${canEdit ? `
+                                    <div style="display:flex; gap:6px;">
+                                        <button class="btn-sm btn-sm-success" data-action="callupAllInCategory" data-cat="${cat}"><i class="fas fa-check-double"></i> استدعاء الكل</button>
+                                        <button class="btn-sm btn-sm-danger" data-action="excludeAllInCategory" data-cat="${cat}"><i class="fas fa-times-circle"></i> استبعاد الكل</button>
+                                    </div>` : ''}
+                            </div>
+                        </td>
+                    </tr>`;
                 players.forEach(p => {
-                    const roster = t.players || {};
                     const r = roster[p.id] || { called: false, healthStatus: 'ready' };
-                    const imgSrc = p.photo && p.photo.startsWith('data:image') ? p.photo :
-                        'https://via.placeholder.com/36';
+                    const imgSrc = p.photo && p.photo.startsWith('data:image') ? p.photo : 'https://via.placeholder.com/36';
                     bodyRows += `
-                            <tr class="${r.called ? 'row-called' : ''}">
-                                <td><img src="${imgSrc}" class="callup-avatar" /></td>
-                                <td style="font-weight:700; text-align:right;">${p.firstName} ${p.lastName}</td>
-                                <td><span class="health-badge ${r.healthStatus || 'ready'}">${HEALTH_STATUS_LIST.find(h => h.key === (r.healthStatus || 'ready'))?.label || ''}</span></td>
-                                <td>${canEdit ? `<select class="attendance-select" data-action="setTourHealthStatus" data-player-id="${p.id}">${HEALTH_STATUS_LIST.map(h => `<option value="${h.key}" ${h.key === (r.healthStatus || 'ready') ? 'selected' : ''}>${h.label}</option>`).join('')}</select>` : '-'}</td>
-                                <td>
-                                    <button class="sp-toggle-btn ${r.called ? 'called' : 'excused'}" data-action="toggleTourCallup" data-player-id="${p.id}">
-                                        <i class="fas ${r.called ? 'fa-check-circle' : 'fa-bullhorn'}"></i> ${r.called ? 'مستدعى' : 'استدعاء'}
-                                    </button>
-                                </td>
-                            </tr>`;
+                        <tr class="${r.called ? 'row-called' : ''}">
+                            <td><img src="${imgSrc}" class="callup-avatar" /></td>
+                            <td style="font-weight:700; text-align:right;">${p.firstName} ${p.lastName}</td>
+                            <td><span class="health-badge ${r.healthStatus || 'ready'}">${HEALTH_STATUS_LIST.find(h => h.key === (r.healthStatus || 'ready'))?.label || ''}</span></td>
+                            <td>${canEdit ? `<select class="attendance-select" data-action="setTourHealthStatus" data-player-id="${p.id}">${HEALTH_STATUS_LIST.map(h => `<option value="${h.key}" ${h.key === (r.healthStatus || 'ready') ? 'selected' : ''}>${h.label}</option>`).join('')}</select>` : '-'}</td>
+                            <td>
+                                ${canEdit ? `
+                                    <div style="display:flex; gap:6px; justify-content:center; flex-wrap:wrap;">
+                                        <button class="sp-toggle-btn called" data-action="callupSinglePlayer" data-player-id="${p.id}" ${r.called ? 'disabled' : ''}>
+                                            <i class="fas fa-check-circle"></i> استدعاء
+                                        </button>
+                                        <button class="sp-toggle-btn excused" data-action="excludeSinglePlayer" data-player-id="${p.id}" ${!r.called ? 'disabled' : ''}>
+                                            <i class="fas fa-user-slash"></i> استبعاد
+                                        </button>
+                                    </div>` : `<span class="badge-status ${r.called ? 'present' : 'absent'}">${r.called ? '✅ مستدعى' : '❌ غير مستدعى'}</span>`}
+                            </td>
+                        </tr>`;
                 });
             });
 
@@ -5873,61 +5965,100 @@
             const coachOptions = allCoaches.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
 
             return `
-                    <div class="form-card">
-                        <h3>🏷️ الفئات المستدعاة لهذه الدورة</h3>
-                        <div>${catsCheckboxes}</div>
+                <div class="form-card">
+                    <h3>🏷️ الفئات المستدعاة لهذه الدورة</h3>
+                    <div>${catsCheckboxes}</div>
+                </div>
+                <div class="form-card">
+                    <h3>👥 قائمة استدعاء اللاعبين <span style="font-size:0.7rem;color:#888;">(يُحفظ فورًا بدون زر حفظ)</span></h3>
+                    <div class="table-wrap">
+                        <table class="callup-table">
+                            <thead><tr><th>الصورة</th><th>الاسم</th><th>الحالة الصحية</th><th>تحديث الحالة</th><th>الاستدعاء</th></tr></thead>
+                            <tbody>${bodyRows || '<tr><td colspan="5" class="text-muted" style="padding:16px;">لا يوجد لاعبون</td></tr>'}</tbody>
+                        </table>
                     </div>
-                    <div class="form-card">
-                        <h3>👥 قائمة استدعاء اللاعبين <span style="font-size:0.7rem;color:#888;">(الاستدعاء يُحفظ فورًا بدون زر حفظ)</span></h3>
-                        <div class="table-wrap">
-                            <table class="callup-table">
-                                <thead><tr><th>الصورة</th><th>الاسم</th><th>الحالة الصحية</th><th>تحديث الحالة</th><th>الاستدعاء</th></tr></thead>
-                                <tbody>${bodyRows || '<tr><td colspan="5" class="text-muted" style="padding:16px;">لا يوجد لاعبون</td></tr>'}</tbody>
-                            </table>
-                        </div>
+                </div>
+                <div class="form-card">
+                    <h3>🧳 المرافقون والإداريون</h3>
+                    <div style="margin-bottom:10px;">${companionsHtml}</div>
+                    <div class="form-grid">
+                        <div class="form-group"><label>اسم المرافق</label><input type="text" id="newCompanionName" placeholder="مثال: أحمد بلال" /></div>
+                        <div class="form-group"><label>الصفة</label><input type="text" id="newCompanionRole" placeholder="إداري / طبيب / سائق..." /></div>
+                        <div class="form-group"><label>ربط بملف مدرب (اختياري)</label><select id="newCompanionCoach"><option value="">بدون ربط</option>${coachOptions}</select></div>
+                        <div class="form-group full"><button class="btn-sm btn-sm-primary" data-action="addCompanion"><i class="fas fa-plus"></i> إضافة</button></div>
                     </div>
-                    <div class="form-card">
-                        <h3>🧳 المرافقون والإداريون</h3>
-                        <div style="margin-bottom:10px;">${companionsHtml}</div>
-                        <div class="form-grid">
-                            <div class="form-group"><label>اسم المرافق</label><input type="text" id="newCompanionName" placeholder="مثال: أحمد بلال" /></div>
-                            <div class="form-group"><label>الصفة</label><input type="text" id="newCompanionRole" placeholder="إداري / طبيب / سائق..." /></div>
-                            <div class="form-group"><label>ربط بملف مدرب (اختياري)</label><select id="newCompanionCoach"><option value="">بدون ربط</option>${coachOptions}</select></div>
-                            <div class="form-group full"><button class="btn-sm btn-sm-primary" data-action="addCompanion"><i class="fas fa-plus"></i> إضافة</button></div>
-                        </div>
-                    </div>
-                `;
+                </div>
+            `;
         }
 
-        function toggleTourCategory(context) {
+        // حذف toggleTourCallup واستبداله بالدوال التالية
+        function callupSinglePlayer(context) {
             if (!requireOpsRole()) return;
-            const t = getTournamentById(currentTournamentId);
-            const cat = context.dataset.cat;
-            let extra = [...(t.extraCategories || [])];
-            if (context.checked) { if (!extra.includes(cat)) extra.push(cat); } else { extra = extra.filter(c => c !==
-                    cat); }
-            updateTourInFirebase({ extraCategories: extra }, '✅ تم تحديث الفئات').then(() => renderTourCard());
-        }
-
-        function toggleTourCallup(context) {
-            if (!requireOpsRole()) return;
-            const t = getTournamentById(currentTournamentId);
             const playerId = context.dataset.playerId;
-            const players = { ...(t.players || {}) };
-            const wasCalled = players[playerId]?.called;
-            const nowCalled = context.value === 'called';
-            players[playerId] = { ...(players[playerId] || { healthStatus: 'ready' }), called: nowCalled };
-            if (nowCalled) delete players[playerId].reason;
-            updateTourInFirebase({ players }, '✅ تم التحديث').then(() => {
-                if (wasCalled !== nowCalled) {
-                    const delta = nowCalled ? 1 : -1;
+            guardedAction('tourCallup_' + playerId, () => {
+                const t = getTournamentById(currentTournamentId);
+                const players = { ...(t.players || {}) };
+                if (players[playerId]?.called) { showToast('ℹ️ اللاعب مستدعى بالفعل', 'info'); return; }
+                players[playerId] = { ...(players[playerId] || { healthStatus: 'ready' }), called: true };
+                delete players[playerId].reason;
+                updateTourInFirebase({ players }, '✅ تم استدعاء اللاعب').then(() => {
                     const current = allPlayerDetails[playerId]?.tournamentsCount || 0;
-                    db.ref('academy/playerDetails/' + playerId + '/tournamentsCount').set(Math.max(0, current +
-                    delta));
+                    db.ref('academy/playerDetails/' + playerId + '/tournamentsCount').set(current + 1);
                     if (!allPlayerDetails[playerId]) allPlayerDetails[playerId] = {};
-                    allPlayerDetails[playerId].tournamentsCount = Math.max(0, current + delta);
-                }
-                renderTourCard();
+                    allPlayerDetails[playerId].tournamentsCount = current + 1;
+                    renderTourCard();
+                });
+            });
+        }
+
+        function excludeSinglePlayer(context) {
+            if (!requireOpsRole()) return;
+            const playerId = context.dataset.playerId;
+            guardedAction('tourCallup_' + playerId, () => {
+                const t = getTournamentById(currentTournamentId);
+                const players = { ...(t.players || {}) };
+                if (!players[playerId]?.called) { showToast('ℹ️ اللاعب مستبعد بالفعل', 'info'); return; }
+                players[playerId] = { ...(players[playerId] || {}), called: false };
+                updateTourInFirebase({ players }, '✅ تم استبعاد اللاعب').then(() => {
+                    const current = allPlayerDetails[playerId]?.tournamentsCount || 0;
+                    db.ref('academy/playerDetails/' + playerId + '/tournamentsCount').set(Math.max(0, current - 1));
+                    if (!allPlayerDetails[playerId]) allPlayerDetails[playerId] = {};
+                    allPlayerDetails[playerId].tournamentsCount = Math.max(0, current - 1);
+                    renderTourCard();
+                });
+            });
+        }
+
+        function callupAllInCategory(context) {
+            if (!requireOpsRole()) return;
+            const cat = context.dataset.cat;
+            guardedAction('tourCallupAll_' + cat, () => {
+                const t = getTournamentById(currentTournamentId);
+                const catPlayers = allPlayers.filter(p => p.categoryId === cat && p.status === 'approved');
+                const players = { ...(t.players || {}) };
+                catPlayers.forEach(p => {
+                    players[p.id] = { ...(players[p.id] || { healthStatus: 'ready' }), called: true };
+                    delete players[p.id].reason;
+                });
+                updateTourInFirebase({ players }, `✅ تم استدعاء جميع لاعبي فئة ${cat}`).then(() => {
+                    pushTourTimeline(`تم استدعاء جميع لاعبي فئة ${cat}`);
+                    renderTourCard();
+                });
+            });
+        }
+
+        function excludeAllInCategory(context) {
+            if (!requireOpsRole()) return;
+            const cat = context.dataset.cat;
+            guardedAction('tourCallupAll_' + cat, () => {
+                const t = getTournamentById(currentTournamentId);
+                const catPlayers = allPlayers.filter(p => p.categoryId === cat && p.status === 'approved');
+                const players = { ...(t.players || {}) };
+                catPlayers.forEach(p => { players[p.id] = { ...(players[p.id] || {}), called: false }; });
+                updateTourInFirebase({ players }, `✅ تم استبعاد جميع لاعبي فئة ${cat}`).then(() => {
+                    pushTourTimeline(`تم استبعاد جميع لاعبي فئة ${cat}`);
+                    renderTourCard();
+                });
             });
         }
 
@@ -5935,8 +6066,7 @@
             if (!requireOpsRole()) return;
             const t = getTournamentById(currentTournamentId);
             const players = { ...(t.players || {}) };
-            players[context.dataset.playerId] = { ...(players[context.dataset.playerId] || {}),
-            reason: context.value };
+            players[context.dataset.playerId] = { ...(players[context.dataset.playerId] || {}), reason: context.value };
             updateTourInFirebase({ players });
         }
 
@@ -5944,9 +6074,17 @@
             if (!requireOpsRole()) return;
             const t = getTournamentById(currentTournamentId);
             const players = { ...(t.players || {}) };
-            players[context.dataset.playerId] = { ...(players[context.dataset.playerId] || { called: true }),
-                healthStatus: context.value };
+            players[context.dataset.playerId] = { ...(players[context.dataset.playerId] || { called: true }), healthStatus: context.value };
             updateTourInFirebase({ players }, '✅ تم تحديث الحالة الصحية').then(() => renderTourCard());
+        }
+
+        function toggleTourCategory(context) {
+            if (!requireOpsRole()) return;
+            const t = getTournamentById(currentTournamentId);
+            const cat = context.dataset.cat;
+            let extra = [...(t.extraCategories || [])];
+            if (context.checked) { if (!extra.includes(cat)) extra.push(cat); } else { extra = extra.filter(c => c !== cat); }
+            updateTourInFirebase({ extraCategories: extra }, '✅ تم تحديث الفئات').then(() => renderTourCard());
         }
 
         function addCompanion() {
@@ -5958,8 +6096,7 @@
             const t = getTournamentById(currentTournamentId);
             const companions = [...(t.companions || []), { name, role, coachId: linkedCoachId || null }];
             updateTourInFirebase({ companions }, '✅ تمت الإضافة').then(() => {
-                if (linkedCoachId) db.ref('academy/coaches/' + linkedCoachId + '/tournaments/' + t.id).set(
-                true);
+                if (linkedCoachId) db.ref('academy/coaches/' + linkedCoachId + '/tournaments/' + t.id).set(true);
                 pushTourTimeline(`تمت إضافة ${role}: ${name}`);
                 renderTourCard();
             });
@@ -5976,8 +6113,7 @@
         /* ===== الطاقم الفني ===== */
         function renderTourCoachesCard(t) {
             const coaches = t.coaches || {};
-            const options = allCoaches.map(c => `<option value="${c.id}">${c.name} (${c.categoryId})</option>`).join(
-                '');
+            const options = allCoaches.map(c => `<option value="${c.id}">${c.name} (${c.categoryId})</option>`).join('');
             return `
                     <div class="form-card">
                         <h3>🧑‍🏫 الطاقم الفني والإداري</h3>
@@ -6037,8 +6173,7 @@
             if (!requireOpsRole()) return;
             const t = getTournamentById(currentTournamentId);
             const consent = { ...(t.parentsConsent || {}) };
-            consent[context.dataset.playerId] = { ...(consent[context.dataset.playerId] || {}),
-            approved: context.value === 'yes' };
+            consent[context.dataset.playerId] = { ...(consent[context.dataset.playerId] || {}), approved: context.value === 'yes' };
             updateTourInFirebase({ parentsConsent: consent }, '✅ تم التحديث');
         }
 
@@ -6046,8 +6181,7 @@
             if (!requireOpsRole()) return;
             const t = getTournamentById(currentTournamentId);
             const consent = { ...(t.parentsConsent || {}) };
-            consent[context.dataset.playerId] = { ...(consent[context.dataset.playerId] || {}),
-            docReceived: context.checked };
+            consent[context.dataset.playerId] = { ...(consent[context.dataset.playerId] || {}), docReceived: context.checked };
             updateTourInFirebase({ parentsConsent: consent });
         }
 
@@ -6058,15 +6192,13 @@
                 if (!info.called) return;
                 const p = allPlayers.find(x => x.id === pid);
                 if (!p) return;
-                rows.push({ type: 'لاعب', color: '#45B3FF', name: `${p.firstName} ${p.lastName}`,
-                    role: p.categoryId });
+                rows.push({ type: 'لاعب', color: '#45B3FF', name: `${p.firstName} ${p.lastName}`, role: p.categoryId });
             });
             Object.entries(t.coaches || {}).forEach(([roleKey, cid]) => {
                 if (!cid) return;
                 const c = allCoaches.find(x => x.id === cid);
                 if (!c) return;
-                rows.push({ type: 'طاقم فني', color: '#D4A017', name: c.name,
-                    role: COACH_ROLES.find(r => r.key === roleKey)?.label || roleKey });
+                rows.push({ type: 'طاقم فني', color: '#D4A017', name: c.name, role: COACH_ROLES.find(r => r.key === roleKey)?.label || roleKey });
             });
             (t.companions || []).forEach(comp => {
                 const name = typeof comp === 'string' ? comp : comp.name;
@@ -6113,8 +6245,7 @@
             const groups = t.groups || [];
             const groupsHtml = groups.map((g, gi) => {
                 const teams = [...(g.teams || [])].map((team, ti) => ({ ...team, ti }))
-                    .sort((a, b) => (b.won * 3 + b.draw) - (a.won * 3 + a.draw) || (b.gf - b.ga) - (a
-                    .gf - a.ga));
+                    .sort((a, b) => (b.won * 3 + b.draw) - (a.won * 3 + a.draw) || (b.gf - b.ga) - (a.gf - a.ga));
                 const rows = teams.map(team => `
                         <tr>
                             <td style="text-align:right; font-weight:700;">${team.name}</td>
@@ -6178,8 +6309,7 @@
             if (!name) { showToast('أدخل اسم الفريق', 'warning'); return; }
             const t = getTournamentById(currentTournamentId);
             const groups = [...(t.groups || [])];
-            groups[gi].teams = [...(groups[gi].teams || []), { name, played: 0, won: 0, draw: 0, lost: 0, gf: 0,
-                ga: 0 }];
+            groups[gi].teams = [...(groups[gi].teams || []), { name, played: 0, won: 0, draw: 0, lost: 0, gf: 0, ga: 0 }];
             updateTourInFirebase({ groups }, '✅ تمت الإضافة').then(() => renderTourCard());
         }
 
@@ -6321,8 +6451,7 @@
             const t = getTournamentById(currentTournamentId);
             const rooms = [...(t.accommodation?.rooms || [])];
             rooms.splice(parseInt(context.dataset.index), 1);
-            updateTourInFirebase({ accommodation: { ...t.accommodation, rooms } }, '✅ تم الحذف').then(() =>
-            renderTourCard());
+            updateTourInFirebase({ accommodation: { ...t.accommodation, rooms } }, '✅ تم الحذف').then(() => renderTourCard());
         }
 
         function assignRoomOccupants(context) {
@@ -6342,8 +6471,7 @@
                 room.occupants || [], (selected) => {
                     const rooms = [...t.accommodation.rooms];
                     rooms[idx].occupants = selected;
-                    updateTourInFirebase({ accommodation: { ...t.accommodation, rooms } }, '✅ تم التوزيع')
-                    .then(() => renderTourCard());
+                    updateTourInFirebase({ accommodation: { ...t.accommodation, rooms } }, '✅ تم التوزيع').then(() => renderTourCard());
                 });
         }
 
@@ -6417,10 +6545,8 @@
             showProgress('جاري رفع الملفات...', 0);
             Promise.all(readers).then(newDocs => {
                 const documents = [...(t.documents || []), ...newDocs];
-                updateTourInFirebase({ documents }, '✅ تم الرفع').then(() => { hideProgress();
-                    renderTourCard(); });
-            }).catch(() => { hideProgress();
-                showToast('❌ فشل الرفع', 'error'); });
+                updateTourInFirebase({ documents }, '✅ تم الرفع').then(() => { hideProgress(); renderTourCard(); });
+            }).catch(() => { hideProgress(); showToast('❌ فشل الرفع', 'error'); });
         }
 
         function removeTourDocument(context) {
@@ -6487,10 +6613,8 @@
             Promise.all(readers).then(dataUrls => {
                 const gallery = { ...(t.gallery || {}) };
                 gallery[cat] = [...(gallery[cat] || []), ...dataUrls];
-                updateTourInFirebase({ gallery }, '✅ تم الرفع').then(() => { hideProgress();
-                    renderTourCard(); });
-            }).catch(() => { hideProgress();
-                showToast('❌ فشل الرفع', 'error'); });
+                updateTourInFirebase({ gallery }, '✅ تم الرفع').then(() => { hideProgress(); renderTourCard(); });
+            }).catch(() => { hideProgress(); showToast('❌ فشل الرفع', 'error'); });
         }
 
         function removeGalleryPhoto(context) {
@@ -6514,10 +6638,8 @@
             showProgress('جاري رفع الصور...', 0);
             Promise.all(readers).then(dataUrls => {
                 const freeGallery = [...(t.freeGallery || []), ...dataUrls];
-                updateTourInFirebase({ freeGallery }, '✅ تم الرفع').then(() => { hideProgress();
-                    renderTourCard(); });
-            }).catch(() => { hideProgress();
-                showToast('❌ فشل الرفع', 'error'); });
+                updateTourInFirebase({ freeGallery }, '✅ تم الرفع').then(() => { hideProgress(); renderTourCard(); });
+            }).catch(() => { hideProgress(); showToast('❌ فشل الرفع', 'error'); });
         }
         window.uploadFreeGalleryPhotos = uploadFreeGalleryPhotos;
 
@@ -6544,8 +6666,7 @@
         function renderTourReportCard(t) {
             const s = computeTourStats(t);
             const matches = allMatches.filter(m => m.tournamentId === t.id);
-            const losses = matches.filter(m => m.result?.winner && m.result.winner !== 'الأكاديمية' && m.result.winner !==
-                'تعادل').length;
+            const losses = matches.filter(m => m.result?.winner && m.result.winner !== 'الأكاديمية' && m.result.winner !== 'تعادل').length;
             const roster = Object.keys(t.players || {}).filter(pid => t.players[pid]?.called);
             const rosterPlayers = roster.map(pid => allPlayers.find(p => p.id === pid)).filter(Boolean);
             const options = rosterPlayers.map(p =>
@@ -6554,8 +6675,7 @@
             const scorerOptions = rosterPlayers.map(p =>
                     `<option value="${p.id}" ${t.finalReport?.topScorer === p.id ? 'selected' : ''}>${p.firstName} ${p.lastName}</option>`
                     ).join('');
-            const attendance = roster.length ? Math.round((Object.values(t.parentsConsent || {}).filter(c => c.approved)
-                .length / roster.length) * 100) : 0;
+            const attendance = roster.length ? Math.round((Object.values(t.parentsConsent || {}).filter(c => c.approved).length / roster.length) * 100) : 0;
             const r = t.finalReport || {};
             return `
                     <div class="stats-row">
@@ -6582,8 +6702,7 @@
             const t = getTournamentById(currentTournamentId);
             const s = computeTourStats(t);
             const matches = allMatches.filter(m => m.tournamentId === t.id);
-            const losses = matches.filter(m => m.result?.winner && m.result.winner !== 'الأكاديمية' && m.result.winner !==
-                'تعادل').length;
+            const losses = matches.filter(m => m.result?.winner && m.result.winner !== 'الأكاديمية' && m.result.winner !== 'تعادل').length;
             const finalReport = {
                 matchesCount: s.matchesCount,
                 wins: s.wins,
@@ -6675,8 +6794,7 @@
             currentViewFunction = showTournamentArchive;
             currentViewArgs = [];
             const content = document.getElementById('pageContent');
-            const completedList = allTournaments.filter(t => t.status === 'منتهية' || t.status === 'مؤجلة' || t.status ===
-                'ملغاة');
+            const completedList = allTournaments.filter(t => t.status === 'منتهية' || t.status === 'مؤجلة' || t.status === 'ملغاة');
             const cities = [...new Set(allTournaments.map(t => t.city).filter(Boolean))];
 
             content.innerHTML = `
@@ -6714,8 +6832,7 @@
             if (!requireRole('admin')) return;
             if (!confirm('إنهاء هذه الدورة؟')) return;
             db.ref('academy/tournaments/' + id).update({ status: 'منتهية' })
-                .then(() => { const idx = allTournaments.findIndex(t => t.id === id); if (idx !== -1) allTournaments[
-                        idx].status = 'منتهية';
+                .then(() => { const idx = allTournaments.findIndex(t => t.id === id); if (idx !== -1) allTournaments[idx].status = 'منتهية';
                     showToast('✅ تم إنهاء الدورة', 'success');
                     refreshCurrentView(); })
                 .catch(err => showToast('❌ خطأ: ' + err.message, 'error'));
@@ -6751,11 +6868,9 @@
            إعادة تسجيل جميع الإجراءات (يشمل القديم بالكامل + إضافات الدورات)
            ===================================================================== */
         function registerAllActions() {
-            EventManager.register('openDashboard', function() { const wrapper = document.getElementById(
-                    'dashboardWrapper'); if (wrapper) wrapper.classList.add('active');
+            EventManager.register('openDashboard', function() { const wrapper = document.getElementById('dashboardWrapper'); if (wrapper) wrapper.classList.add('active');
                 showLoginScreen(); });
-            EventManager.register('closeDashboardPanel', function() { document.getElementById('dashboardWrapper')
-                    .classList.remove('active'); });
+            EventManager.register('closeDashboardPanel', function() { document.getElementById('dashboardWrapper').classList.remove('active'); });
             EventManager.register('logoutDashboard', function() {
                 if (confirm('تسجيل الخروج؟')) {
                     currentUser = null;
@@ -6793,10 +6908,8 @@
             EventManager.register('deselectAllSessionPlayers', function() { deselectAllSessionPlayers(); });
             EventManager.register('toggleSessionPlayerCall', function(c) { toggleSessionPlayerCall(c); });
             EventManager.register('openSessionDetail', function(c) { openSessionDetail(c.dataset.id); });
-            // تم حذف تسجيل saveSessionPlayerRow واستبداله بـ autoSaveSessionField
             EventManager.register('autoSaveSessionField', function(c) { autoSaveSessionField(c); });
-            EventManager.register('completeSessionWithAttendance', function(c) { completeSessionWithAttendance(c
-                    .dataset.id); });
+            EventManager.register('completeSessionWithAttendance', function(c) { completeSessionWithAttendance(c.dataset.id); });
             EventManager.register('exportSessionDetailPDF', function(c) { exportSessionDetailPDF(c); });
             EventManager.register('deleteSession', function(c) { deleteSession(c.dataset.id); });
             EventManager.register('showTrainingSessionsArchive', function() { showTrainingSessionsArchive(); });
@@ -6812,11 +6925,12 @@
             EventManager.register('showMatchDetailPage', function(c) { showMatchDetailPage(c.dataset.id); });
             EventManager.register('switchMatchTab', function(c) { switchMatchTab(c); });
             EventManager.register('updateMatchStatus', function(c) { updateMatchStatus(c); });
-            EventManager.register('toggleMatchCallup', function(c) { toggleMatchCallup(c); });
-            EventManager.register('updateMatchCallupAttendance', function(c) { updateMatchCallupAttendance(c); });
-            EventManager.register('updateMatchCallupReason', function(c) { updateMatchCallupReason(c); });
+            EventManager.register('callupMatchPlayer', function(c) { callupMatchPlayer(c); });
+            EventManager.register('excludeMatchPlayer', function(c) { excludeMatchPlayer(c); });
             EventManager.register('selectAllMatchCallups', function() { selectAllMatchCallups(); });
             EventManager.register('deselectAllMatchCallups', function() { deselectAllMatchCallups(); });
+            EventManager.register('updateMatchCallupAttendance', function(c) { updateMatchCallupAttendance(c); });
+            EventManager.register('updateMatchCallupReason', function(c) { updateMatchCallupReason(c); });
             EventManager.register('addPlayerToPitch', function(c) { addPlayerToPitch(c); });
             EventManager.register('changeFormation', function(c) { changeFormation(c); });
             EventManager.register('applySubstitution', function() { applySubstitution(); });
@@ -6831,8 +6945,7 @@
             EventManager.register('showAdminCoaches', function() { showAdminCoaches(); });
             EventManager.register('addCoach', function() { addCoach(); });
             EventManager.register('deleteCoach', function(c) { deleteCoach(c.dataset.id); });
-            EventManager.register('editCoachField', function(c) { editCoachField(c.dataset.id, c.dataset.field, c
-                    .dataset.current); });
+            EventManager.register('editCoachField', function(c) { editCoachField(c.dataset.id, c.dataset.field, c.dataset.current); });
             EventManager.register('showCoachDetailPage', function(c) { showCoachDetailPage(c.dataset.id); });
             EventManager.register('showAdminLogs', function() { showAdminLogs(); });
             EventManager.register('refreshLogs', function() { refreshLogs(); });
@@ -6844,12 +6957,9 @@
             EventManager.register('showAttendanceFull', function(c) { showAttendanceFull(c.dataset.id); });
             EventManager.register('exportAttendanceSheetPDF', function(c) { exportAttendanceSheetPDF(c); });
             EventManager.register('exportPlayersListPDF', function() { exportPlayersListPDF(); });
-            EventManager.register('toggleMonthPaymentSimple', function(c) { toggleMonthPaymentSimple(c.dataset
-                    .playerId, c.dataset.monthKey); });
-            EventManager.register('editPlayerField', function(c) { editPlayerField(c.dataset.id, c.dataset.field, c
-                    .dataset.current, c.dataset.label); });
-            EventManager.register('editPlayerStat', function(c) { editPlayerStat(c.dataset.id, c.dataset.key, c
-                    .dataset.current, c.dataset.label); });
+            EventManager.register('toggleMonthPaymentSimple', function(c) { toggleMonthPaymentSimple(c.dataset.playerId, c.dataset.monthKey); });
+            EventManager.register('editPlayerField', function(c) { editPlayerField(c.dataset.id, c.dataset.field, c.dataset.current, c.dataset.label); });
+            EventManager.register('editPlayerStat', function(c) { editPlayerStat(c.dataset.id, c.dataset.key, c.dataset.current, c.dataset.label); });
             EventManager.register('showSendMessageModal', function(c) { showSendMessageModal(c.dataset.id); });
             EventManager.register('deletePlayerMessage', function(c) { deletePlayerMessage(c); });
             EventManager.register('closeParentMessagesModal', function(c) { closeParentMessagesModal(c); });
@@ -6857,8 +6967,7 @@
             EventManager.register('closeModal', function(c) { closeModal(c.dataset.id); });
             EventManager.register('closeEditModal', function() { closeEditModal(); });
             EventManager.register('submitEditModal', function() { submitEditModal(); });
-            EventManager.register('filterTrainingSessionsByCategoryUI', function(c) { filterTrainingSessionsByCategoryUI(
-                    c); });
+            EventManager.register('filterTrainingSessionsByCategoryUI', function(c) { filterTrainingSessionsByCategoryUI(c); });
             EventManager.register('filterMatchesByCategoryUI', function(c) { filterMatchesByCategoryUI(c); });
 
             /* ---- إضافات نظام الدورات ---- */
@@ -6872,7 +6981,10 @@
             EventManager.register('updateTourStatus', function(c) { updateTourStatus(c); });
             EventManager.register('switchTourTab', function(c) { switchTourTab(c); });
             EventManager.register('toggleTourCategory', function(c) { toggleTourCategory(c); });
-            EventManager.register('toggleTourCallup', function(c) { toggleTourCallup(c); });
+            EventManager.register('callupSinglePlayer', function(c) { callupSinglePlayer(c); });
+            EventManager.register('excludeSinglePlayer', function(c) { excludeSinglePlayer(c); });
+            EventManager.register('callupAllInCategory', function(c) { callupAllInCategory(c); });
+            EventManager.register('excludeAllInCategory', function(c) { excludeAllInCategory(c); });
             EventManager.register('setTourExclusionReason', function(c) { setTourExclusionReason(c); });
             EventManager.register('setTourHealthStatus', function(c) { setTourHealthStatus(c); });
             EventManager.register('addCompanion', function() { addCompanion(); });
@@ -6899,8 +7011,7 @@
             EventManager.register('removeTourDocument', function(c) { removeTourDocument(c); });
             EventManager.register('uploadGalleryPhotos', function() { uploadGalleryPhotos(); });
             EventManager.register('removeGalleryPhoto', function(c) { removeGalleryPhoto(c); });
-            EventManager.register('uploadFreeGalleryPhotos', function() { showToast(
-                    'استخدم زر إضافة الصورة في الألبوم الحر', 'info'); });
+            EventManager.register('uploadFreeGalleryPhotos', function() { showToast('استخدم زر إضافة الصورة في الألبوم الحر', 'info'); });
             EventManager.register('removeFreeGalleryPhoto', function(c) { removeFreeGalleryPhoto(c); });
             EventManager.register('saveTourFinalReport', function() { saveTourFinalReport(); });
             EventManager.register('exportCurrentTourTabPDF', function() { exportCurrentTourTabPDF(); });
@@ -7010,12 +7121,10 @@
                         const newPlayerRef = db.ref('academy/players').push();
                         await newPlayerRef.set(newPlayer);
                         // فهرسة كود ولي الأمر لتفعيل دخول فوري لاحقاً
-                        await db.ref('academy/playerCodeIndex/' + sanitizeCodeKey(parentCode)).set(newPlayerRef
-                            .key);
+                        await db.ref('academy/playerCodeIndex/' + sanitizeCodeKey(parentCode)).set(newPlayerRef.key);
 
                         regForm.reset();
-                        document.querySelectorAll('.upload-area').forEach(el => el.classList.remove(
-                        'has-file'));
+                        document.querySelectorAll('.upload-area').forEach(el => el.classList.remove('has-file'));
                         const photoIconBox = document.querySelector('#uploadPhoto .icon');
                         if (photoIconBox) photoIconBox.innerHTML = '<i class="fas fa-camera"></i>';
                         document.getElementById('confirmInfo').innerHTML = `
@@ -7037,8 +7146,7 @@
             renderGallery();
 
             const navbar = document.getElementById('navbar');
-            window.addEventListener('scroll', () => { if (navbar) navbar.classList.toggle('scrolled', window.scrollY >
-                    60); });
+            window.addEventListener('scroll', () => { if (navbar) navbar.classList.toggle('scrolled', window.scrollY > 60); });
 
             const menuBtn = document.getElementById('menuBtn');
             if (menuBtn) {
