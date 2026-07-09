@@ -1767,8 +1767,8 @@
                 window.addDebugLog('🚫 محاولة وصول غير مصرح: ' + roles.join(','), 'warning');
                 return false;
             }
-            // المدير التقني والمرافق للاطلاع فقط، لا صلاحية تعديل في أي قسم
-            if (currentUser.role === 'coach' && ['technicalDirector', 'companion'].includes(currentUser.data?.roleType)) {
+            // الأدوار غير التدريبية (طاقم فني/طبي/مرافق) للاطلاع فقط مبدئياً، لحين تفعيل صلاحياتها الدقيقة
+            if (currentUser.role === 'coach' && ['technicalDirector', 'companion', 'executiveDirector', 'technicalDirectorDTS', 'fitnessCoach', 'medicalStaff'].includes(currentUser.data?.roleType)) {
                 showToast('❌ هذا الحساب مخصص للاطلاع فقط ولا يملك صلاحية التعديل', 'error');
                 return false;
             }
@@ -1786,7 +1786,36 @@
         }
 
         function isReadOnlyStaff() {
-            return currentUser?.role === 'coach' && ['technicalDirector', 'companion'].includes(currentUser?.data?.roleType);
+            return currentUser?.role === 'coach' && ['technicalDirector', 'companion', 'executiveDirector', 'technicalDirectorDTS', 'fitnessCoach', 'medicalStaff'].includes(currentUser?.data?.roleType);
+        }
+
+        function isFitnessCoach() {
+            return currentUser?.role === 'coach' && currentUser.data?.roleType === 'fitnessCoach';
+        }
+
+        function requireEvaluationRole() {
+            if (currentUser?.role === 'admin') return true;
+            if (currentUser?.role === 'coach' && (currentUser.data?.roleType || 'coach') === 'coach') return true;
+            showToast('❌ هذا الحساب لا يملك صلاحية تعديل تقييمات أو إحصائيات اللاعبين', 'error');
+            return false;
+        }
+
+        function canManageAdminDocs() {
+            return currentUser?.role === 'admin' || (currentUser?.role === 'coach' && currentUser.data?.roleType === 'staffAdmin');
+        }
+
+        function canManageMedicalRecord() {
+            return currentUser?.role === 'admin' || (currentUser?.role === 'coach' && currentUser.data?.roleType === 'medicalStaff');
+        }
+
+        const MEDICAL_STATUS_LIST = [
+            { key: 'healthy', label: '🟢 سليم', cls: 'present' },
+            { key: 'injured', label: '🔴 مصاب', cls: 'absent' },
+            { key: 'recovering', label: '🟡 في مرحلة التعافي', cls: 'excused' },
+            { key: 'readyToReturn', label: '🔵 جاهز للعودة', cls: 'paid' }
+        ];
+        function getMedicalStatusInfo(key) {
+            return MEDICAL_STATUS_LIST.find(m => m.key === key) || MEDICAL_STATUS_LIST[0];
         }
 
         // ================================================================
@@ -1812,6 +1841,30 @@
             '4-2-3-1': [{ x: 50, y: 8 }, { x: 20, y: 25 }, { x: 35, y: 22 }, { x: 65, y: 22 }, { x: 80, y: 25 }, { x: 30,
                 y: 45 }, { x: 70, y: 45 }, { x: 15, y: 60 }, { x: 50, y: 62 }, { x: 85, y: 60 }, { x: 50, y: 75 }]
         };
+
+        // ===== نظام الموارد البشرية للأكاديمية =====
+        const HR_ROLE_TYPES = [
+            { key: 'coach', label: '🧑‍🏫 مدرب فئة', section: 'coaches' },
+            { key: 'executiveDirector', label: '👔 المدير التنفيذي', section: 'technicalStaff' },
+            { key: 'technicalDirectorDTS', label: '🧭 المدير التقني (DTS)', section: 'technicalStaff' },
+            { key: 'fitnessCoach', label: '💪 المحضر البدني', section: 'technicalStaff' },
+            { key: 'staffAdmin', label: '🗂️ إداري', section: 'admins' },
+            { key: 'medicalStaff', label: '⚕️ الطاقم الطبي', section: 'medical' },
+            { key: 'companion', label: '🧳 مرافق دورات', section: 'other' }
+        ];
+        const HR_CONTRACT_TYPES = ['دوام كامل', 'دوام جزئي', 'موسمي', 'تعاقد حر'];
+        const HR_STATUS_LIST = [
+            { key: 'active', label: '🟢 نشط' },
+            { key: 'onLeave', label: '🟡 في إجازة' },
+            { key: 'suspended', label: '🔴 موقوف' },
+            { key: 'contractEnded', label: '⚪ منتهي العقد' }
+        ];
+        function getHrRoleLabel(roleType) {
+            return (HR_ROLE_TYPES.find(r => r.key === (roleType || 'coach')) || HR_ROLE_TYPES[0]).label;
+        }
+        function getHrStatusLabel(statusKey) {
+            return (HR_STATUS_LIST.find(s => s.key === statusKey) || HR_STATUS_LIST[0]).label;
+        }
 
         const MATCH_TYPES = ['ودية', 'رسمية', 'دوري', 'كأس', 'تحضيرية'];
         const NO_CALLUP_REASONS = ['إصابة', 'غياب', 'قرار فني', 'إيقاف', 'أسباب أخرى'];
@@ -2211,7 +2264,7 @@
                     <div class="menu-item" data-action="showAdminTrainingSessions"><i class="fas fa-futbol"></i> <span>الحصص التدريبية</span></div>
                     <div class="menu-item" data-action="showAdminMatches"><i class="fas fa-handshake"></i> <span>المباريات</span></div>
                     <div class="menu-item" data-action="showAdminTournaments"><i class="fas fa-trophy"></i> <span>الدورات</span></div>
-                    <div class="menu-item" data-action="showAdminCoaches"><i class="fas fa-chalkboard-teacher"></i> <span>المدربون</span></div>
+                    <div class="menu-item" data-action="showHRHub"><i class="fas fa-building-user"></i> <span>الموارد البشرية</span></div>
                     <div class="menu-item" data-action="showAdminLogs"><i class="fas fa-history"></i> <span>سجل التعديلات</span></div>
                     <div class="menu-item" data-action="refreshDashboardData" style="border-right-color:var(--gold);"><i class="fas fa-sync-alt"></i> <span>🔄 تحديث البيانات</span></div>
                 `;
@@ -2229,9 +2282,67 @@
                     `;
                     showCoachHome();
                     window.addDebugLog('🧑‍🏫 تم تحميل لوحة المدرب', 'info');
+                } else if (rt === 'executiveDirector') {
+                    sidebar.innerHTML = `
+                        <div class="menu-item" style="opacity:0.6; cursor:default; font-size:0.8rem; border-right:none;"><i class="fas fa-id-badge"></i> <span>👔 المدير التنفيذي</span></div>
+                        <div class="menu-item active" data-action="showAdminHome"><i class="fas fa-tachometer-alt"></i> <span>الرئيسية</span></div>
+                        <div class="menu-item" data-action="showAdminPlayers"><i class="fas fa-users"></i> <span>اللاعبون</span></div>
+                        <div class="menu-item" data-action="showAdminTrainingSessions"><i class="fas fa-futbol"></i> <span>الحصص التدريبية</span></div>
+                        <div class="menu-item" data-action="showAdminMatches"><i class="fas fa-handshake"></i> <span>المباريات</span></div>
+                        <div class="menu-item" data-action="showAdminTournaments"><i class="fas fa-trophy"></i> <span>الدورات</span></div>
+                        <div class="menu-item" data-action="showHRHub"><i class="fas fa-building-user"></i> <span>الموارد البشرية</span></div>
+                        <div class="menu-item" data-action="showPeriodicReportsExecutive" style="border-right-color:var(--gold);"><i class="fas fa-chart-line"></i> <span>📊 التقارير الدورية</span></div>
+                        <div class="menu-item" data-action="refreshDashboardData"><i class="fas fa-sync-alt"></i> <span>🔄 تحديث البيانات</span></div>
+                    `;
+                    showAdminHome();
+                    window.addDebugLog('👔 تم تحميل لوحة المدير التنفيذي', 'info');
+                } else if (rt === 'technicalDirectorDTS') {
+                    sidebar.innerHTML = `
+                        <div class="menu-item" style="opacity:0.6; cursor:default; font-size:0.8rem; border-right:none;"><i class="fas fa-id-badge"></i> <span>🧭 المدير التقني (DTS)</span></div>
+                        <div class="menu-item active" data-action="showAdminHome"><i class="fas fa-tachometer-alt"></i> <span>الرئيسية</span></div>
+                        <div class="menu-item" data-action="showAdminPlayers"><i class="fas fa-users"></i> <span>اللاعبون</span></div>
+                        <div class="menu-item" data-action="showAdminTrainingSessions"><i class="fas fa-futbol"></i> <span>الحصص التدريبية</span></div>
+                        <div class="menu-item" data-action="showAdminMatches"><i class="fas fa-handshake"></i> <span>المباريات</span></div>
+                        <div class="menu-item" data-action="showAdminTournaments"><i class="fas fa-trophy"></i> <span>الدورات</span></div>
+                        <div class="menu-item" data-action="showHRHub"><i class="fas fa-building-user"></i> <span>المدربون والطاقم</span></div>
+                        <div class="menu-item" data-action="showPeriodicReportsTechnical" style="border-right-color:var(--gold);"><i class="fas fa-microscope"></i> <span>🧪 التقارير الفنية</span></div>
+                        <div class="menu-item" data-action="refreshDashboardData"><i class="fas fa-sync-alt"></i> <span>🔄 تحديث البيانات</span></div>
+                    `;
+                    showAdminHome();
+                    window.addDebugLog('🧭 تم تحميل لوحة المدير التقني', 'info');
+                } else if (rt === 'fitnessCoach') {
+                    sidebar.innerHTML = `
+                        <div class="menu-item" style="opacity:0.6; cursor:default; font-size:0.8rem; border-right:none;"><i class="fas fa-id-badge"></i> <span>💪 المحضر البدني</span></div>
+                        <div class="menu-item active" data-action="showFitnessSessions"><i class="fas fa-running"></i> <span>الحصص المجدولة</span></div>
+                        <div class="menu-item" data-action="refreshDashboardData" style="border-right-color:var(--gold);"><i class="fas fa-sync-alt"></i> <span>🔄 تحديث البيانات</span></div>
+                    `;
+                    showFitnessSessions();
+                    window.addDebugLog('💪 تم تحميل لوحة المحضر البدني', 'info');
+                } else if (rt === 'staffAdmin') {
+                    sidebar.innerHTML = `
+                        <div class="menu-item" style="opacity:0.6; cursor:default; font-size:0.8rem; border-right:none;"><i class="fas fa-id-badge"></i> <span>🗂️ إداري الأكاديمية</span></div>
+                        <div class="menu-item active" data-action="showAdminHome"><i class="fas fa-tachometer-alt"></i> <span>الرئيسية</span></div>
+                        <div class="menu-item" data-action="showAdminPlayers"><i class="fas fa-users"></i> <span>اللاعبون</span></div>
+                        <div class="menu-item" data-action="showSubscriptionsOverview" style="border-right-color:var(--gold);"><i class="fas fa-file-invoice-dollar"></i> <span>📋 متابعة الاشتراكات</span></div>
+                        <div class="menu-item" data-action="showAdminTrainingSessions"><i class="fas fa-futbol"></i> <span>الحصص التدريبية</span></div>
+                        <div class="menu-item" data-action="showAdminMatches"><i class="fas fa-handshake"></i> <span>المباريات</span></div>
+                        <div class="menu-item" data-action="showAdminTournaments"><i class="fas fa-trophy"></i> <span>الدورات</span></div>
+                        <div class="menu-item" data-action="showHRHub"><i class="fas fa-building-user"></i> <span>الموارد البشرية</span></div>
+                        <div class="menu-item" data-action="refreshDashboardData"><i class="fas fa-sync-alt"></i> <span>🔄 تحديث البيانات</span></div>
+                    `;
+                    showAdminHome();
+                    window.addDebugLog('🗂️ تم تحميل لوحة الإداري', 'info');
+                } else if (rt === 'medicalStaff') {
+                    sidebar.innerHTML = `
+                        <div class="menu-item" style="opacity:0.6; cursor:default; font-size:0.8rem; border-right:none;"><i class="fas fa-id-badge"></i> <span>⚕️ الطاقم الطبي</span></div>
+                        <div class="menu-item active" data-action="showMedicalStaffPlayers"><i class="fas fa-notes-medical"></i> <span>السجلات الطبية</span></div>
+                        <div class="menu-item" data-action="refreshDashboardData" style="border-right-color:var(--gold);"><i class="fas fa-sync-alt"></i> <span>🔄 تحديث البيانات</span></div>
+                    `;
+                    showMedicalStaffPlayers();
+                    window.addDebugLog('⚕️ تم تحميل لوحة الطاقم الطبي', 'info');
                 } else {
-                    // إداري عام / مدير تقني / مرافق: يعاين نفس شاشات المدير الكاملة (القيود مطبقة داخل أزرار التعديل نفسها)
-                    const roleTitle = rt === 'staffAdmin' ? '🗂️ إداري عام' : rt === 'technicalDirector' ? '🧭 مدير تقني (اطلاع فقط)' : '🧳 مرافق (اطلاع فقط)';
+                    // إداري / طاقم فني / طاقم طبي / مرافق: يعاين نفس شاشات المدير الكاملة (القيود مطبقة داخل أزرار التعديل نفسها)
+                    const roleTitle = getHrRoleLabel(rt) + (isReadOnlyStaff() ? ' (اطلاع فقط)' : '');
                     sidebar.innerHTML = `
                         <div class="menu-item" style="opacity:0.6; cursor:default; font-size:0.8rem; border-right:none;"><i class="fas fa-id-badge"></i> <span>${roleTitle}</span></div>
                         <div class="menu-item active" data-action="showAdminHome"><i class="fas fa-tachometer-alt"></i> <span>الرئيسية</span></div>
@@ -2239,7 +2350,7 @@
                         <div class="menu-item" data-action="showAdminTrainingSessions"><i class="fas fa-futbol"></i> <span>الحصص التدريبية</span></div>
                         <div class="menu-item" data-action="showAdminMatches"><i class="fas fa-handshake"></i> <span>المباريات</span></div>
                         <div class="menu-item" data-action="showAdminTournaments"><i class="fas fa-trophy"></i> <span>الدورات</span></div>
-                        <div class="menu-item" data-action="showAdminCoaches"><i class="fas fa-chalkboard-teacher"></i> <span>المدربون والطاقم</span></div>
+                        <div class="menu-item" data-action="showHRHub"><i class="fas fa-building-user"></i> <span>الموارد البشرية</span></div>
                         <div class="menu-item" data-action="refreshDashboardData" style="border-right-color:var(--gold);"><i class="fas fa-sync-alt"></i> <span>🔄 تحديث البيانات</span></div>
                     `;
                     showAdminHome();
@@ -2642,7 +2753,7 @@
                         <div class="item"><div class="label">تاريخ النهاية</div><div class="value">${t.endDate || '-'}</div></div>
                         <div class="item"><div class="label">الملاعب</div><div class="value">${t.venues || '-'}</div></div>
                         <div class="item"><div class="label">المدينة</div><div class="value">${t.city || '-'}</div></div>
-                        <div class="item"><div class="label">الحالة الصحية لابنك</div><div class="value">${HEALTH_STATUS_LIST.find(h => h.key === (info.healthStatus || 'ready'))?.label || '-'}</div></div>
+                        <div class="item"><div class="label">الحالة الصحية لابنك</div><div class="value">${getMedicalStatusInfo(info.healthStatus || 'healthy').label}</div></div>
                         ${busInfo ? `<div class="item"><div class="label">🚌 النقل</div><div class="value">${busInfo.name} — ${busInfo.departureTime || ''} — ${busInfo.meetingPoint || ''}</div></div>` : ''}
                         ${roomInfo ? `<div class="item"><div class="label">🏨 الإقامة</div><div class="value">غرفة ${roomInfo.number} — ${t.accommodation?.hotelName || ''}</div></div>` : ''}
                     </div>
@@ -2747,29 +2858,10 @@
             }
             attendHtml += '</div>';
 
-            const stats = [
-                { label: '⚽ الأهداف', key: 'goals', value: details.goals || 0 },
-                { label: '🎯 تمريرات حاسمة', key: 'assists', value: details.assists || 0 },
-                { label: '🟨 بطاقات صفراء', key: 'yellowCards', value: details.yellowCards || 0 },
-                { label: '🟥 بطاقات حمراء', key: 'redCards', value: details.redCards || 0 },
-                { label: '🏆 رجل المباراة', key: 'manOfMatch', value: details.manOfMatch || 0 },
-                { label: '📊 مباريات أساسي', key: 'starterMatches', value: details.starterMatches || 0 },
-                { label: '🩹 إصابات', key: 'injuries', value: details.injuries || 0 },
-                { label: '⚠️ عقوبات', key: 'penalties', value: details.penalties || 0 }
-            ];
-            let statsHtml = '';
-            stats.forEach(s => {
-                const isEditable = canEdit;
-                statsHtml += `
-                        <div class="stat-item" data-action="${isEditable ? 'editPlayerStat' : ''}" data-id="${playerId}" data-key="${s.key}" data-current="${s.value}" data-label="${s.label}" style="${isEditable ? 'cursor:pointer;' : ''}">
-                            <div class="number">${s.value}</div>
-                            <div class="label">${s.label}</div>
-                        </div>
-                    `;
-            });
-
+            const injuryStatusInfo = getMedicalStatusInfo(details.injuryStatus || 'healthy');
             const infoFields = [
                 { label: 'الفئة', key: 'categoryId', value: p.categoryId },
+                { label: '🩺 الحالة الصحية الحالية', key: '_injuryStatus', value: injuryStatusInfo.label },
                 { label: 'تاريخ الميلاد', key: 'birthDate', value: p.birthDate },
                 { label: 'مكان الميلاد', key: 'birthPlace', value: p.birthPlace || '-' },
                 { label: 'المستوى الدراسي', key: 'studyLevel', value: p.studyLevel || '-' },
@@ -2784,7 +2876,7 @@
             ];
             let infoHtml = '';
             infoFields.forEach(f => {
-                const isEditable = canEdit && ['categoryId', 'birthDate', 'birthPlace', 'studyLevel', 'health',
+                const isEditable = f.key !== '_injuryStatus' && canEdit && ['categoryId', 'birthDate', 'birthPlace', 'studyLevel', 'health',
                     'bloodType', 'guardianName', 'guardianPhone', 'jerseyNumber', 'position', 'fitness',
                     'rating'
                 ].includes(f.key);
@@ -2792,6 +2884,27 @@
                         <div class="item">
                             <div class="label">${f.label}</div>
                             <div class="value" data-action="${isEditable ? 'editPlayerField' : ''}" data-id="${playerId}" data-field="${f.key}" data-current="${f.value}" data-label="${f.label}" style="${isEditable ? 'cursor:pointer;' : ''}">${f.value}</div>
+                        </div>
+                    `;
+            });
+
+            const stats = [
+                { label: '⚽ الأهداف', key: 'goals', value: details.goals || 0 },
+                { label: '🎯 تمريرات حاسمة', key: 'assists', value: details.assists || 0 },
+                { label: '🟨 بطاقات صفراء', key: 'yellowCards', value: details.yellowCards || 0 },
+                { label: '🟥 بطاقات حمراء', key: 'redCards', value: details.redCards || 0 },
+                { label: '🏆 رجل المباراة', key: 'manOfMatch', value: details.manOfMatch || 0 },
+                { label: '📊 مباريات أساسي', key: 'starterMatches', value: details.starterMatches || 0 },
+                { label: '🩹 إصابات', key: 'injuries', value: details.injuries || 0 },
+                { label: '⚠️ عقوبات', key: 'penalties', value: details.penalties || 0 }
+            ];
+            let statsHtml = '';
+            stats.forEach(s => {
+                const isEditable = canEdit && requireEvaluationRole();
+                statsHtml += `
+                        <div class="stat-item" data-action="${isEditable ? 'editPlayerStat' : ''}" data-id="${playerId}" data-key="${s.key}" data-current="${s.value}" data-label="${s.label}" style="${isEditable ? 'cursor:pointer;' : ''}">
+                            <div class="number">${s.value}</div>
+                            <div class="label">${s.label}</div>
                         </div>
                     `;
             });
@@ -2824,6 +2937,9 @@
                         ${paymentHtml}
                         <div class="section-title-detail">📋 سجل الحضور</div>
                         ${attendHtml}
+                        <div class="section-title-detail">🩺 السجل الطبي</div>
+                        ${canManageMedicalRecord() ? `<button class="btn-sm btn-sm-primary" data-action="showAddMedicalRecordModal" data-id="${playerId}" style="margin-bottom:10px;"><i class="fas fa-plus"></i> إضافة سجل طبي جديد</button>` : ''}
+                        <div style="max-height:320px; overflow-y:auto;">${renderMedicalRecordsHtml(playerId)}</div>
                         <div class="section-title-detail">📩 الرسائل الموجهة لولي الأمر</div>
                         ${canEdit ? `<button class="btn-sm btn-sm-primary" data-action="showSendMessageModal" data-id="${playerId}" style="margin-bottom:10px;"><i class="fas fa-paper-plane"></i> إرسال رسالة جديدة</button>` : ''}
                         <div class="parent-msg-list">${renderMessagesHistoryHtml(playerId)}</div>
@@ -2832,6 +2948,7 @@
                             <div style="display:flex; gap:16px; flex-wrap:wrap; margin-bottom:16px;">
                                 ${p.parentalDoc && p.parentalDoc.startsWith('data:image') ? `<button class="btn-sm btn-sm-info" onclick="window.viewDocument('${p.parentalDoc}')"><i class="fas fa-file-signature"></i> الترخيص الأبوي</button>` : '<span class="text-muted">لا يوجد ترخيص</span>'}
                                 ${p.internalDoc && p.internalDoc.startsWith('data:image') ? `<button class="btn-sm btn-sm-info" onclick="window.viewDocument('${p.internalDoc}')"><i class="fas fa-file-contract"></i> القانون الداخلي</button>` : '<span class="text-muted">لا يوجد قانون</span>'}
+                                ${canManageAdminDocs() ? `<button class="btn-sm btn-sm-warning" data-action="showManageDocumentsModal" data-id="${playerId}"><i class="fas fa-file-upload"></i> تحديث الوثائق</button>` : ''}
                             </div>
                         `}
                         <div style="margin-top:16px; text-align:center;"><button class="btn-sm btn-sm-secondary" data-action="goBackToPrevious"><i class="fas fa-arrow-right"></i> الرجوع</button></div>
@@ -3082,6 +3199,7 @@
         // ================================================================
         function coachRatePlayer(playerId) {
             if (!requireRole('admin', 'coach')) return;
+            if (!requireEvaluationRole()) return;
             const p = allPlayers.find(x => x.id === playerId);
             const current = allPlayerDetails[playerId] || { rating: 0, notes: '' };
             showEditModal({
@@ -3137,6 +3255,7 @@
 
         function editPlayerField(playerId, field, currentValue, label) {
             if (!requireRole('admin', 'coach')) return;
+            if (field === 'rating' && !requireEvaluationRole()) return;
             const config = getPlayerFieldConfig(field);
             showEditModal({
                 title: `تعديل ${label}`,
@@ -3190,6 +3309,7 @@
 
         function editPlayerStat(playerId, key, currentValue, label) {
             if (!requireRole('admin', 'coach')) return;
+            if (!requireEvaluationRole()) return;
             showEditModal({
                 title: `تعديل ${label}`,
                 icon: 'fa-chart-bar',
@@ -3304,13 +3424,19 @@
             document.querySelectorAll('[data-action="filterTrainingSessionsByCategoryUI"]').forEach(b => b.classList.remove(
                 'active'));
             context.classList.add('active');
-            const isCoach = sessionsListFilterSource === 'coach';
-            let source = isCoach ?
-                allTrainingSessions.filter(s => s.coachId === currentUser.id || s.coachName === currentUser.data.name) :
-                allTrainingSessions;
+            let source, containerId;
+            if (sessionsListFilterSource === 'coach') {
+                source = allTrainingSessions.filter(s => s.coachId === currentUser.id || s.coachName === currentUser.data.name);
+                containerId = 'coachSessionsList';
+            } else if (sessionsListFilterSource === 'fitness') {
+                source = allTrainingSessions;
+                containerId = 'fitnessSessionsList';
+            } else {
+                source = allTrainingSessions;
+                containerId = 'adminSessionsList';
+            }
             source = source.filter(s => s.status === 'مجدولة' || s.status === 'مؤجلة');
             const filtered = (cat === 'all' || !cat) ? source : source.filter(s => s.categoryId === cat);
-            const containerId = isCoach ? 'coachSessionsList' : 'adminSessionsList';
             renderSessionsList(document.getElementById(containerId), filtered);
         }
 
@@ -3339,6 +3465,25 @@
             renderSessionsList(container, scheduledOnly);
             window.addDebugLog(`⚽ عرض حصصي المجدولة (${scheduledOnly.length} حصة)`, 'info');
             EventManager.bindButtons(content);
+        }
+
+        function showFitnessSessions() {
+            currentViewFunction = showFitnessSessions;
+            currentViewArgs = [];
+            sessionsListFilterSource = 'fitness';
+            const content = document.getElementById('pageContent');
+            content.innerHTML = `
+                    <h2 class="page-title">💪 الحصص التدريبية — جميع الفئات</h2>
+                    <p class="page-sub">يمكنك إضافة التقييم البدني والملاحظات البدنية للحصص المجدولة فقط. بمجرد اكتمال الحصة تُقفل التعديلات وتنتقل الملاحظات تلقائياً لسجل اللاعب.</p>
+                    ${buildSessionsCategoryFilterHtml()}
+                    <div id="fitnessSessionsList"></div>
+                `;
+            const scheduledOnly = allTrainingSessions.filter(s => s.status === 'مجدولة' || s.status === 'مؤجلة');
+            renderSessionsList(document.getElementById('fitnessSessionsList'), scheduledOnly);
+            window.addDebugLog(`💪 عرض الحصص لكل الفئات (${scheduledOnly.length})`, 'info');
+            EventManager.bindButtons(content);
+            updateDashboardActionBar();
+            animatePageTransition();
         }
 
         function renderSessionsList(container, sessions, isArchive) {
@@ -3609,6 +3754,8 @@
                 plan: [],
                 ratings: {},
                 notes: {},
+                physicalRatings: {},
+                physicalNotes: {},
                 report: null,
                 stats: { present: 0, absent: 0, excused: 0, total: 0 }
             };
@@ -3702,6 +3849,8 @@
                     const attStatus = (s.attendance || {})[p.id] || '';
                     const rating = (s.ratings || {})[p.id] || '';
                     const note = (s.notes || {})[p.id] || '';
+                    const physicalRating = (s.physicalRatings || {})[p.id] || '';
+                    const physicalNote = (s.physicalNotes || {})[p.id] || '';
                     const imgSrc = p.photo && p.photo.startsWith('data:image') ? p.photo : 'https://via.placeholder.com/36';
                     const dis = isLocked ? 'disabled' : '';
                     rowsHtml += `
@@ -3727,6 +3876,14 @@
                                 <div class="spf-group spf-note">
                                     <label>ملاحظة اختيارية</label>
                                     <input type="text" value="${note}" placeholder="اكتب ملاحظة عن أداء اللاعب..." ${dis} data-action="autoSaveSessionField" data-session-id="${s.id}" data-player-id="${p.id}" data-field="note" />
+                                </div>
+                                <div class="spf-group">
+                                    <label>💪 التقييم البدني /10</label>
+                                    <input type="number" min="0" max="10" step="0.5" value="${physicalRating}" placeholder="0-10" ${dis} data-action="autoSaveSessionField" data-session-id="${s.id}" data-player-id="${p.id}" data-field="physicalRating" />
+                                </div>
+                                <div class="spf-group spf-note">
+                                    <label>💪 ملاحظة بدنية (جاهزية/لياقة)</label>
+                                    <input type="text" value="${physicalNote}" placeholder="ملاحظة المحضر البدني..." ${dis} data-action="autoSaveSessionField" data-session-id="${s.id}" data-player-id="${p.id}" data-field="physicalNote" />
                                 </div>
                             </div>
                         </div>
@@ -3805,6 +3962,26 @@
                 db.ref('academy/trainingSessions/' + sessionId + '/notes').set(notes)
                     .then(() => { session.notes = notes; flash(true); })
                     .catch(() => { flash(false); });
+            } else if (field === 'physicalRating' || field === 'physicalNote') {
+                const canEditPhysical = currentUser?.role === 'admin' ||
+                    (currentUser?.role === 'coach' && (currentUser.data?.roleType || 'coach') === 'coach') ||
+                    isFitnessCoach();
+                if (!canEditPhysical) { showToast('❌ ليس لديك صلاحية إدخال بيانات بدنية', 'error'); return; }
+                if (field === 'physicalRating') {
+                    const physicalRatings = { ...(session.physicalRatings || {}) };
+                    const r = parseFloat(context.value);
+                    if (!isNaN(r)) physicalRatings[playerId] = r; else delete physicalRatings[playerId];
+                    db.ref('academy/trainingSessions/' + sessionId + '/physicalRatings').set(physicalRatings)
+                        .then(() => { session.physicalRatings = physicalRatings; flash(true); })
+                        .catch(() => { flash(false); });
+                } else {
+                    const physicalNotes = { ...(session.physicalNotes || {}) };
+                    const v = context.value.trim();
+                    if (v) physicalNotes[playerId] = v; else delete physicalNotes[playerId];
+                    db.ref('academy/trainingSessions/' + sessionId + '/physicalNotes').set(physicalNotes)
+                        .then(() => { session.physicalNotes = physicalNotes; flash(true); })
+                        .catch(() => { flash(false); });
+                }
             }
         }
 
@@ -3839,9 +4016,25 @@
                     session.status = 'مكتملة';
                     session.stats = stats;
                     session.completedAt = new Date().toISOString();
+
+                    // نقل الملاحظات والتقييمات البدنية تلقائياً إلى السجل الدائم لكل لاعب
+                    const physicalRatings = session.physicalRatings || {};
+                    const physicalNotes = session.physicalNotes || {};
+                    Object.keys({ ...physicalRatings, ...physicalNotes }).forEach(pid => {
+                        const entry = {
+                            sessionId,
+                            sessionTitle: session.title || 'حصة تدريبية',
+                            date: session.date,
+                            rating: physicalRatings[pid] ?? null,
+                            note: physicalNotes[pid] || '',
+                            addedBy: currentUser?.data?.name || currentUser?.role
+                        };
+                        db.ref('academy/playerDetails/' + pid + '/physicalHistory').push(entry);
+                    });
+
                     closeModal('sessionDetailModal');
                     addLog('إنهاء حصة', `تم إنهاء الحصة ${session.title || ''}`, currentUser?.role);
-                    showToast('✅ تم إنهاء الحصة ونقلها للأرشيف', 'success');
+                    showToast('✅ تم إنهاء الحصة ونقل البيانات البدنية لسجلات اللاعبين', 'success');
                     refreshCurrentView();
                 })
                 .catch(err => showToast('❌ خطأ: ' + err.message, 'error'));
@@ -5011,29 +5204,27 @@
         // سيتم تعريف الدوال الجديدة في قسم نظام الدورات المتكامل.
 
         // ================================================================
-        // 22. دوال المدربين (مع التعديلات الجديدة - showEditModal)
+        // 22. نظام الموارد البشرية HR
         // ================================================================
-        function renderCoachesTable() {
+
+        function renderCoachesTable(list) {
             const tbody = document.getElementById('coachesTableBody');
             if (!tbody) return;
-            if (allCoaches.length === 0) { tbody.innerHTML =
-                    `<tr><td colspan="6" style="text-align:center;color:#888;padding:20px;">لا يوجد مدربون</td></tr>`; return; }
-            const roleLabels = {
-                coach: c => '🧑‍🏫 مدرب ' + (c.categoryId || ''),
-                staffAdmin: () => '🗂️ إداري عام',
-                technicalDirector: () => '🧭 مدير تقني',
-                companion: () => '🧳 مرافق'
-            };
+            const source = list || allCoaches;
+            if (source.length === 0) { tbody.innerHTML =
+                    `<tr><td colspan="7" style="text-align:center;color:#888;padding:20px;">لا يوجد أعضاء بعد</td></tr>`; return; }
             let html = '';
-            allCoaches.forEach((c, idx) => {
+            source.forEach((c, idx) => {
                 const rt = c.roleType || 'coach';
                 const badgeCls = rt === 'coach' ? 'paid' : rt === 'staffAdmin' ? 'unpaid' : 'excused';
+                const statusInfo = HR_STATUS_LIST.find(s => s.key === c.status) || HR_STATUS_LIST[0];
                 html += `<tr>
                         <td>${idx + 1}</td>
-                        <td class="editable-field" data-action="editCoachField" data-id="${c.id}" data-field="name" data-current="${c.name || ''}">${c.name || ''}</td>
-                        <td><span class="badge-status ${badgeCls}">${(roleLabels[rt] || roleLabels.coach)(c)}</span></td>
+                        <td class="editable-field" data-action="editCoachField" data-id="${c.id}" data-field="name" data-current="${c.name || ''}">${c.name || ''}${rt === 'coach' && c.categoryId ? ' — ' + c.categoryId : ''}</td>
+                        <td><span class="badge-status ${badgeCls}">${getHrRoleLabel(rt)}</span></td>
                         <td class="editable-field" data-action="editCoachField" data-id="${c.id}" data-field="phone" data-current="${c.phone || ''}">${c.phone || '-'}</td>
                         <td>${c.jobTitle || '-'}</td>
+                        <td><span class="badge-status ${c.status === 'active' ? 'paid' : c.status === 'suspended' ? 'unpaid' : 'excused'}">${statusInfo.label}</span></td>
                         <td>
                             <button class="btn-sm btn-sm-info" data-action="showCoachDetailPage" data-id="${c.id}"><i class="fas fa-folder-open"></i> فتح الملف</button>
                             <button class="btn-sm btn-sm-danger" data-action="deleteCoach" data-id="${c.id}"><i class="fas fa-trash"></i></button>
@@ -5049,34 +5240,56 @@
             currentViewArgs = [];
             const content = document.getElementById('pageContent');
             content.innerHTML = `
-                    <h2 class="page-title">🧑‍🏫 المدربون</h2>
-                    <p class="page-sub">إدارة مدربي الأكاديمية (الكود لا يظهر لحمايته، يمكن تعيينه فقط عند الإضافة)</p>
+                    <button class="btn-sm btn-sm-secondary" data-action="showHRHub" style="margin-bottom:14px;"><i class="fas fa-arrow-right"></i> رجوع لمركز الموارد البشرية</button>
+                    <h2 class="page-title">🧑‍🏫 القائمة الكاملة لأعضاء الطاقم</h2>
+                    <p class="page-sub">إدارة جميع أعضاء الأكاديمية (الكود لا يظهر لحمايته، يمكن تعيينه فقط عند الإضافة)</p>
                     <div class="table-wrap"><table>
-                        <thead><tr><th>#</th><th>الاسم</th><th>نوع الحساب</th><th>الهاتف</th><th>الصفة</th><th>إجراءات</th></tr></thead>
+                        <thead><tr><th>#</th><th>الاسم</th><th>نوع الحساب</th><th>الهاتف</th><th>الصفة</th><th>الحالة</th><th>إجراءات</th></tr></thead>
                         <tbody id="coachesTableBody"></tbody>
                     </table></div>
                     <div class="form-card">
-                        <h3>➕ إضافة حساب جديد (مدرب فئة أو إداري عام أو مدير تقني أو مرافق)</h3>
+                        <h3>➕ إضافة عضو جديد لطاقم الأكاديمية</h3>
                         <div class="form-grid">
-                            <div class="form-group"><label>نوع الحساب</label>
+                            <div class="form-group"><label>نوع الحساب <span class="required">*</span></label>
                                 <select id="newCoachRoleType" onchange="toggleNewCoachCategoryField()">
-                                    <option value="coach">🧑‍🏫 مدرب فئة معينة</option>
-                                    <option value="staffAdmin">🗂️ إداري عام (اطلاع كامل + تعديل عدا الحصص/المباريات/الدورات)</option>
-                                    <option value="technicalDirector">🧭 مدير تقني (اطلاع فقط)</option>
-                                    <option value="companion">🧳 مرافق (ملف + اطلاع فقط)</option>
+                                    ${HR_ROLE_TYPES.map(r => `<option value="${r.key}">${r.label}</option>`).join('')}
                                 </select>
                             </div>
-                            <div class="form-group"><label>الاسم الكامل</label><input type="text" id="newCoachName" /></div>
-                            <div class="form-group" id="newCoachCategoryWrap"><label>الفئة</label><select id="newCoachCategory">${categories.map(c => `<option value="${c}">${c}</option>`).join('')}</select></div>
-                            <div class="form-group"><label>كود الدخول</label><input type="text" id="newCoachCode" /></div>
+                            <div class="form-group"><label>الكود التعريفي <span class="required">*</span></label><input type="text" id="newCoachCode" placeholder="كود الدخول للنظام" /></div>
+                            <div class="form-group"><label>الاسم الكامل <span class="required">*</span></label><input type="text" id="newCoachName" /></div>
+                            <div class="form-group" id="newCoachCategoryWrap"><label>الفئة المشرف عليها</label><select id="newCoachCategory">${categories.map(c => `<option value="${c}">${c}</option>`).join('')}</select></div>
+                            <div class="form-group"><label>الصفة الوظيفية</label><input type="text" id="newCoachJobTitle" placeholder="مثال: مدرب رئيسي" /></div>
+                            <div class="form-group"><label>الحالة</label><select id="newCoachStatus">${HR_STATUS_LIST.map(s => `<option value="${s.key}">${s.label}</option>`).join('')}</select></div>
+                            <div class="form-group"><label>تاريخ بداية العمل</label><input type="date" id="newCoachStartDate" /></div>
+                            <div class="form-group"><label>نوع العقد</label><select id="newCoachContractType">${HR_CONTRACT_TYPES.map(c => `<option value="${c}">${c}</option>`).join('')}</select></div>
+                            <div class="form-group"><label>سنوات الخبرة</label><input type="number" id="newCoachExperience" min="0" /></div>
                             <div class="form-group"><label>الهاتف</label><input type="text" id="newCoachPhone" /></div>
-                            <div class="form-group"><label>الصفة الوظيفية</label><input type="text" id="newCoachJobTitle" placeholder="مثال: مدرب رئيسي / إداري الأكاديمية" /></div>
-                            <div class="form-group full"><button class="btn-submit" data-action="addCoach"><i class="fas fa-save"></i> حفظ</button></div>
+                            <div class="form-group"><label>البريد الإلكتروني</label><input type="email" id="newCoachEmail" /></div>
+                            <div class="form-group"><label>الجنسية</label><input type="text" id="newCoachNationality" /></div>
+                            <div class="form-group full"><label>العنوان</label><input type="text" id="newCoachAddress" /></div>
+                            <div class="form-group" id="newCoachLicenseWrap"><label>الرخصة التدريبية</label><input type="text" id="newCoachLicenseName" placeholder="مثال: رخصة CAF C" /></div>
+                            <div class="form-group">
+                                <label>الصورة الشخصية</label>
+                                <div class="upload-area" id="newCoachPhotoUpload"><div class="icon"><i class="fas fa-camera"></i></div><div class="text">انقر لاختيار صورة</div><div class="file-name" id="newCoachPhotoName"></div><input type="file" id="newCoachPhotoFile" accept="image/*" /></div>
+                            </div>
+                            <div class="form-group">
+                                <label>صورة العقد</label>
+                                <div class="upload-area" id="newCoachContractUpload"><div class="icon"><i class="fas fa-file-contract"></i></div><div class="text">انقر لرفع العقد</div><div class="file-name" id="newCoachContractName"></div><input type="file" id="newCoachContractFile" accept="image/*,application/pdf" /></div>
+                            </div>
+                            <div class="form-group" id="newCoachLicenseFileWrap">
+                                <label>صورة الرخصة التدريبية</label>
+                                <div class="upload-area" id="newCoachLicenseUpload"><div class="icon"><i class="fas fa-id-card"></i></div><div class="text">انقر لرفع الرخصة</div><div class="file-name" id="newCoachLicenseFileName"></div><input type="file" id="newCoachLicenseFile" accept="image/*,application/pdf" /></div>
+                            </div>
+                            <div class="form-group full"><label>ملاحظات الإدارة</label><textarea id="newCoachNotes" rows="2"></textarea></div>
+                            <div class="form-group full"><button class="btn-submit" data-action="addCoach"><i class="fas fa-save"></i> حفظ العضو الجديد</button></div>
                         </div>
                     </div>
                 `;
             setActiveMenu(5);
             renderCoachesTable();
+            setupUpload('newCoachPhotoFile', 'newCoachPhotoName', 'newCoachPhotoUpload');
+            setupUpload('newCoachContractFile', 'newCoachContractName', 'newCoachContractUpload');
+            setupUpload('newCoachLicenseFile', 'newCoachLicenseFileName', 'newCoachLicenseUpload');
             setTimeout(toggleNewCoachCategoryField, 50);
             window.addDebugLog(`🧑‍🏫 عرض المدربين (${allCoaches.length})`, 'info');
             EventManager.bindButtons(content);
@@ -5084,48 +5297,86 @@
 
         function toggleNewCoachCategoryField() {
             const roleType = document.getElementById('newCoachRoleType')?.value;
+            const isCoach = roleType === 'coach';
             const wrap = document.getElementById('newCoachCategoryWrap');
-            if (wrap) wrap.style.display = roleType === 'coach' ? 'flex' : 'none';
+            const licenseWrap = document.getElementById('newCoachLicenseWrap');
+            const licenseFileWrap = document.getElementById('newCoachLicenseFileWrap');
+            if (wrap) wrap.style.display = isCoach ? 'flex' : 'none';
+            if (licenseWrap) licenseWrap.style.display = isCoach ? 'flex' : 'none';
+            if (licenseFileWrap) licenseFileWrap.style.display = isCoach ? 'flex' : 'none';
         }
         window.toggleNewCoachCategoryField = toggleNewCoachCategoryField;
 
-        function addCoach() {
+        async function addCoach() {
             if (!requireRole('admin')) return;
             const roleType = document.getElementById('newCoachRoleType').value;
             const name = document.getElementById('newCoachName').value.trim();
-            const categoryId = roleType === 'coach' ? document.getElementById('newCoachCategory').value : '';
             const code = document.getElementById('newCoachCode').value.trim();
+            if (!name || !code) { showToast('الرجاء ملء الاسم والكود', 'warning'); return; }
+
+            const categoryId = roleType === 'coach' ? document.getElementById('newCoachCategory').value : '';
+            const licenseName = roleType === 'coach' ? document.getElementById('newCoachLicenseName').value.trim() : '';
             const phone = document.getElementById('newCoachPhone').value.trim();
             const jobTitle = document.getElementById('newCoachJobTitle').value.trim();
-            if (!name || !code) { showToast('الرجاء ملء الاسم والكود', 'warning'); return; }
-            const data = { name, categoryId, code, phone, roleType, jobTitle };
-            db.ref('academy/coaches').push(data)
-                .then((snap) => {
-                    allCoaches.push({ id: snap.key, ...data });
-                    db.ref('academy/coachCodeIndex/' + sanitizeCodeKey(code)).set({ id: snap.key, ...data });
-                    addLog('إضافة حساب', `تم إضافة ${roleType === 'coach' ? 'مدرب' : 'حساب إداري/تقني/مرافق'}: ${name}`,
-                        currentUser?.role);
-                    showToast('✅ تم إضافة الحساب بنجاح', 'success');
-                    showAdminCoaches();
-                })
-                .catch(err => showToast('❌ خطأ: ' + err.message, 'error'));
+            const status = document.getElementById('newCoachStatus').value;
+            const startDate = document.getElementById('newCoachStartDate').value;
+            const contractType = document.getElementById('newCoachContractType').value;
+            const experienceYears = parseInt(document.getElementById('newCoachExperience').value) || 0;
+            const email = document.getElementById('newCoachEmail').value.trim();
+            const nationality = document.getElementById('newCoachNationality').value.trim();
+            const address = document.getElementById('newCoachAddress').value.trim();
+            const notes = document.getElementById('newCoachNotes').value.trim();
+
+            const photoFile = document.getElementById('newCoachPhotoFile').files[0];
+            const contractFile = document.getElementById('newCoachContractFile').files[0];
+            const licenseFile = document.getElementById('newCoachLicenseFile').files[0];
+
+            showLoading('جاري حفظ بيانات العضو...');
+            try {
+                const [photo, contractDoc, licenseDoc] = await Promise.all([
+                    photoFile ? readFileAsBase64(photoFile) : Promise.resolve(''),
+                    contractFile ? readFileAsBase64(contractFile) : Promise.resolve(''),
+                    licenseFile ? readFileAsBase64(licenseFile) : Promise.resolve('')
+                ]);
+                const data = {
+                    name, categoryId, code, phone, roleType, jobTitle,
+                    status, startDate, contractType, experienceYears,
+                    email, nationality, address, notes,
+                    licenseName, photo, contractDoc, licenseDoc,
+                    createdAt: new Date().toISOString()
+                };
+                const snap = await db.ref('academy/coaches').push(data);
+                allCoaches.push({ id: snap.key, ...data });
+                await db.ref('academy/coachCodeIndex/' + sanitizeCodeKey(code)).set({ id: snap.key, ...data });
+                addLog('إضافة عضو طاقم', `تم إضافة ${getHrRoleLabel(roleType)}: ${name}`, currentUser?.role);
+                hideLoading();
+                showToast('✅ تم إضافة العضو بنجاح', 'success');
+                showAdminCoaches();
+            } catch (err) {
+                hideLoading();
+                showToast('❌ خطأ: ' + err.message, 'error');
+            }
         }
 
         function deleteCoach(id) {
             if (!requireRole('admin')) return;
             if (!confirm('حذف هذا الحساب؟')) return;
+            const c = allCoaches.find(x => x.id === id);
             db.ref('academy/coaches/' + id).remove()
-                .then(() => { allCoaches = allCoaches.filter(c => c.id !== id);
+                .then(() => {
+                    if (c?.code) db.ref('academy/coachCodeIndex/' + sanitizeCodeKey(c.code)).remove();
+                    allCoaches = allCoaches.filter(x => x.id !== id);
+                    addLog('حذف عضو', `تم حذف ${c?.name || ''}`, currentUser?.role);
                     showToast('✅ تم الحذف', 'success');
-                    showAdminCoaches(); })
+                    showAdminCoaches();
+                })
                 .catch(err => showToast('❌ خطأ: ' + err.message, 'error'));
         }
 
         function computeCoachStats(coach) {
-            const isAdmin = (coach.roleType || 'coach') !== 'coach';
-            const matches = isAdmin ? [] : allMatches.filter(m => m.coachId === coach.id || m.coachName === coach.name);
-            const sessions = isAdmin ? [] : allTrainingSessions.filter(s => s.coachId === coach.id || s.coachName ===
-                coach.name);
+            const isCoachRole = (coach.roleType || 'coach') === 'coach';
+            const matches = isCoachRole ? allMatches.filter(m => m.coachId === coach.id || m.coachName === coach.name) : [];
+            const sessions = isCoachRole ? allTrainingSessions.filter(s => s.coachId === coach.id || s.coachName === coach.name) : [];
             const finishedMatches = matches.filter(m => m.status === 'منتهية');
             const wins = finishedMatches.filter(m => m.result?.winner === 'الأكاديمية').length;
             const winRate = finishedMatches.length ? Math.round((wins / finishedMatches.length) * 100) : 0;
@@ -5148,6 +5399,12 @@
             Object.entries(formationCount).forEach(([f, cnt]) => { if (cnt > maxCount) { maxCount = cnt;
                     preferredFormation = f; } });
 
+            let ratingsCount = 0;
+            sessions.forEach(s => { ratingsCount += Object.keys(s.ratings || {}).length; });
+            matches.forEach(m => { ratingsCount += Object.keys(m.ratings || {}).length; });
+
+            const reportsCount = matches.filter(m => m.report && (m.report.positives || m.report.negatives || m.report.recommendations)).length;
+
             return {
                 matchesCount: matches.length,
                 finishedCount: finishedMatches.length,
@@ -5156,71 +5413,164 @@
                 sessionsCount: sessions.length,
                 completedSessionsCount: completedSessions.length,
                 attendanceRate,
-                preferredFormation
+                preferredFormation,
+                ratingsCount,
+                reportsCount
             };
+        }
+
+        function getCoachActivityLog(coach, limit) {
+            const list = allLogs.filter(l => l.userName === coach.name).sort((a, b) => new Date(b.timestamp || 0) - new Date(a.timestamp || 0));
+            return limit ? list.slice(0, limit) : list;
+        }
+
+        function renderCoachActivityLogHtml(coach, limit) {
+            const logs = getCoachActivityLog(coach, limit);
+            if (logs.length === 0) return '<p class="text-muted text-center" style="padding:14px;">لا يوجد نشاط مسجل بعد</p>';
+            return logs.map(l => `
+                <div class="log-entry-item">
+                    <div><div class="log-action">${l.action || ''}</div><div class="log-details">${l.details || ''}</div></div>
+                    <div style="text-align:left;"><div class="log-time">${l.timeFormatted || ''}</div></div>
+                </div>`).join('');
         }
 
         function showCoachDetailPage(coachId) {
             previousViewFunction = currentViewFunction;
             previousViewArgs = currentViewArgs;
             const c = allCoaches.find(x => x.id === coachId);
-            if (!c) { showToast('الحساب غير موجود', 'error'); return; }
+            if (!c) { showToast('العضو غير موجود', 'error'); return; }
             currentViewFunction = showCoachDetailPage;
             currentViewArgs = [coachId];
             const rt = c.roleType || 'coach';
-            const isAdmin = rt !== 'coach';
-            const roleLabelsFull = { staffAdmin: '🗂️ إداري عام', technicalDirector: '🧭 مدير تقني', companion: '🧳 مرافق' };
+            const isCoachRole = rt === 'coach';
             const s = computeCoachStats(c);
             const content = document.getElementById('pageContent');
+            const canEdit = currentUser?.role === 'admin';
+            const statusInfo = HR_STATUS_LIST.find(st => st.key === c.status) || HR_STATUS_LIST[0];
+            const imgSrc = c.photo && c.photo.startsWith('data:image') ? c.photo : '';
+
+            const personalFields = [
+                { label: 'الكود التعريفي', key: 'code', value: c.code || '-', gold: true },
+                { label: 'المنصب/الصفة', key: 'jobTitle', value: c.jobTitle || '-' },
+                { label: 'نوع العقد', key: 'contractType', value: c.contractType || '-' },
+                { label: 'تاريخ بداية العمل', key: 'startDate', value: c.startDate || '-' },
+                { label: 'سنوات الخبرة', key: 'experienceYears', value: (c.experienceYears || 0) + ' سنة' },
+                { label: 'الهاتف', key: 'phone', value: c.phone || '-' },
+                { label: 'البريد الإلكتروني', key: 'email', value: c.email || '-' },
+                { label: 'الجنسية', key: 'nationality', value: c.nationality || '-' },
+                { label: 'العنوان', key: 'address', value: c.address || '-' }
+            ];
+            if (isCoachRole) {
+                personalFields.splice(1, 0, { label: 'الفئة المشرف عليها', key: 'categoryId', value: c.categoryId || '-' });
+                personalFields.push({ label: 'الرخصة التدريبية', key: 'licenseName', value: c.licenseName || '-' });
+            }
+
+            let infoHtml = '';
+            personalFields.forEach(f => {
+                infoHtml += `
+                    <div class="item" ${f.gold ? 'style="border:2px solid var(--gold);"' : ''}>
+                        <div class="label">${f.label}</div>
+                        <div class="value" ${canEdit ? `data-action="editCoachField" data-id="${c.id}" data-field="${f.key}" data-current="${(c[f.key] ?? '').toString().replace(/"/g,'&quot;')}" style="cursor:pointer; ${f.gold ? 'color:var(--gold); font-weight:900;' : ''}"` : ''}>${f.value}</div>
+                    </div>`;
+            });
+
+            const docsHtml = `
+                <div style="display:flex; gap:12px; flex-wrap:wrap; margin-top:10px;">
+                    ${c.contractDoc ? `<button class="btn-sm btn-sm-info" onclick="window.viewDocument('${c.contractDoc}')"><i class="fas fa-file-contract"></i> عرض العقد</button>` : '<span class="text-muted">لا يوجد عقد مرفق</span>'}
+                    ${isCoachRole && c.licenseDoc ? `<button class="btn-sm btn-sm-info" onclick="window.viewDocument('${c.licenseDoc}')"><i class="fas fa-id-card"></i> عرض الرخصة</button>` : ''}
+                </div>`;
+
+            const trainingStatsHtml = isCoachRole ? `
+                <div class="coach-stats-template">
+                    <h3 style="text-align:center; color:var(--dark-navy); margin-bottom:16px;">📊 إحصائيات الأداء — فئة ${c.categoryId || ''}</h3>
+                    <div class="stats-row">
+                        <div class="tour-mini-stat"><div class="num">${s.matchesCount}</div><div class="lbl">⚽ إجمالي المباريات</div></div>
+                        <div class="tour-mini-stat"><div class="num">${s.finishedCount}</div><div class="lbl">🏁 مباريات منتهية</div></div>
+                        <div class="tour-mini-stat"><div class="num">${s.wins}</div><div class="lbl">🏆 الانتصارات</div></div>
+                        <div class="tour-mini-stat"><div class="num">${s.winRate}%</div><div class="lbl">📈 نسبة الفوز</div></div>
+                        <div class="tour-mini-stat"><div class="num">${s.sessionsCount}</div><div class="lbl">🏃 إجمالي الحصص</div></div>
+                        <div class="tour-mini-stat"><div class="num">${s.completedSessionsCount}</div><div class="lbl">✅ حصص مكتملة</div></div>
+                        <div class="tour-mini-stat"><div class="num">${s.attendanceRate}%</div><div class="lbl">👥 نسبة حضور اللاعبين</div></div>
+                        <div class="tour-mini-stat"><div class="num">${s.ratingsCount}</div><div class="lbl">⭐ تقييمات اللاعبين</div></div>
+                        <div class="tour-mini-stat"><div class="num">${s.reportsCount}</div><div class="lbl">📝 التقارير المنشأة</div></div>
+                        <div class="tour-mini-stat"><div class="num" style="font-size:1.1rem;">${s.preferredFormation}</div><div class="lbl">🧩 الخطة المفضلة</div></div>
+                    </div>
+                </div>` : `
+                <div class="form-card"><p class="text-muted text-center">هذا الحساب غير مرتبط بحصص أو مباريات مباشرة (${getHrRoleLabel(rt)}).</p></div>
+                `;
 
             content.innerHTML = `
                     <button class="btn-sm btn-sm-secondary" data-action="goBackToPrevious" style="margin-bottom:16px;"><i class="fas fa-arrow-right"></i> رجوع</button>
                     <div class="coach-file-header">
-                        <div class="coach-file-avatar"><i class="fas ${isAdmin ? 'fa-user-tie' : 'fa-chalkboard-teacher'}"></i></div>
+                        <div class="coach-file-avatar" style="${imgSrc ? 'padding:0; overflow:hidden;' : ''}">
+                            ${imgSrc ? `<img src="${imgSrc}" style="width:100%;height:100%;object-fit:cover;border-radius:20px;" />` : `<i class="fas ${isCoachRole ? 'fa-chalkboard-teacher' : 'fa-user-tie'}"></i>`}
+                        </div>
                         <div class="coach-file-info">
                             <h2>${c.name}</h2>
-                            <span class="badge-status ${isAdmin ? 'unpaid' : 'paid'}">${isAdmin ? (roleLabelsFull[rt] || '🗂️ إداري عام') : '🧑‍🏫 مدرب فئة ' + (c.categoryId || '')}</span>
+                            <span class="badge-status ${isCoachRole ? 'paid' : 'unpaid'}">${getHrRoleLabel(rt)}</span>
+                            <span class="badge-status ${c.status === 'active' ? 'paid' : c.status === 'suspended' ? 'unpaid' : 'excused'}" style="margin-right:6px;">${statusInfo.label}</span>
                             ${c.jobTitle ? `<div class="coach-file-jobtitle">${c.jobTitle}</div>` : ''}
                         </div>
                     </div>
 
                     <div class="form-card">
-                        <h3>🔐 معلومات الحساب</h3>
-                        <div class="info-grid-detail">
-                            <div class="item"><div class="label">الاسم الكامل</div><div class="value" data-action="editCoachField" data-id="${c.id}" data-field="name" data-current="${c.name || ''}" style="cursor:pointer;">${c.name || ''}</div></div>
-                            <div class="item"><div class="label">الهاتف</div><div class="value" data-action="editCoachField" data-id="${c.id}" data-field="phone" data-current="${c.phone || ''}" style="cursor:pointer;">${c.phone || '-'}</div></div>
-                            <div class="item"><div class="label">الصفة الوظيفية</div><div class="value" data-action="editCoachField" data-id="${c.id}" data-field="jobTitle" data-current="${c.jobTitle || ''}" style="cursor:pointer;">${c.jobTitle || '-'}</div></div>
-                            ${!isAdmin ? `<div class="item"><div class="label">الفئة</div><div class="value" data-action="editCoachField" data-id="${c.id}" data-field="categoryId" data-current="${c.categoryId || ''}" style="cursor:pointer;">${c.categoryId || ''}</div></div>` : ''}
-                            <div class="item" style="border:2px solid var(--gold);"><div class="label">🔑 كود الدخول</div><div class="value" data-action="editCoachField" data-id="${c.id}" data-field="code" data-current="${c.code || ''}" style="cursor:pointer; color:var(--gold); font-weight:900;">${c.code || '-'}</div></div>
-                        </div>
-                        <p class="text-muted" style="margin-top:8px;">انقر على أي خانة لتعديلها فورًا.</p>
+                        <h3>🔐 المعلومات الشخصية والمهنية ${canEdit ? '<span style="font-size:0.7rem;color:#888;">(انقر لتعديل أي خانة)</span>' : ''}</h3>
+                        <div class="info-grid-detail">${infoHtml}</div>
+                        <div class="section-title-sm">📎 الوثائق</div>
+                        ${docsHtml}
+                        ${c.notes ? `<div class="match-info-notes" style="margin-top:14px;"><i class="fas fa-sticky-note"></i> ${c.notes}</div>` : ''}
                     </div>
 
-                    ${!isAdmin ? `
-                    <div class="coach-stats-template">
-                        <h3 style="text-align:center; color:var(--dark-navy); margin-bottom:16px;">📊 إحصائيات الأداء — فئة ${c.categoryId}</h3>
-                        <div class="stats-row">
-                            <div class="tour-mini-stat"><div class="num">${s.matchesCount}</div><div class="lbl">⚽ إجمالي المباريات</div></div>
-                            <div class="tour-mini-stat"><div class="num">${s.finishedCount}</div><div class="lbl">🏁 مباريات منتهية</div></div>
-                            <div class="tour-mini-stat"><div class="num">${s.wins}</div><div class="lbl">🏆 الانتصارات</div></div>
-                            <div class="tour-mini-stat"><div class="num">${s.winRate}%</div><div class="lbl">📈 نسبة الفوز</div></div>
-                            <div class="tour-mini-stat"><div class="num">${s.sessionsCount}</div><div class="lbl">🏃 إجمالي الحصص</div></div>
-                            <div class="tour-mini-stat"><div class="num">${s.completedSessionsCount}</div><div class="lbl">✅ حصص مكتملة</div></div>
-                            <div class="tour-mini-stat"><div class="num">${s.attendanceRate}%</div><div class="lbl">👥 نسبة حضور اللاعبين</div></div>
-                            <div class="tour-mini-stat"><div class="num" style="font-size:1.1rem;">${s.preferredFormation}</div><div class="lbl">🧩 الخطة المفضلة</div></div>
-                        </div>
-                    </div>` : `
-                    <div class="form-card"><p class="text-muted text-center">هذا حساب إداري عام، لا توجد إحصائيات تدريبية مرتبطة به.</p></div>
-                    `}
+                    ${trainingStatsHtml}
 
+                    <div class="form-card">
+                        <h3>🕒 سجل النشاطات (آخر العمليات داخل النظام)</h3>
+                        <div style="max-height:320px; overflow-y:auto;">${renderCoachActivityLogHtml(c, 30)}</div>
+                    </div>
+
+                    ${canEdit ? `
                     <div style="text-align:center; margin-top:10px;">
-                        <button class="btn-sm btn-sm-danger" data-action="deleteCoach" data-id="${c.id}"><i class="fas fa-trash"></i> حذف الحساب</button>
-                    </div>
+                        <select id="coachStatusChange" data-action="changeCoachStatus" data-id="${c.id}" style="padding:10px 20px; border-radius:30px; border:2px solid #e0e0e0; font-family:'Cairo',sans-serif; margin-left:10px;">
+                            ${HR_STATUS_LIST.map(st => `<option value="${st.key}" ${st.key === c.status ? 'selected' : ''}>تغيير الحالة إلى: ${st.label}</option>`).join('')}
+                        </select>
+                        <button class="btn-sm btn-sm-danger" data-action="permanentDeleteCoach" data-id="${c.id}"><i class="fas fa-trash-alt"></i> حذف نهائي</button>
+                    </div>` : ''}
                 `;
-            window.addDebugLog(`👤 عرض ملف ${isAdmin ? 'الإداري' : 'المدرب'} ${c.name}`, 'info');
+            window.addDebugLog(`👤 عرض ملف ${getHrRoleLabel(rt)} — ${c.name}`, 'info');
             EventManager.bindButtons(content);
             updateDashboardActionBar();
             animatePageTransition();
+        }
+
+        function changeCoachStatus(context) {
+            if (!requireRole('admin')) return;
+            const id = context.dataset.id;
+            const newStatus = context.value;
+            db.ref('academy/coaches/' + id).update({ status: newStatus })
+                .then(() => {
+                    const idx = allCoaches.findIndex(x => x.id === id);
+                    if (idx !== -1) allCoaches[idx].status = newStatus;
+                    addLog('تغيير حالة عضو', `تم تغيير حالة ${allCoaches[idx]?.name || ''} إلى ${getHrStatusLabel(newStatus)}`, currentUser?.role);
+                    showToast('✅ تم تحديث الحالة', 'success');
+                })
+                .catch(err => showToast('❌ خطأ: ' + err.message, 'error'));
+        }
+
+        function permanentDeleteCoach(context) {
+            if (!requireRole('admin')) return;
+            const id = context.dataset.id;
+            const c = allCoaches.find(x => x.id === id);
+            if (!confirm(`⚠️ سيتم حذف "${c?.name || ''}" نهائيًا من النظام ولا يمكن التراجع عن هذا الإجراء. هل أنت متأكد؟`)) return;
+            if (!confirm('تأكيد أخير: هذا حذف نهائي دائم لكل بيانات هذا العضو. متابعة؟')) return;
+            db.ref('academy/coaches/' + id).remove()
+                .then(() => {
+                    if (c?.code) db.ref('academy/coachCodeIndex/' + sanitizeCodeKey(c.code)).remove();
+                    allCoaches = allCoaches.filter(x => x.id !== id);
+                    addLog('حذف نهائي لعضو', `تم حذف ${c?.name || ''} نهائيًا من طاقم الأكاديمية`, currentUser?.role);
+                    showToast('✅ تم الحذف النهائي', 'success');
+                    showAdminCoaches();
+                })
+                .catch(err => showToast('❌ خطأ: ' + err.message, 'error'));
         }
 
         function editCoachField(id, field, currentValue) {
@@ -5259,6 +5609,266 @@
                         })
                         .catch(err => showToast('❌ خطأ: ' + err.message, 'error'));
                 }
+            });
+        }
+
+        function showHRHub() {
+            currentViewFunction = showHRHub;
+            currentViewArgs = [];
+            const content = document.getElementById('pageContent');
+            const sectionsMeta = [
+                { key: 'coaches', title: 'قسم المدربين', icon: 'fa-chalkboard-teacher', color: '#45B3FF', desc: 'المدربون المشرفون على فئات اللاعبين، مرتبطون تلقائياً بفئتهم' },
+                { key: 'technicalStaff', title: 'الطاقم الفني', icon: 'fa-user-tie', color: '#D4A017', desc: 'المدير التنفيذي، المدير التقني (DTS)، والمحضر البدني' },
+                { key: 'admins', title: 'قسم الإداريين', icon: 'fa-briefcase', color: '#28a745', desc: 'متابعة الاشتراكات، الوثائق، وبيانات أولياء الأمور' },
+                { key: 'medical', title: 'الطاقم الطبي', icon: 'fa-notes-medical', color: '#dc3545', desc: 'متابعة الإصابات والحالة الصحية لجميع اللاعبين' }
+            ];
+            const activeCount = allCoaches.filter(c => (c.status || 'active') === 'active').length;
+            const onLeaveCount = allCoaches.filter(c => c.status === 'onLeave').length;
+            const suspendedCount = allCoaches.filter(c => c.status === 'suspended').length;
+
+            const cardsHtml = sectionsMeta.map(sec => {
+                const members = allCoaches.filter(c => (HR_ROLE_TYPES.find(r => r.key === (c.roleType || 'coach')) || {}).section === sec.key);
+                const tagsHtml = members.slice(0, 4).map(m => `<span class="player-tag">${m.name}</span>`).join('') ||
+                    '<span class="player-tag" style="opacity:0.5;">لا يوجد أعضاء بعد</span>';
+                const moreTag = members.length > 4 ? `<span class="player-tag staff">+${members.length - 4}</span>` : '';
+                return `
+                    <div class="tournament-card" data-action="showHRSectionList" data-section="${sec.key}" style="cursor:pointer; border-color:${sec.color}55;">
+                        <div class="tournament-header">
+                            <span class="title"><i class="fas ${sec.icon}" style="color:${sec.color};"></i> ${sec.title}</span>
+                            <span class="badge-status" style="background:${sec.color}22; color:${sec.color};">${members.length} عضو</span>
+                        </div>
+                        <p style="color:rgba(255,255,255,0.65); font-size:0.85rem; margin:8px 0 14px;">${sec.desc}</p>
+                        <div class="tournament-players">${tagsHtml}${moreTag}</div>
+                    </div>`;
+            }).join('');
+
+            content.innerHTML = `
+                    <h2 class="page-title">🏢 إدارة الموارد البشرية للأكاديمية</h2>
+                    <p class="page-sub">المركز الشامل لإدارة جميع أعضاء الطاقم بمختلف مناصبهم وصلاحياتهم</p>
+                    <div class="stats-row">
+                        <div class="stat-box"><div class="num">${allCoaches.length}</div><div class="label">إجمالي الأعضاء</div></div>
+                        <div class="stat-box"><div class="num">${activeCount}</div><div class="label">🟢 نشط</div></div>
+                        <div class="stat-box"><div class="num">${onLeaveCount}</div><div class="label">🟡 في إجازة</div></div>
+                        <div class="stat-box"><div class="num">${suspendedCount}</div><div class="label">🔴 موقوف</div></div>
+                    </div>
+                    <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:20px;">
+                        <button class="btn-submit" data-action="showAdminCoaches"><i class="fas fa-list"></i> عرض القائمة الكاملة وإضافة عضو جديد</button>
+                    </div>
+                    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:20px;">
+                        ${cardsHtml}
+                    </div>
+                `;
+            setActiveMenu(5);
+            window.addDebugLog('🏢 عرض مركز إدارة الموارد البشرية', 'info');
+            EventManager.bindButtons(content);
+        }
+
+        function showHRSectionList(sectionKey) {
+            currentViewFunction = showHRSectionList;
+            currentViewArgs = [sectionKey];
+            const sectionsMeta = {
+                coaches: { title: 'قسم المدربين', icon: 'fa-chalkboard-teacher' },
+                technicalStaff: { title: 'الطاقم الفني', icon: 'fa-user-tie' },
+                admins: { title: 'قسم الإداريين', icon: 'fa-briefcase' },
+                medical: { title: 'الطاقم الطبي', icon: 'fa-notes-medical' }
+            };
+            const meta = sectionsMeta[sectionKey] || { title: 'الأعضاء', icon: 'fa-users' };
+            const filtered = allCoaches.filter(c => (HR_ROLE_TYPES.find(r => r.key === (c.roleType || 'coach')) || {}).section === sectionKey);
+            const content = document.getElementById('pageContent');
+            content.innerHTML = `
+                    <button class="btn-sm btn-sm-secondary" data-action="showHRHub" style="margin-bottom:14px;"><i class="fas fa-arrow-right"></i> رجوع لمركز الموارد البشرية</button>
+                    <h2 class="page-title"><i class="fas ${meta.icon}"></i> ${meta.title}</h2>
+                    <p class="page-sub">عدد الأعضاء في هذا القسم: ${filtered.length}</p>
+                    <div style="margin-bottom:16px;">
+                        <button class="btn-submit" data-action="showAdminCoaches"><i class="fas fa-user-plus"></i> إضافة عضو جديد لهذا القسم</button>
+                    </div>
+                    <div class="table-wrap"><table>
+                        <thead><tr><th>#</th><th>الاسم</th><th>نوع الحساب</th><th>الهاتف</th><th>الصفة</th><th>الحالة</th><th>إجراءات</th></tr></thead>
+                        <tbody id="coachesTableBody"></tbody>
+                    </table></div>
+                `;
+            renderCoachesTable(filtered);
+            window.addDebugLog(`📂 عرض قسم ${meta.title} (${filtered.length})`, 'info');
+            EventManager.bindButtons(content);
+            updateDashboardActionBar();
+            animatePageTransition();
+        }
+
+        // ================================================================
+        // 22.5 نظام التقارير الدورية (المدير التنفيذي) والتقارير الفنية (DTS)
+        // ================================================================
+        const REPORT_TABS = [
+            { key: 'overall', label: 'نظرة عامة', icon: 'fa-chart-pie' },
+            { key: 'players', label: 'اللاعبون', icon: 'fa-users' },
+            { key: 'sessions', label: 'الحصص التدريبية', icon: 'fa-futbol' },
+            { key: 'matches', label: 'المباريات', icon: 'fa-handshake' },
+            { key: 'tournaments', label: 'الدورات', icon: 'fa-trophy' },
+            { key: 'coaches', label: 'المدربون', icon: 'fa-chalkboard-teacher' }
+        ];
+        let currentReportKind = 'executive';
+        let currentReportTab = 'overall';
+
+        function showPeriodicReportsExecutive() { showPeriodicReports('executive'); }
+        function showPeriodicReportsTechnical() { showPeriodicReports('technical'); }
+
+        function showPeriodicReports(kind) {
+            currentViewFunction = showPeriodicReports;
+            currentViewArgs = [kind];
+            currentReportKind = kind;
+            currentReportTab = 'overall';
+            const content = document.getElementById('pageContent');
+            const title = kind === 'executive' ? '📊 التقارير الدورية' : '🧪 التقارير الفنية';
+            const sub = kind === 'executive' ?
+                'نظرة شاملة على أداء الأكاديمية عبر جميع الأقسام' :
+                'متابعة فنية للمدربين واللاعبين والأداء التدريبي';
+            content.innerHTML = `
+                    <h2 class="page-title">${title}</h2>
+                    <p class="page-sub">${sub}</p>
+                    <div style="display:flex; gap:8px; overflow-x:auto; padding-bottom:8px; margin-bottom:16px;" id="reportTabsBar"></div>
+                    <button class="btn-sm btn-sm-info" data-action="exportCurrentReportPDF" style="margin-bottom:14px;"><i class="fas fa-file-pdf"></i> تصدير هذا التقرير PDF</button>
+                    <div id="reportBody"></div>
+                `;
+            renderReportTabsBar();
+            renderReportBody();
+            updateDashboardActionBar();
+            animatePageTransition();
+        }
+
+        function renderReportTabsBar() {
+            const bar = document.getElementById('reportTabsBar');
+            if (!bar) return;
+            bar.innerHTML = REPORT_TABS.map(t => `
+                    <button class="btn-sm ${currentReportTab === t.key ? 'btn-sm-primary' : 'btn-sm-secondary'}" data-action="switchReportTab" data-tab="${t.key}" style="white-space:nowrap;"><i class="fas ${t.icon}"></i> ${t.label}</button>
+                `).join('');
+            EventManager.bindButtons(bar);
+        }
+
+        function switchReportTab(context) {
+            currentReportTab = context.dataset.tab;
+            renderReportTabsBar();
+            renderReportBody();
+        }
+
+        function renderReportBody() {
+            const body = document.getElementById('reportBody');
+            if (!body) return;
+            const renderers = {
+                overall: renderReportOverallTab,
+                players: renderReportPlayersTab,
+                sessions: renderReportSessionsTab,
+                matches: renderReportMatchesTab,
+                tournaments: renderReportTournamentsTab,
+                coaches: renderReportCoachesTab
+            };
+            body.innerHTML = renderers[currentReportTab]();
+            EventManager.bindButtons(body);
+        }
+
+        function renderReportOverallTab() {
+            const approved = allPlayers.filter(p => p.status === 'approved').length;
+            const pending = allPlayers.filter(p => p.status === 'pending').length;
+            const completedSessions = allTrainingSessions.filter(s => s.status === 'مكتملة').length;
+            const scheduledSessions = allTrainingSessions.filter(s => s.status === 'مجدولة').length;
+            const finishedMatches = allMatches.filter(m => m.status === 'منتهية');
+            const wins = finishedMatches.filter(m => m.result?.winner === 'الأكاديمية').length;
+            const winRate = finishedMatches.length ? Math.round((wins / finishedMatches.length) * 100) : 0;
+            const ongoingTournaments = allTournaments.filter(t => t.status === 'جارية').length;
+            const coachesOnly = allCoaches.filter(c => (c.roleType || 'coach') === 'coach').length;
+
+            const boxes = [
+                { num: allPlayers.length, lbl: '👥 إجمالي اللاعبين' }, { num: approved, lbl: '✅ لاعبون معتمدون' },
+                { num: pending, lbl: '⏳ طلبات قيد الانتظار' }, { num: coachesOnly, lbl: '🧑‍🏫 المدربون' },
+                { num: completedSessions, lbl: '🏃 حصص مكتملة' }, { num: scheduledSessions, lbl: '📅 حصص مجدولة' },
+                { num: finishedMatches.length, lbl: '⚽ مباريات منتهية' }, { num: winRate + '%', lbl: '📈 نسبة الفوز العامة' },
+                { num: ongoingTournaments, lbl: '🏆 دورات جارية' }
+            ];
+            return `<div class="stats-row">${boxes.map(b => `<div class="tour-mini-stat"><div class="num">${b.num}</div><div class="lbl">${b.lbl}</div></div>`).join('')}</div>`;
+        }
+
+        function renderReportPlayersTab() {
+            const rows = categories.map(cat => {
+                const players = allPlayers.filter(p => p.categoryId === cat);
+                const approved = players.filter(p => p.status === 'approved').length;
+                const pending = players.filter(p => p.status === 'pending').length;
+                const ratings = players.map(p => allPlayerDetails[p.id]?.rating).filter(r => typeof r === 'number');
+                const avgRating = ratings.length ? (ratings.reduce((a, b) => a + b, 0) / ratings.length).toFixed(1) : '-';
+                return `<tr><td>${cat}</td><td>${players.length}</td><td>${approved}</td><td>${pending}</td><td>${avgRating}</td></tr>`;
+            }).join('');
+            return `<div class="form-card"><h3>👥 توزيع اللاعبين حسب الفئة</h3>
+                    <div class="table-wrap"><table><thead><tr><th>الفئة</th><th>الإجمالي</th><th>معتمد</th><th>قيد الانتظار</th><th>متوسط التقييم</th></tr></thead><tbody>${rows}</tbody></table></div>
+                </div>`;
+        }
+
+        function renderReportSessionsTab() {
+            const total = allTrainingSessions.length;
+            const byStatus = SESSION_STATUS.map(st => ({ st, count: allTrainingSessions.filter(s => s.status === st).length }));
+            let totalPresent = 0, totalMarked = 0;
+            allTrainingSessions.filter(s => s.status === 'مكتملة').forEach(s => {
+                Object.values(s.attendance || {}).forEach(v => { totalMarked++; if (v === 'present') totalPresent++; });
+            });
+            const attendanceRate = totalMarked ? Math.round((totalPresent / totalMarked) * 100) : 0;
+            const rows = byStatus.map(b => `<tr><td>${b.st}</td><td>${b.count}</td></tr>`).join('');
+            return `<div class="form-card"><h3>🏃 الحصص التدريبية</h3>
+                    <div class="stats-row" style="margin-bottom:16px;">
+                        <div class="tour-mini-stat"><div class="num">${total}</div><div class="lbl">إجمالي الحصص</div></div>
+                        <div class="tour-mini-stat"><div class="num">${attendanceRate}%</div><div class="lbl">نسبة الحضور العامة</div></div>
+                    </div>
+                    <div class="table-wrap"><table><thead><tr><th>الحالة</th><th>العدد</th></tr></thead><tbody>${rows}</tbody></table></div>
+                </div>`;
+        }
+
+        function renderReportMatchesTab() {
+            const finished = allMatches.filter(m => m.status === 'منتهية');
+            const wins = finished.filter(m => m.result?.winner === 'الأكاديمية').length;
+            const draws = finished.filter(m => m.result?.winner === 'تعادل').length;
+            const losses = finished.length - wins - draws;
+            const goalsFor = finished.reduce((s, m) => s + (m.result?.scoreHome || 0), 0);
+            const goalsAgainst = finished.reduce((s, m) => s + (m.result?.scoreAway || 0), 0);
+            const rows = categories.map(cat => {
+                const catMatches = finished.filter(m => m.categoryId === cat);
+                const catWins = catMatches.filter(m => m.result?.winner === 'الأكاديمية').length;
+                return `<tr><td>${cat}</td><td>${catMatches.length}</td><td>${catWins}</td></tr>`;
+            }).join('');
+            return `<div class="form-card"><h3>⚽ المباريات</h3>
+                    <div class="stats-row" style="margin-bottom:16px;">
+                        <div class="tour-mini-stat"><div class="num">${finished.length}</div><div class="lbl">مباريات منتهية</div></div>
+                        <div class="tour-mini-stat"><div class="num">${wins}</div><div class="lbl">انتصارات</div></div>
+                        <div class="tour-mini-stat"><div class="num">${draws}</div><div class="lbl">تعادلات</div></div>
+                        <div class="tour-mini-stat"><div class="num">${losses}</div><div class="lbl">خسائر</div></div>
+                        <div class="tour-mini-stat"><div class="num">${goalsFor}-${goalsAgainst}</div><div class="lbl">الأهداف له/عليه</div></div>
+                    </div>
+                    <div class="table-wrap"><table><thead><tr><th>الفئة</th><th>عدد المباريات</th><th>الانتصارات</th></tr></thead><tbody>${rows}</tbody></table></div>
+                </div>`;
+        }
+
+        function renderReportTournamentsTab() {
+            const rows = allTournaments.map(t => {
+                const s = computeTourStats(t);
+                return `<tr><td>${t.name}</td><td>${t.categoryId}</td><td>${t.status}</td><td>${s.matchesCount}</td><td>${s.wins}</td></tr>`;
+            }).join('') || '<tr><td colspan="5" class="text-muted" style="padding:16px;">لا توجد دورات</td></tr>';
+            return `<div class="form-card"><h3>🏆 الدورات</h3>
+                    <div class="table-wrap"><table><thead><tr><th>الاسم</th><th>الفئة</th><th>الحالة</th><th>المباريات</th><th>الانتصارات</th></tr></thead><tbody>${rows}</tbody></table></div>
+                </div>`;
+        }
+
+        function renderReportCoachesTab() {
+            const coachesOnly = allCoaches.filter(c => (c.roleType || 'coach') === 'coach');
+            const rows = coachesOnly.map(c => {
+                const s = computeCoachStats(c);
+                return `<tr><td>${c.name}</td><td>${c.categoryId || '-'}</td><td>${s.matchesCount}</td><td>${s.winRate}%</td><td>${s.sessionsCount}</td><td>${s.attendanceRate}%</td><td>${s.preferredFormation}</td></tr>`;
+            }).join('') || '<tr><td colspan="7" class="text-muted" style="padding:16px;">لا يوجد مدربون</td></tr>';
+            return `<div class="form-card"><h3>🧑‍🏫 أداء المدربين</h3>
+                    <div class="table-wrap"><table><thead><tr><th>الاسم</th><th>الفئة</th><th>المباريات</th><th>نسبة الفوز</th><th>الحصص</th><th>نسبة الحضور</th><th>الخطة المفضلة</th></tr></thead><tbody>${rows}</tbody></table></div>
+                </div>`;
+        }
+
+        function exportCurrentReportPDF() {
+            const body = document.getElementById('reportBody');
+            const tabInfo = REPORT_TABS.find(t => t.key === currentReportTab);
+            const kindLabel = currentReportKind === 'executive' ? 'التقارير_الدورية' : 'التقارير_الفنية';
+            if (!body) return;
+            exportHtmlToPDF(body, `${kindLabel}_${tabInfo?.label || currentReportTab}`, {
+                title: `${currentReportKind === 'executive' ? 'التقارير الدورية' : 'التقارير الفنية'} — ${tabInfo?.label || ''}`
             });
         }
 
@@ -5430,7 +6040,7 @@
 
             const triggerPrint = () => { try { printWin.focus(); printWin.print(); } catch (e) {} };
             printWin.onload = () => setTimeout(triggerPrint, 500);
-            setTimeout(triggerPrint, 1000); // احتياط إن لم يُطلق onload في بعض المتصفحات
+            setTimeout(triggerPrint, 1000);
         }
 
         function setupUpload(inputId, nameDisplayId, containerId) {
@@ -5492,10 +6102,6 @@
         const TOUR_TYPES = ['محلية', 'وطنية', 'دولية', 'ودية', 'رسمية'];
         const TOUR_SYSTEM_TYPES = ['مجموعات', 'خروج مباشر', 'دوري'];
         const TOUR_STATUS_LIST = ['قادمة', 'جارية', 'منتهية', 'مؤجلة', 'ملغاة'];
-        const HEALTH_STATUS_LIST = [
-            { key: 'ready', label: 'جاهز' }, { key: 'notready', label: 'غير جاهز' },
-            { key: 'injured', label: 'مصاب' }, { key: 'suspended', label: 'موقوف' }
-        ];
         const COACH_ROLES = [
             { key: 'headCoach', label: 'المدرب الرئيسي' }, { key: 'assistantCoach', label: 'مساعد المدرب' },
             { key: 'goalkeeperCoach', label: 'مدرب الحراس' }, { key: 'fitnessCoach', label: 'مدرب اللياقة' },
@@ -5915,7 +6521,6 @@
         }
 
         /* ===== اللاعبون (استدعاء/استبعاد + الحالة الصحية + المرافقون) ===== */
-        // استبدال renderTourPlayersCard بالكامل
         function renderTourPlayersCard(t) {
             const canEdit = currentUser?.role === 'admin' || currentUser?.role === 'coach';
             const activeCats = [t.categoryId, ...(t.extraCategories || [])].filter((v, i, a) => v && a.indexOf(v) === i);
@@ -6003,7 +6608,6 @@
             `;
         }
 
-        // حذف toggleTourCallup واستبداله بالدوال التالية
         function callupSinglePlayer(context) {
             if (!requireOpsRole()) return;
             const playerId = context.dataset.playerId;
@@ -6268,7 +6872,6 @@
             `;
         }
 
-        // دوال إدارة المعنيين الجديدة
         function addParticipantPlayer() {
             if (!requireOpsRole()) return;
             const select = document.getElementById('participantPlayerSelect');
@@ -6353,7 +6956,6 @@
                         <div id="tourMatchesList"></div>
                     </div>
                 `;
-            // تُملأ القائمة بعد الحقن مباشرة عبر renderMatchesList (انظر أسفل)
         }
 
         function createMatchInsideTournament() {
@@ -6961,10 +7563,6 @@
         }
 
         /* ---------- توسيع نظام المباريات: ربط اختياري بالدورة ---------- */
-        // تم استبدال openCreateMatchModal و saveMatchDetailed أعلاه ليشمل اختيار الدورة.
-        // تمت إضافة متغير pendingTournamentIdForMatch لربط المباراة تلقائياً عند الإنشاء من داخل الدورة.
-
-        // تعبئة قائمة مباريات الدورة بعد كل عرض للبطاقة (لأن renderMatchesList معرّفة مسبقاً وتُستخدم بنفس الشكل)
         const originalRenderTourCard = renderTourCard;
         renderTourCard = function() {
             originalRenderTourCard();
@@ -6975,7 +7573,6 @@
             }
         };
 
-        // --- دوال التصدير PDF للتبويبات ---
         function exportCurrentTourTabPDF() {
             const t = getTournamentById(currentTournamentId);
             const tabInfo = TOUR_TABS.find(tb => tb.key === currentTournamentTab);
@@ -6986,9 +7583,285 @@
             });
         }
 
-        /* =====================================================================
-           إعادة تسجيل جميع الإجراءات (يشمل القديم بالكامل + إضافات الدورات)
-           ===================================================================== */
+        // ================================================================
+        // دوال إدارة الملفات والوثائق
+        // ================================================================
+
+        function showManageDocumentsModal(playerId) {
+            if (!canManageAdminDocs()) { showToast('❌ ليس لديك صلاحية إدارة الوثائق', 'error'); return; }
+            const p = allPlayers.find(x => x.id === playerId);
+            if (!p) return;
+            const container = document.createElement('div');
+            container.className = 'edit-modal-overlay';
+            container.id = 'manageDocsModal';
+            container.innerHTML = `
+                    <div class="edit-modal-box">
+                        <div class="edit-modal-header">
+                            <div class="edit-modal-icon"><i class="fas fa-folder-open"></i></div>
+                            <div class="edit-modal-title-wrap"><h3>تحديث وثائق ${p.firstName} ${p.lastName}</h3><span>أكاديمية ASSARU — إدارة الوثائق</span></div>
+                            <button class="icon-close-btn on-dark" onclick="document.getElementById('manageDocsModal').remove()" title="إغلاق"><i class="fas fa-times"></i></button>
+                        </div>
+                        <div class="edit-modal-body">
+                            <div class="edit-modal-group">
+                                <label>الترخيص الأبوي (استبدال)</label>
+                                <div class="upload-area" id="mdParentalUpload"><div class="icon"><i class="fas fa-file-signature"></i></div><div class="text">انقر لاختيار ملف جديد</div><div class="file-name" id="mdParentalName"></div><input type="file" id="mdParentalFile" accept="image/*,application/pdf" /></div>
+                            </div>
+                            <div class="edit-modal-group">
+                                <label>القانون الداخلي (استبدال)</label>
+                                <div class="upload-area" id="mdInternalUpload"><div class="icon"><i class="fas fa-file-contract"></i></div><div class="text">انقر لاختيار ملف جديد</div><div class="file-name" id="mdInternalName"></div><input type="file" id="mdInternalFile" accept="image/*,application/pdf" /></div>
+                            </div>
+                        </div>
+                        <div class="edit-modal-footer">
+                            <button class="btn-sm btn-sm-secondary" onclick="document.getElementById('manageDocsModal').remove()">إلغاء</button>
+                            <button class="btn-submit" data-action="saveManagedDocuments" data-id="${playerId}"><i class="fas fa-check"></i> حفظ الوثائق</button>
+                        </div>
+                    </div>
+                `;
+            document.body.appendChild(container);
+            container.addEventListener('click', e => { if (e.target === container) container.remove(); });
+            setupUpload('mdParentalFile', 'mdParentalName', 'mdParentalUpload');
+            setupUpload('mdInternalFile', 'mdInternalName', 'mdInternalUpload');
+        }
+
+        async function saveManagedDocuments(context) {
+            if (!canManageAdminDocs()) { showToast('❌ ليس لديك صلاحية إدارة الوثائق', 'error'); return; }
+            const playerId = context.dataset.id;
+            const parentalFile = document.getElementById('mdParentalFile').files[0];
+            const internalFile = document.getElementById('mdInternalFile').files[0];
+            if (!parentalFile && !internalFile) { showToast('اختر ملفاً واحداً على الأقل', 'warning'); return; }
+            showLoading('جاري حفظ الوثائق...');
+            try {
+                const update = {};
+                if (parentalFile) update.parentalDoc = await readFileAsBase64(parentalFile);
+                if (internalFile) update.internalDoc = await readFileAsBase64(internalFile);
+                await db.ref('academy/players/' + playerId).update(update);
+                const idx = allPlayers.findIndex(x => x.id === playerId);
+                if (idx !== -1) Object.assign(allPlayers[idx], update);
+                addLog('تحديث وثائق', `تم تحديث وثائق اللاعب ${allPlayers[idx]?.firstName || ''}`, currentUser?.role);
+                hideLoading();
+                document.getElementById('manageDocsModal')?.remove();
+                showToast('✅ تم تحديث الوثائق بنجاح', 'success');
+                showPlayerDetailPage(playerId);
+            } catch (err) {
+                hideLoading();
+                showToast('❌ خطأ: ' + err.message, 'error');
+            }
+        }
+
+        // ================================================================
+        // دوال الطاقم الطبي
+        // ================================================================
+
+        function showMedicalStaffPlayers() {
+            currentViewFunction = showMedicalStaffPlayers;
+            currentViewArgs = [];
+            const content = document.getElementById('pageContent');
+            const players = allPlayers.filter(p => p.status === 'approved');
+            const rows = players.map(p => {
+                const details = allPlayerDetails[p.id] || {};
+                const statusInfo = getMedicalStatusInfo(details.injuryStatus || 'healthy');
+                const recordsCount = Object.keys(details.medicalRecords || {}).length;
+                const imgSrc = p.photo && p.photo.startsWith('data:image') ? p.photo : 'https://via.placeholder.com/40';
+                return `
+                    <tr>
+                        <td><img src="${imgSrc}" style="width:36px;height:36px;border-radius:50%;object-fit:cover;border:2px solid var(--primary-blue);" /></td>
+                        <td style="font-weight:700;">${p.firstName} ${p.lastName}</td>
+                        <td>${p.categoryId}</td>
+                        <td><span class="badge-status ${statusInfo.cls}">${statusInfo.label}</span></td>
+                        <td>${recordsCount}</td>
+                        <td><button class="btn-sm btn-sm-info" data-action="showPlayerDetailPage" data-id="${p.id}"><i class="fas fa-notes-medical"></i> فتح السجل الطبي</button></td>
+                    </tr>`;
+            }).join('') || '<tr><td colspan="6" class="text-muted" style="padding:20px;text-align:center;">لا يوجد لاعبون</td></tr>';
+
+            content.innerHTML = `
+                    <h2 class="page-title">⚕️ السجلات الطبية</h2>
+                    <p class="page-sub">متابعة الحالة الصحية والإصابات لجميع لاعبي الأكاديمية</p>
+                    <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px;">
+                        <input type="text" id="medicalSearchInput" placeholder="🔍 بحث عن لاعب..." style="flex:1; min-width:200px; padding:10px 16px; border-radius:12px; border:2px solid #e0e0e0; font-family:'Cairo',sans-serif;" oninput="applyMedicalSearchFilter()" />
+                    </div>
+                    <div class="table-wrap"><table>
+                        <thead><tr><th>الصورة</th><th>الاسم</th><th>الفئة</th><th>الحالة الصحية</th><th>عدد السجلات</th><th>إجراء</th></tr></thead>
+                        <tbody id="medicalPlayersTableBody">${rows}</tbody>
+                    </table></div>
+                `;
+            window.addDebugLog(`⚕️ عرض قائمة السجلات الطبية (${players.length})`, 'info');
+            EventManager.bindButtons(content);
+            updateDashboardActionBar();
+            animatePageTransition();
+        }
+
+        function applyMedicalSearchFilter() {
+            const term = document.getElementById('medicalSearchInput')?.value.trim().toLowerCase() || '';
+            const players = allPlayers.filter(p => p.status === 'approved' &&
+                (!term || `${p.firstName} ${p.lastName}`.toLowerCase().includes(term)));
+            const tbody = document.getElementById('medicalPlayersTableBody');
+            if (!tbody) return;
+            tbody.innerHTML = players.map(p => {
+                const details = allPlayerDetails[p.id] || {};
+                const statusInfo = getMedicalStatusInfo(details.injuryStatus || 'healthy');
+                const recordsCount = Object.keys(details.medicalRecords || {}).length;
+                const imgSrc = p.photo && p.photo.startsWith('data:image') ? p.photo : 'https://via.placeholder.com/40';
+                return `
+                    <tr>
+                        <td><img src="${imgSrc}" style="width:36px;height:36px;border-radius:50%;object-fit:cover;border:2px solid var(--primary-blue);" /></td>
+                        <td style="font-weight:700;">${p.firstName} ${p.lastName}</td>
+                        <td>${p.categoryId}</td>
+                        <td><span class="badge-status ${statusInfo.cls}">${statusInfo.label}</span></td>
+                        <td>${recordsCount}</td>
+                        <td><button class="btn-sm btn-sm-info" data-action="showPlayerDetailPage" data-id="${p.id}"><i class="fas fa-notes-medical"></i> فتح السجل الطبي</button></td>
+                    </tr>`;
+            }).join('') || '<tr><td colspan="6" class="text-muted" style="padding:20px;text-align:center;">لا نتائج</td></tr>';
+            EventManager.bindButtons(tbody);
+        }
+        window.applyMedicalSearchFilter = applyMedicalSearchFilter;
+
+        function showAddMedicalRecordModal(playerId) {
+            if (!canManageMedicalRecord()) { showToast('❌ ليس لديك صلاحية إضافة سجل طبي', 'error'); return; }
+            const p = allPlayers.find(x => x.id === playerId);
+            if (!p) return;
+            const currentStatus = (allPlayerDetails[playerId] || {}).injuryStatus || 'healthy';
+            const container = document.createElement('div');
+            container.className = 'edit-modal-overlay';
+            container.id = 'addMedicalModal';
+            container.innerHTML = `
+                    <div class="edit-modal-box">
+                        <div class="edit-modal-header">
+                            <div class="edit-modal-icon"><i class="fas fa-notes-medical"></i></div>
+                            <div class="edit-modal-title-wrap"><h3>سجل طبي جديد: ${p.firstName} ${p.lastName}</h3><span>أكاديمية ASSARU — الطاقم الطبي</span></div>
+                            <button class="icon-close-btn on-dark" onclick="document.getElementById('addMedicalModal').remove()" title="إغلاق"><i class="fas fa-times"></i></button>
+                        </div>
+                        <div class="edit-modal-body">
+                            <div class="edit-modal-group">
+                                <label>الحالة الصحية الحالية</label>
+                                <select id="medStatusSelect" class="edit-modal-field">
+                                    ${MEDICAL_STATUS_LIST.map(m => `<option value="${m.key}" ${m.key === currentStatus ? 'selected' : ''}>${m.label}</option>`).join('')}
+                                </select>
+                            </div>
+                            <div class="edit-modal-group"><label>التشخيص</label><input type="text" id="medDiagnosis" class="edit-modal-field" placeholder="مثال: التواء في الكاحل" /></div>
+                            <div class="edit-modal-group"><label>ملاحظات طبية</label><textarea id="medNote" class="edit-modal-field" rows="3"></textarea></div>
+                            <div class="edit-modal-group"><label>تاريخ العودة المتوقع</label><input type="date" id="medReturnDate" class="edit-modal-field" /></div>
+                            <div class="edit-modal-group">
+                                <label>تقرير طبي مرفق (اختياري)</label>
+                                <div class="upload-area" id="medReportUpload"><div class="icon"><i class="fas fa-file-medical"></i></div><div class="text">انقر لرفع تقرير</div><div class="file-name" id="medReportName"></div><input type="file" id="medReportFile" accept="image/*,application/pdf" /></div>
+                            </div>
+                        </div>
+                        <div class="edit-modal-footer">
+                            <button class="btn-sm btn-sm-secondary" onclick="document.getElementById('addMedicalModal').remove()">إلغاء</button>
+                            <button class="btn-submit" data-action="saveMedicalRecord" data-id="${playerId}"><i class="fas fa-check"></i> حفظ السجل</button>
+                        </div>
+                    </div>
+                `;
+            document.body.appendChild(container);
+            container.addEventListener('click', e => { if (e.target === container) container.remove(); });
+            setupUpload('medReportFile', 'medReportName', 'medReportUpload');
+        }
+
+        async function saveMedicalRecord(context) {
+            if (!canManageMedicalRecord()) { showToast('❌ ليس لديك صلاحية إضافة سجل طبي', 'error'); return; }
+            const playerId = context.dataset.id;
+            const status = document.getElementById('medStatusSelect').value;
+            const diagnosis = document.getElementById('medDiagnosis').value.trim();
+            const note = document.getElementById('medNote').value.trim();
+            const expectedReturnDate = document.getElementById('medReturnDate').value;
+            const reportFile = document.getElementById('medReportFile').files[0];
+            if (!diagnosis && !note) { showToast('أدخل التشخيص أو ملاحظة على الأقل', 'warning'); return; }
+
+            showLoading('جاري حفظ السجل الطبي...');
+            try {
+                const reportDoc = reportFile ? await readFileAsBase64(reportFile) : '';
+                const record = {
+                    diagnosis, note, status, expectedReturnDate, reportDoc,
+                    date: new Date().toISOString(),
+                    addedBy: currentUser?.data?.name || currentUser?.role
+                };
+                const snap = await db.ref('academy/playerDetails/' + playerId + '/medicalRecords').push(record);
+                await db.ref('academy/playerDetails/' + playerId).update({ injuryStatus: status });
+
+                if (!allPlayerDetails[playerId]) allPlayerDetails[playerId] = {};
+                if (!allPlayerDetails[playerId].medicalRecords) allPlayerDetails[playerId].medicalRecords = {};
+                allPlayerDetails[playerId].medicalRecords[snap.key] = record;
+                allPlayerDetails[playerId].injuryStatus = status;
+
+                addLog('سجل طبي', `تمت إضافة سجل طبي للاعب ${allPlayers.find(x => x.id === playerId)?.firstName || ''}`, currentUser?.role);
+                hideLoading();
+                document.getElementById('addMedicalModal')?.remove();
+                showToast('✅ تم حفظ السجل الطبي بنجاح', 'success');
+                showPlayerDetailPage(playerId);
+            } catch (err) {
+                hideLoading();
+                showToast('❌ خطأ: ' + err.message, 'error');
+            }
+        }
+
+        function renderMedicalRecordsHtml(playerId) {
+            const details = allPlayerDetails[playerId] || {};
+            const records = Object.values(details.medicalRecords || {}).sort((a, b) => new Date(b.date) - new Date(a.date));
+            if (records.length === 0) return '<p class="text-muted text-center" style="padding:14px;">لا توجد سجلات طبية بعد</p>';
+            return records.map(r => {
+                const statusInfo = getMedicalStatusInfo(r.status);
+                return `
+                    <div class="log-entry-item" style="border-right-color:${statusInfo.cls === 'absent' ? '#dc3545' : statusInfo.cls === 'excused' ? '#ffc107' : '#28a745'};">
+                        <div>
+                            <div class="log-action">${statusInfo.label} ${r.diagnosis ? '— ' + r.diagnosis : ''}</div>
+                            ${r.note ? `<div class="log-details">${r.note}</div>` : ''}
+                            ${r.expectedReturnDate ? `<div class="log-details">📅 العودة المتوقعة: ${r.expectedReturnDate}</div>` : ''}
+                            ${r.reportDoc ? `<button class="btn-sm btn-sm-info" style="margin-top:6px;" onclick="window.viewDocument('${r.reportDoc}')"><i class="fas fa-file-medical"></i> عرض التقرير</button>` : ''}
+                        </div>
+                        <div style="text-align:left;"><div class="log-user">${r.addedBy || ''}</div><div class="log-time">${new Date(r.date).toLocaleString('ar-EG')}</div></div>
+                    </div>`;
+            }).join('');
+        }
+
+        // ================================================================
+        // دوال متابعة الاشتراكات للإداري
+        // ================================================================
+
+        function showSubscriptionsOverview() {
+            currentViewFunction = showSubscriptionsOverview;
+            currentViewArgs = [];
+            const content = document.getElementById('pageContent');
+            const rows = allPlayers.filter(p => p.status === 'approved').map(p => {
+                const payment = allPayments.find(pay => pay.playerId === p.id) || {};
+                const monthly = payment.monthly || {};
+                const joinDateObj = new Date(p.approvedAt || p.registrationDate || '2026-01-01');
+                const startMonthIndex = joinDateObj.getFullYear() < 2026 ? 0 : (joinDateObj.getFullYear() > 2026 ? 12 : joinDateObj.getMonth());
+                const visibleMonthsIdx = MONTHS_AR.map((m, i) => i).filter(i => i >= startMonthIndex);
+                const paidCount = visibleMonthsIdx.filter(i => monthly[`2026_${String(i + 1).padStart(2, '0')}`]?.paid).length;
+                const unpaidCount = visibleMonthsIdx.length - paidCount;
+                return { p, paidCount, unpaidCount };
+            }).sort((a, b) => b.unpaidCount - a.unpaidCount);
+
+            content.innerHTML = `
+                    <h2 class="page-title">📋 متابعة الاشتراكات</h2>
+                    <p class="page-sub">نظرة شاملة على حالة الدفع الشهري لجميع اللاعبين المعتمدين — 2026</p>
+                    <div class="table-wrap"><table>
+                        <thead><tr><th>#</th><th>اللاعب</th><th>الفئة</th><th>ولي الأمر</th><th>الهاتف</th><th>أشهر مدفوعة</th><th>أشهر غير مدفوعة</th><th>إجراء</th></tr></thead>
+                        <tbody>
+                            ${rows.map((r, idx) => `
+                                <tr>
+                                    <td>${idx + 1}</td>
+                                    <td style="font-weight:700;">${r.p.firstName} ${r.p.lastName}</td>
+                                    <td>${r.p.categoryId}</td>
+                                    <td>${r.p.guardianName || '-'}</td>
+                                    <td>${r.p.guardianPhone || '-'}</td>
+                                    <td><span class="badge-status paid">${r.paidCount}</span></td>
+                                    <td><span class="badge-status ${r.unpaidCount > 0 ? 'unpaid' : 'paid'}">${r.unpaidCount}</span></td>
+                                    <td><button class="btn-sm btn-sm-info" data-action="showPlayerDetailPage" data-id="${r.p.id}"><i class="fas fa-eye"></i> فتح ملف الدفع</button></td>
+                                </tr>
+                            `).join('') || '<tr><td colspan="8" class="text-muted" style="padding:20px;text-align:center;">لا يوجد لاعبون معتمدون</td></tr>'}
+                        </tbody>
+                    </table></div>
+                `;
+            window.addDebugLog(`📋 عرض متابعة الاشتراكات (${rows.length} لاعب)`, 'info');
+            EventManager.bindButtons(content);
+            updateDashboardActionBar();
+            animatePageTransition();
+        }
+
+        // ================================================================
+        // تسجيل جميع الإجراءات
+        // ================================================================
+
         function registerAllActions() {
             EventManager.register('openDashboard', function() { const wrapper = document.getElementById('dashboardWrapper'); if (wrapper) wrapper.classList.add('active');
                 showLoginScreen(); });
@@ -7009,6 +7882,7 @@
             EventManager.register('loginAs_admin', function() { loginAs('admin'); });
             EventManager.register('loginAs_coach', function() { loginAs('coach'); });
             EventManager.register('loginAs_parent', function() { loginAs('parent'); });
+            EventManager.register('showAdminHome', function() { showAdminHome(); });
             EventManager.register('showAdminPlayers', function() { showAdminPlayers(); });
             EventManager.register('filterPlayers', function(c) { filterPlayers(c.dataset.cat || 'all'); });
             EventManager.register('filterPlayersBy', function(c) { filterPlayersBy(c.dataset.key || 'payment'); });
@@ -7022,6 +7896,11 @@
             EventManager.register('showCoachHome', function() { showCoachHome(); });
             EventManager.register('showCoachPlayers', function() { showCoachPlayers(); });
             EventManager.register('showCoachTrainingSessions', function() { showCoachTrainingSessions(); });
+            EventManager.register('showFitnessSessions', function() { showFitnessSessions(); });
+            EventManager.register('showSubscriptionsOverview', function() { showSubscriptionsOverview(); });
+            EventManager.register('showMedicalStaffPlayers', function() { showMedicalStaffPlayers(); });
+            EventManager.register('showAddMedicalRecordModal', function(c) { showAddMedicalRecordModal(c.dataset.id); });
+            EventManager.register('saveMedicalRecord', function(c) { saveMedicalRecord(c); });
             EventManager.register('coachRatePlayer', function(c) { coachRatePlayer(c.dataset.id); });
             EventManager.register('showAdminTrainingSessions', function() { showAdminTrainingSessions(); });
             EventManager.register('showCreateTrainingSession', function() { showCreateTrainingSession(); });
@@ -7070,6 +7949,10 @@
             EventManager.register('deleteCoach', function(c) { deleteCoach(c.dataset.id); });
             EventManager.register('editCoachField', function(c) { editCoachField(c.dataset.id, c.dataset.field, c.dataset.current); });
             EventManager.register('showCoachDetailPage', function(c) { showCoachDetailPage(c.dataset.id); });
+            EventManager.register('changeCoachStatus', function(c) { changeCoachStatus(c); });
+            EventManager.register('permanentDeleteCoach', function(c) { permanentDeleteCoach(c); });
+            EventManager.register('showHRHub', function() { showHRHub(); });
+            EventManager.register('showHRSectionList', function(c) { showHRSectionList(c.dataset.section); });
             EventManager.register('showAdminLogs', function() { showAdminLogs(); });
             EventManager.register('refreshLogs', function() { refreshLogs(); });
             EventManager.register('clearLogs', function() { clearLogs(); });
@@ -7086,14 +7969,14 @@
             EventManager.register('showSendMessageModal', function(c) { showSendMessageModal(c.dataset.id); });
             EventManager.register('deletePlayerMessage', function(c) { deletePlayerMessage(c); });
             EventManager.register('closeParentMessagesModal', function(c) { closeParentMessagesModal(c); });
+            EventManager.register('showManageDocumentsModal', function(c) { showManageDocumentsModal(c.dataset.id); });
+            EventManager.register('saveManagedDocuments', function(c) { saveManagedDocuments(c); });
             EventManager.register('goBackToPrevious', function() { goBackToPrevious(); });
             EventManager.register('closeModal', function(c) { closeModal(c.dataset.id); });
             EventManager.register('closeEditModal', function() { closeEditModal(); });
             EventManager.register('submitEditModal', function() { submitEditModal(); });
             EventManager.register('filterTrainingSessionsByCategoryUI', function(c) { filterTrainingSessionsByCategoryUI(c); });
             EventManager.register('filterMatchesByCategoryUI', function(c) { filterMatchesByCategoryUI(c); });
-
-            /* ---- إضافات نظام الدورات ---- */
             EventManager.register('showAdminTournaments', function() { showAdminTournaments(); });
             EventManager.register('showCreateTournament', function() { showCreateTournament(); });
             EventManager.register('saveTournamentDetailed', function() { saveTournamentDetailed(); });
@@ -7142,11 +8025,13 @@
             EventManager.register('removeFreeGalleryPhoto', function(c) { removeFreeGalleryPhoto(c); });
             EventManager.register('saveTourFinalReport', function() { saveTourFinalReport(); });
             EventManager.register('exportCurrentTourTabPDF', function() { exportCurrentTourTabPDF(); });
-
-            // إضافة إظهار ملف الدورة لولي الأمر
             EventManager.register('showParentTournamentFile', function(c) { showParentTournamentFile(c.dataset.id); });
+            EventManager.register('showPeriodicReportsExecutive', function() { showPeriodicReportsExecutive(); });
+            EventManager.register('showPeriodicReportsTechnical', function() { showPeriodicReportsTechnical(); });
+            EventManager.register('switchReportTab', function(c) { switchReportTab(c); });
+            EventManager.register('exportCurrentReportPDF', function() { exportCurrentReportPDF(); });
 
-            window.addDebugLog && window.addDebugLog('📝 تم تسجيل جميع الإجراءات (متضمنة نظام الدورات)', 'success');
+            window.addDebugLog && window.addDebugLog('📝 تم تسجيل جميع الإجراءات', 'success');
         }
 
         // ================================================================
@@ -7158,15 +8043,13 @@
             EventManager.bindButtons();
 
             if (db) {
-                loadAllData(false, true).catch(() => {}); // تحميل صامت في الخلفية بدون شريط تقدم
+                loadAllData(false, true).catch(() => {});
             }
 
             setupUpload('regPhoto', 'photoFileName', 'uploadPhoto');
             setupUpload('regParental', 'parentalFileName', 'uploadParental');
             setupUpload('regInternal', 'internalFileName', 'uploadInternal');
-            setupUpload('matchOpponentLogo', 'matchOpponentLogoName', 'matchOpponentLogoUpload');
 
-            // معاينة فورية للصورة الشخصية عند رفعها في استمارة التسجيل
             const regPhotoInputEl = document.getElementById('regPhoto');
             if (regPhotoInputEl) {
                 regPhotoInputEl.addEventListener('change', function() {
@@ -7191,7 +8074,7 @@
                 regForm.addEventListener('submit', async function(e) {
                     e.preventDefault();
                     const submitBtn = document.getElementById('regSubmitBtn');
-                    if (submitBtn.disabled) return; // منع تكرار الإرسال بضغطات متتالية
+                    if (submitBtn.disabled) return;
 
                     const firstName = document.getElementById('regFirstName').value.trim();
                     const lastName = document.getElementById('regLastName').value.trim();
@@ -7214,7 +8097,6 @@
                     }
                     if (!db) { showToast('❌ لا يوجد اتصال بقاعدة البيانات', 'error'); return; }
 
-                    // تحميل قصير المدى على الزر فقط (بدون حجب الشاشة بالكامل)
                     const originalBtnHtml = submitBtn.innerHTML;
                     submitBtn.disabled = true;
                     submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الإرسال...';
@@ -7247,7 +8129,6 @@
                         };
                         const newPlayerRef = db.ref('academy/players').push();
                         await newPlayerRef.set(newPlayer);
-                        // فهرسة كود ولي الأمر لتفعيل دخول فوري لاحقاً
                         await db.ref('academy/playerCodeIndex/' + sanitizeCodeKey(parentCode)).set(newPlayerRef.key);
 
                         regForm.reset();
