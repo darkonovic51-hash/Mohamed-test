@@ -1862,6 +1862,7 @@
         let allLogs = [];
         let allPlayerMessages = {};
         let allOfficialMessages = {};
+        let allFawjAssignments = {};
         let currentUser = null;
         let currentViewFunction = null;
         let currentViewArgs = [];
@@ -2085,7 +2086,8 @@
                     { key: 'logs', path: 'academy/logs', label: 'السجل' },
                     { key: 'playerMessages', path: 'academy/playerMessages', label: 'رسائل أولياء الأمور' },
                     { key: 'permissionDefinitions', path: 'academy/permissionDefinitions', label: 'الصلاحيات' },
-                    { key: 'officialMessages', path: 'academy/officialMessages', label: 'الرسائل الرسمية' }
+                    { key: 'officialMessages', path: 'academy/officialMessages', label: 'الرسائل الرسمية' },
+                    { key: 'fawjAssignments', path: 'academy/fawjAssignments', label: 'تعيينات الأفواج' }
                 ];
 
                 const results = {};
@@ -2110,6 +2112,7 @@
                     allPlayerMessages = results.playerMessages || {};
                     allPermissionDefinitions = toArray(results.permissionDefinitions);
                     allOfficialMessages = results.officialMessages || {};
+                    allFawjAssignments = results.fawjAssignments || {};
 
                     // إذا لم توجد صلاحيات مسبقاً في القاعدة (أول تشغيل)، نزرع القائمة الافتراضية تلقائياً
                     if (allPermissionDefinitions.length === 0) {
@@ -2433,6 +2436,8 @@
             if (currentUser.role === 'admin') {
                 sidebar.innerHTML = `
                     <div class="menu-item active" data-action="showAdminHome"><i class="fas fa-tachometer-alt"></i> <span>الرئيسية</span></div>
+                    <div class="menu-item" data-action="showJoinRequests"><i class="fas fa-user-clock"></i> <span>طلبات الانضمام</span></div>
+                    <div class="menu-item" data-action="showCategoryFiles"><i class="fas fa-folder-tree"></i> <span>ملفات الفئات</span></div>
                     <div class="menu-item" data-action="showAdminPlayers"><i class="fas fa-users"></i> <span>اللاعبون</span></div>
                     <div class="menu-item" data-action="showAdminTrainingSessions"><i class="fas fa-futbol"></i> <span>الحصص التدريبية</span></div>
                     <div class="menu-item" data-action="showAdminMatches"><i class="fas fa-handshake"></i> <span>المباريات</span></div>
@@ -2582,10 +2587,343 @@
                 <tbody id="playersTableBody"></tbody>
             </table></div>`;
             content.innerHTML = html;
-            setActiveMenu(1);
+            setActiveMenu(3);
             renderPlayersTable('all');
             EventManager.bindButtons(content);
             window.addDebugLog('📋 عرض قائمة اللاعبين', 'info');
+        }
+
+        // ===== طلبات الانضمام =====
+        function showJoinRequests() {
+            currentViewFunction = showJoinRequests;
+            currentViewArgs = [];
+            const content = document.getElementById('pageContent');
+            const pending = allPlayers.filter(p => p.status === 'pending');
+            content.innerHTML = `
+                    <h2 class="page-title">📥 طلبات الانضمام</h2>
+                    <p class="page-sub">راجع طلبات التسجيل الجديدة، واختر الفوج قبل القبول</p>
+                    <div id="joinRequestsList"></div>
+                `;
+            setActiveMenu(1);
+            renderJoinRequestsList(pending);
+            window.addDebugLog(`📥 عرض طلبات الانضمام (${pending.length})`, 'info');
+        }
+
+        function renderJoinRequestsList(pending) {
+            const container = document.getElementById('joinRequestsList');
+            if (!container) return;
+            if (pending.length === 0) {
+                container.innerHTML = `<p class="text-muted text-center" style="padding:30px;">لا توجد طلبات انضمام حالياً</p>`;
+                return;
+            }
+            let html = '';
+            pending.forEach(p => {
+                const imgSrc = p.photo && p.photo.startsWith('data:image') ? p.photo : 'https://via.placeholder.com/60';
+                html += `
+                    <div class="form-card">
+                        <div style="display:flex; gap:16px; align-items:center; flex-wrap:wrap;">
+                            <img src="${imgSrc}" style="width:60px; height:60px; border-radius:50%; object-fit:cover; border:3px solid var(--primary-blue);" />
+                            <div style="flex:1; min-width:220px;">
+                                <div style="font-weight:800; color:var(--dark-navy); font-size:1.1rem;">${p.firstName} ${p.lastName}</div>
+                                <div class="text-muted">الفئة: <strong>${p.categoryId}</strong> — تاريخ الميلاد: ${p.birthDate || '-'}</div>
+                                <div class="text-muted">ولي الأمر: ${p.guardianName || '-'} — ${p.guardianPhone || '-'}</div>
+                            </div>
+                            <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                                ${p.parentalDoc ? `<button class="btn-sm btn-sm-info" onclick="window.viewDocument('${p.parentalDoc}')"><i class="fas fa-file-signature"></i> الترخيص</button>` : ''}
+                                ${p.internalDoc ? `<button class="btn-sm btn-sm-info" onclick="window.viewDocument('${p.internalDoc}')"><i class="fas fa-file-contract"></i> القانون الداخلي</button>` : ''}
+                            </div>
+                        </div>
+                        <div class="form-grid" style="margin-top:14px;">
+                            <div class="form-group">
+                                <label>اختر الفوج <span class="required">*</span></label>
+                                <select id="fawjSelect_${p.id}">
+                                    <option value="A">الفوج A</option>
+                                    <option value="B">الفوج B</option>
+                                    <option value="C">الفوج C</option>
+                                </select>
+                            </div>
+                            <div class="form-group full" style="display:flex; gap:10px;">
+                                <button class="btn-sm btn-sm-success" data-action="acceptJoinRequest" data-id="${p.id}"><i class="fas fa-check"></i> قبول الطلب</button>
+                                <button class="btn-sm btn-sm-danger" data-action="rejectJoinRequest" data-id="${p.id}"><i class="fas fa-times"></i> رفض الطلب</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+            EventManager.bindButtons(container);
+        }
+
+        function acceptJoinRequest(context) {
+            if (!requireRole('admin')) return;
+            const playerId = context.dataset.id;
+            const fawjSelect = document.getElementById('fawjSelect_' + playerId);
+            const fawj = fawjSelect ? fawjSelect.value : 'A';
+            if (!confirm(`قبول اللاعب ووضعه في الفوج ${fawj}؟`)) return;
+            db.ref('academy/players/' + playerId).update({ status: 'approved', fawj, approvedAt: new Date().toISOString() })
+                .then(() => {
+                    const idx = allPlayers.findIndex(p => p.id === playerId);
+                    if (idx !== -1) {
+                        allPlayers[idx].status = 'approved';
+                        allPlayers[idx].fawj = fawj;
+                        allPlayers[idx].approvedAt = new Date().toISOString();
+                    }
+                    addLog('قبول طلب انضمام', `تم قبول ${allPlayers[idx]?.firstName || ''} ${allPlayers[idx]?.lastName || ''} — فئة ${allPlayers[idx]?.categoryId} — الفوج ${fawj}`, 'admin');
+                    showToast(`✅ تم قبول اللاعب في الفوج ${fawj}`, 'success');
+                    showJoinRequests();
+                })
+                .catch(err => showToast('❌ خطأ: ' + err.message, 'error'));
+        }
+
+        function rejectJoinRequest(context) {
+            if (!requireRole('admin')) return;
+            const playerId = context.dataset.id;
+            if (!confirm('رفض هذا الطلب؟')) return;
+            db.ref('academy/players/' + playerId).update({ status: 'rejected' })
+                .then(() => {
+                    const idx = allPlayers.findIndex(p => p.id === playerId);
+                    if (idx !== -1) allPlayers[idx].status = 'rejected';
+                    addLog('رفض طلب انضمام', 'تم رفض طلب انضمام', 'admin');
+                    showToast('✅ تم رفض الطلب', 'success');
+                    showJoinRequests();
+                })
+                .catch(err => showToast('❌ خطأ: ' + err.message, 'error'));
+        }
+
+        // ================================================================
+        // دوال ملفات الفئات
+        // ================================================================
+        const FAWJ_LIST = ['A', 'B', 'C'];
+
+        function showCategoryFiles() {
+            currentViewFunction = showCategoryFiles;
+            currentViewArgs = [];
+            const content = document.getElementById('pageContent');
+            const cardsHtml = categories.map(cat => {
+                const count = allPlayers.filter(p => p.categoryId === cat && p.status === 'approved').length;
+                return `
+                    <div class="hr-modern-card" style="--section-color:#45B3FF;" data-action="showCategoryFawjFile" data-cat="${cat}">
+                        <div class="hr-modern-card-top">
+                            <div class="hr-modern-card-icon"><i class="fas fa-layer-group"></i></div>
+                            <div class="hr-modern-count">${count}</div>
+                        </div>
+                        <div class="hr-modern-card-title">فئة ${cat}</div>
+                        <div class="hr-modern-card-desc">إدارة الأفواج A / B / C الخاصة بهذه الفئة، وتعيين المدربين</div>
+                    </div>`;
+            }).join('');
+            content.innerHTML = `
+                    <h2 class="page-title">🗂️ ملفات الفئات</h2>
+                    <p class="page-sub">اختر فئة لعرض أفواجها الثلاثة (A / B / C) وإدارة لاعبيها ومدربيها</p>
+                    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:20px;">${cardsHtml}</div>
+                `;
+            setActiveMenu(2);
+            window.addDebugLog('🗂️ عرض ملفات الفئات', 'info');
+            EventManager.bindButtons(content);
+        }
+
+        function getFawjAssignment(categoryId, fawj) {
+            return (allFawjAssignments[categoryId] || {})[fawj] || { coachId: '', assistantId: '' };
+        }
+
+        function renderCoachOptionsHtml(selectedId) {
+            return `<option value="">-- غير معيّن --</option>` + allCoaches.map(c =>
+                `<option value="${c.id}" ${c.id === selectedId ? 'selected' : ''}>${c.name}${c.categoryId ? ' (' + c.categoryId + ')' : ''}</option>`
+            ).join('');
+        }
+
+        function renderFawjTableCard(categoryId, fawj) {
+            const players = allPlayers.filter(p => p.categoryId === categoryId && p.status === 'approved' && p.fawj === fawj);
+            const assignment = getFawjAssignment(categoryId, fawj);
+            const otherFawjs = FAWJ_LIST.filter(f => f !== fawj);
+            const rows = players.map(p => `
+                    <tr>
+                        <td style="font-weight:700; text-align:right;">${p.firstName} ${p.lastName}</td>
+                        <td>${p.birthDate || '-'}</td>
+                        <td>${p.guardianName || '-'}</td>
+                        <td>${p.guardianPhone || '-'}</td>
+                        <td>${(allPlayerDetails[p.id] || {}).jerseyNumber || '-'}</td>
+                        <td>
+                            <select style="padding:5px 8px; border-radius:8px; border:2px solid #e0e0e0; font-size:0.8rem;" data-action="transferPlayerFawj" data-id="${p.id}" data-cat="${categoryId}">
+                                <option value="">نقل إلى...</option>
+                                ${otherFawjs.map(f => `<option value="${f}">الفوج ${f}</option>`).join('')}
+                            </select>
+                        </td>
+                    </tr>
+                `).join('') || `<tr><td colspan="6" class="text-muted" style="padding:16px;">لا يوجد لاعبون في هذا الفوج بعد</td></tr>`;
+
+            return `
+                <div class="form-card" id="fawjCard_${categoryId}_${fawj}" style="border:2px solid var(--primary-blue); position:relative; overflow:hidden;">
+                    <div style="display:flex; align-items:center; gap:14px; margin-bottom:14px; border-bottom:2px solid var(--light-bg); padding-bottom:12px;">
+                        <img src="https://raw.githubusercontent.com/darkonovic51-hash/Mohamed-test/4a065c0a8a951b1d39707aa5eb90a5ce7512bec4/1000015625-removebg-preview.png" style="height:44px;" />
+                        <div>
+                            <h3 style="margin:0; color:var(--dark-navy);">فئة ${categoryId} — الفوج ${fawj}</h3>
+                            <span class="text-muted">${players.length} لاعب</span>
+                        </div>
+                    </div>
+                    <div class="table-wrap" id="fawjTableWrap_${categoryId}_${fawj}">
+                        <table>
+                            <thead><tr><th>الاسم</th><th>تاريخ الميلاد</th><th>ولي الأمر</th><th>الهاتف</th><th>رقم اللاعب</th><th>نقل الفوج</th></tr></thead>
+                            <tbody>${rows}</tbody>
+                        </table>
+                    </div>
+                    <button class="btn-sm btn-sm-info" data-action="exportFawjPDF" data-cat="${categoryId}" data-fawj="${fawj}" style="margin-top:10px;"><i class="fas fa-file-pdf"></i> تحميل PDF للفوج ${fawj}</button>
+                    <div class="mf-grid-2" style="margin-top:16px;">
+                        <div class="mf-card" style="margin:0;">
+                            <div class="mf-card-header"><div class="mf-icon"><i class="fas fa-user-tie"></i></div><h4>مدرب الفوج</h4></div>
+                            <select data-action="setFawjCoach" data-cat="${categoryId}" data-fawj="${fawj}" data-role="coachId">
+                                ${renderCoachOptionsHtml(assignment.coachId)}
+                            </select>
+                        </div>
+                        <div class="mf-card" style="margin:0;">
+                            <div class="mf-card-header"><div class="mf-icon"><i class="fas fa-user-friends"></i></div><h4>مساعد المدرب</h4></div>
+                            <select data-action="setFawjCoach" data-cat="${categoryId}" data-fawj="${fawj}" data-role="assistantId">
+                                ${renderCoachOptionsHtml(assignment.assistantId)}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function showCategoryFawjFile(context) {
+            const categoryId = typeof context === 'string' ? context : context.dataset.cat;
+            currentViewFunction = showCategoryFawjFile;
+            currentViewArgs = [categoryId];
+            const content = document.getElementById('pageContent');
+            const unassigned = allPlayers.filter(p => p.categoryId === categoryId && p.status === 'approved' && !p.fawj);
+
+            let unassignedHtml = '';
+            if (unassigned.length > 0) {
+                unassignedHtml = `
+                    <div class="form-card" style="border:2px dashed var(--gold);">
+                        <h3><i class="fas fa-exclamation-circle" style="color:var(--gold);"></i> لاعبون بدون فوج محدد (${unassigned.length})</h3>
+                        <div class="table-wrap"><table>
+                            <thead><tr><th>الاسم</th><th>ولي الأمر</th><th>تعيين الفوج</th></tr></thead>
+                            <tbody>
+                                ${unassigned.map(p => `
+                                    <tr>
+                                        <td style="font-weight:700;">${p.firstName} ${p.lastName}</td>
+                                        <td>${p.guardianName || '-'}</td>
+                                        <td>
+                                            <select id="assignFawjSelect_${p.id}" style="padding:6px 10px; border-radius:8px; border:2px solid #e0e0e0;">
+                                                <option value="A">A</option><option value="B">B</option><option value="C">C</option>
+                                            </select>
+                                            <button class="btn-sm btn-sm-primary" data-action="assignPlayerToFawj" data-id="${p.id}"><i class="fas fa-check"></i> تعيين</button>
+                                        </td>
+                                    </tr>`).join('')}
+                            </tbody>
+                        </table></div>
+                    </div>`;
+            }
+
+            content.innerHTML = `
+                    <button class="btn-sm btn-sm-secondary" data-action="showCategoryFiles" style="margin-bottom:14px;"><i class="fas fa-arrow-right"></i> رجوع لملفات الفئات</button>
+                    <h2 class="page-title">🗂️ فئة ${categoryId}</h2>
+                    <p class="page-sub">إدارة الأفواج الثلاثة الخاصة بهذه الفئة</p>
+                    ${unassignedHtml}
+                    ${FAWJ_LIST.map(f => renderFawjTableCard(categoryId, f)).join('')}
+                `;
+            window.addDebugLog(`🗂️ عرض ملف فئة ${categoryId}`, 'info');
+            EventManager.bindButtons(content);
+            updateDashboardActionBar();
+            animatePageTransition();
+        }
+
+        function assignPlayerToFawj(context) {
+            if (!requireRole('admin')) return;
+            const playerId = context.dataset.id;
+            const select = document.getElementById('assignFawjSelect_' + playerId);
+            const fawj = select ? select.value : 'A';
+            db.ref('academy/players/' + playerId).update({ fawj })
+                .then(() => {
+                    const idx = allPlayers.findIndex(p => p.id === playerId);
+                    if (idx !== -1) allPlayers[idx].fawj = fawj;
+                    addLog('تعيين فوج', `تم تعيين ${allPlayers[idx]?.firstName || ''} للفوج ${fawj}`, currentUser?.role);
+                    showToast(`✅ تم التعيين للفوج ${fawj}`, 'success');
+                    showCategoryFawjFile(allPlayers[idx]?.categoryId);
+                })
+                .catch(err => showToast('❌ خطأ: ' + err.message, 'error'));
+        }
+
+        function setFawjCoach(context) {
+            if (!requireRole('admin')) return;
+            const categoryId = context.dataset.cat;
+            const fawj = context.dataset.fawj;
+            const role = context.dataset.role;
+            const coachId = context.value;
+            const current = getFawjAssignment(categoryId, fawj);
+            const updated = { ...current, [role]: coachId };
+            db.ref('academy/fawjAssignments/' + categoryId + '/' + fawj).set(updated)
+                .then(() => {
+                    if (!allFawjAssignments[categoryId]) allFawjAssignments[categoryId] = {};
+                    allFawjAssignments[categoryId][fawj] = updated;
+                    addLog('تعيين مدرب فوج', `تم تحديث ${role === 'coachId' ? 'مدرب' : 'مساعد مدرب'} فوج ${fawj} — فئة ${categoryId}`, currentUser?.role);
+                    showToast('✅ تم الحفظ', 'success');
+                })
+                .catch(err => showToast('❌ خطأ: ' + err.message, 'error'));
+        }
+
+        function transferPlayerFawj(context) {
+            if (!requireRole('admin')) return;
+            const playerId = context.dataset.id;
+            const categoryId = context.dataset.cat;
+            const newFawj = context.value;
+            if (!newFawj) return;
+            const p = allPlayers.find(x => x.id === playerId);
+            if (!p) return;
+            if (!confirm(`نقل ${p.firstName} ${p.lastName} إلى الفوج ${newFawj}؟`)) { context.value = ''; return; }
+            const oldFawj = p.fawj;
+            db.ref('academy/players/' + playerId).update({ fawj: newFawj })
+                .then(() => {
+                    p.fawj = newFawj;
+                    addLog('نقل فوج', `تم نقل ${p.firstName} ${p.lastName} من الفوج ${oldFawj || '-'} إلى الفوج ${newFawj}`, currentUser?.role);
+                    showToast(`✅ تم نقل اللاعب إلى الفوج ${newFawj}`, 'success');
+                    showCategoryFawjFile(categoryId);
+                })
+                .catch(err => { showToast('❌ خطأ: ' + err.message, 'error'); context.value = ''; });
+        }
+
+        function exportFawjPDF(context) {
+            const categoryId = context.dataset.cat;
+            const fawj = context.dataset.fawj;
+            const players = allPlayers.filter(p => p.categoryId === categoryId && p.status === 'approved' && p.fawj === fawj);
+            const assignment = getFawjAssignment(categoryId, fawj);
+            const coach = allCoaches.find(c => c.id === assignment.coachId);
+            const assistant = allCoaches.find(c => c.id === assignment.assistantId);
+
+            const rowsHtml = players.map((p, idx) => `
+                    <tr>
+                        <td>${idx + 1}</td>
+                        <td style="text-align:right;">${p.firstName} ${p.lastName}</td>
+                        <td>${p.birthDate || '-'}</td>
+                        <td>${p.guardianName || '-'}</td>
+                        <td>${p.guardianPhone || '-'}</td>
+                        <td>${(allPlayerDetails[p.id] || {}).jerseyNumber || '-'}</td>
+                    </tr>
+                `).join('') || `<tr><td colspan="6" style="text-align:center;">لا يوجد لاعبون</td></tr>`;
+
+            const summaryHtml = `
+                <div style="display:flex; gap:20px; flex-wrap:wrap; margin-bottom:16px; background:#F4F8FC; padding:14px; border-radius:12px;">
+                    <div><strong>الفئة:</strong> ${categoryId}</div>
+                    <div><strong>الفوج:</strong> ${fawj}</div>
+                    <div><strong>عدد اللاعبين:</strong> ${players.length}</div>
+                    <div><strong>مدرب الفوج:</strong> ${coach ? coach.name : 'غير معيّن'}</div>
+                    <div><strong>مساعد المدرب:</strong> ${assistant ? assistant.name : 'غير معيّن'}</div>
+                </div>
+            `;
+
+            const wrapper = document.createElement('div');
+            wrapper.innerHTML = `
+                ${summaryHtml}
+                <table>
+                    <thead><tr><th>#</th><th>الاسم</th><th>تاريخ الميلاد</th><th>ولي الأمر</th><th>الهاتف</th><th>رقم اللاعب</th></tr></thead>
+                    <tbody>${rowsHtml}</tbody>
+                </table>
+            `;
+
+            exportHtmlToPDF(wrapper, `فئة_${categoryId}_الفوج_${fawj}`, {
+                title: `فئة ${categoryId} — الفوج ${fawj}`
+            });
         }
 
         function renderPlayersTable(filterCategory) {
@@ -7437,19 +7775,23 @@
                 if (!info.called) return;
                 const p = allPlayers.find(x => x.id === pid);
                 if (!p) return;
-                rows.push({ type: 'لاعب', color: '#45B3FF', name: `${p.firstName} ${p.lastName}`, role: p.categoryId, removeAction: 'removeParticipantPlayer', removeId: pid });
+                rows.push({
+                    type: 'لاعب', color: '#45B3FF', name: `${p.firstName} ${p.lastName}`,
+                    role: p.categoryId, birthDate: p.birthDate || '-', phone: p.guardianPhone || '-',
+                    fawj: p.fawj || '-', removeAction: 'removeParticipantPlayer', removeId: pid
+                });
             });
             Object.entries(t.participantStaff || {}).forEach(([cid, roleLabel]) => {
                 const c = allCoaches.find(x => x.id === cid);
                 if (!c) return;
                 const rt = c.roleType || 'coach';
                 const rtLabels = { coach: '🧑‍🏫 مدرب فئة ' + (c.categoryId || ''), staffAdmin: '🗂️ إداري عام', technicalDirector: '🧭 مدير تقني', companion: '🧳 مرافق' };
-                rows.push({ type: 'طاقم', color: '#D4A017', name: c.name, role: (typeof roleLabel === 'string' && roleLabel) || rtLabels[rt] || 'طاقم', removeAction: 'removeParticipantStaff', removeId: cid });
+                rows.push({ type: 'طاقم', color: '#D4A017', name: c.name, role: (typeof roleLabel === 'string' && roleLabel) || rtLabels[rt] || 'طاقم', birthDate: '-', phone: '-', fawj: '-', removeAction: 'removeParticipantStaff', removeId: cid });
             });
             (t.companions || []).forEach((comp, i) => {
                 const name = typeof comp === 'string' ? comp : comp.name;
                 const role = (typeof comp === 'object' && comp.role) || 'مرافق';
-                rows.push({ type: 'مرافق', color: '#28a745', name, role, removeAction: 'removeCompanion', removeId: i });
+                rows.push({ type: 'مرافق', color: '#28a745', name, role, birthDate: '-', phone: '-', fawj: '-', removeAction: 'removeCompanion', removeId: i });
             });
 
             const bodyRows = rows.map(r => `
@@ -7457,8 +7799,11 @@
                     <td><span class="badge-status" style="background:${r.color}22;color:${r.color};">${r.type}</span></td>
                     <td style="font-weight:700;">${r.name}</td>
                     <td>${r.role}</td>
-                    <td>${canEdit ? `<button class="btn-sm btn-sm-danger" data-action="${r.removeAction}" data-id="${r.removeId}"><i class="fas fa-times"></i></button>` : ''}</td>
-                </tr>`).join('') || '<tr><td colspan="4" class="text-muted" style="padding:16px;">لا يوجد معنيون بعد</td></tr>';
+                    <td>${r.birthDate}</td>
+                    <td>${r.phone}</td>
+                    <td>${r.fawj}</td>
+                    <td>${canEdit ? `<button class="btn-sm btn-sm-danger" data-action="${r.removeAction}" data-id="${r.removeId}"><i class="fas fa-times"></i> استبعاد</button>` : ''}</td>
+                </tr>`).join('') || '<tr><td colspan="7" class="text-muted" style="padding:16px;">لا يوجد معنيون بعد</td></tr>';
 
             const alreadyIds = new Set(Object.entries(t.players || {}).filter(([, v]) => v.called).map(([pid]) => pid));
             const playerOptionsHtml = categories.map(cat => {
@@ -7475,14 +7820,26 @@
             }).join('');
 
             return `
+                <div class="form-card" style="border:2px solid var(--primary-blue);">
+                    <h3><i class="fas fa-layer-group"></i> تحميل فئة كاملة كمعنيين بالدورة</h3>
+                    <p class="text-muted" style="margin-bottom:10px;">اختر الفئة، ليتم تلقائياً جلب جميع لاعبيها المعتمدين وإضافتهم لقائمة المعنيين. يمكنك بعدها استبعاد أي لاعب فردياً دون حذفه من الفئة أو من النظام.</p>
+                    <div class="form-grid">
+                        <div class="form-group"><label>الفئة العمرية</label>
+                            <select id="participantCategorySelect">
+                                ${categories.map(c => `<option value="${c}">${c}</option>`).join('')}
+                            </select>
+                        </div>
+                        <div class="form-group full"><button class="btn-sm btn-sm-primary" data-action="loadCategoryAsParticipants"><i class="fas fa-download"></i> تحميل جميع لاعبي هذه الفئة</button></div>
+                    </div>
+                </div>
                 <div class="form-card">
                     <h3>📋 قائمة المعنيين بالدورة (${rows.length})</h3>
-                    <div class="table-wrap"><table class="callup-table"><thead><tr><th>الصفة</th><th>الاسم</th><th>التفاصيل</th><th>إزالة</th></tr></thead><tbody>${bodyRows}</tbody></table></div>
+                    <div class="table-wrap"><table class="callup-table"><thead><tr><th>الصفة</th><th>الاسم</th><th>التفاصيل</th><th>تاريخ الميلاد</th><th>الهاتف</th><th>الفوج</th><th>استبعاد</th></tr></thead><tbody>${bodyRows}</tbody></table></div>
                 </div>
                 ${canEdit ? `
                 <div class="form-card">
-                    <h3>➕ إضافة لاعب يدويًا من أي فئة</h3>
-                    <p class="text-muted" style="margin-bottom:10px;">لإضافة لاعب لا ينتمي بالضرورة لفئة الدورة الرئيسية أو الفئات المستدعاة.</p>
+                    <h3>➕ إضافة لاعب واحد يدويًا من أي فئة</h3>
+                    <p class="text-muted" style="margin-bottom:10px;">لإضافة لاعب واحد بعينه دون تحميل الفئة كاملة.</p>
                     <div class="form-grid">
                         <div class="form-group full"><label>اختر اللاعب</label><select id="participantPlayerSelect">${playerOptionsHtml || '<option value="">لا يوجد لاعبون متاحون</option>'}</select></div>
                         <div class="form-group full"><button class="btn-sm btn-sm-primary" data-action="addParticipantPlayer"><i class="fas fa-user-plus"></i> إضافة اللاعب للمعنيين</button></div>
@@ -7498,6 +7855,25 @@
                     </div>
                 </div>` : ''}
             `;
+        }
+
+        function loadCategoryAsParticipants() {
+            if (!requireOpsRole()) return;
+            const categoryId = document.getElementById('participantCategorySelect')?.value;
+            if (!categoryId) { showToast('اختر فئة أولاً', 'warning'); return; }
+            const t = getTournamentById(currentTournamentId);
+            const catPlayers = allPlayers.filter(p => p.categoryId === categoryId && p.status === 'approved');
+            if (catPlayers.length === 0) { showToast('لا يوجد لاعبون معتمدون في هذه الفئة', 'warning'); return; }
+            const players = { ...(t.players || {}) };
+            let addedCount = 0;
+            catPlayers.forEach(p => {
+                if (!players[p.id]?.called) addedCount++;
+                players[p.id] = { ...(players[p.id] || { healthStatus: 'ready' }), called: true };
+            });
+            updateTourInFirebase({ players }, `✅ تم تحميل ${addedCount} لاعب جديد من فئة ${categoryId}`).then(() => {
+                pushTourTimeline(`تم تحميل جميع لاعبي فئة ${categoryId} كمعنيين بالدورة`);
+                renderTourCard();
+            });
         }
 
         function addParticipantPlayer() {
@@ -8654,6 +9030,15 @@
             EventManager.register('loginAs_coach', function() { loginAs('coach'); });
             EventManager.register('loginAs_parent', function() { loginAs('parent'); });
             EventManager.register('showAdminHome', function() { showAdminHome(); });
+            EventManager.register('showJoinRequests', function() { showJoinRequests(); });
+            EventManager.register('acceptJoinRequest', function(c) { acceptJoinRequest(c); });
+            EventManager.register('rejectJoinRequest', function(c) { rejectJoinRequest(c); });
+            EventManager.register('showCategoryFiles', function() { showCategoryFiles(); });
+            EventManager.register('showCategoryFawjFile', function(c) { showCategoryFawjFile(c); });
+            EventManager.register('assignPlayerToFawj', function(c) { assignPlayerToFawj(c); });
+            EventManager.register('setFawjCoach', function(c) { setFawjCoach(c); });
+            EventManager.register('transferPlayerFawj', function(c) { transferPlayerFawj(c); });
+            EventManager.register('exportFawjPDF', function(c) { exportFawjPDF(c); });
             EventManager.register('showAdminPlayers', function() { showAdminPlayers(); });
             EventManager.register('filterPlayers', function(c) { filterPlayers(c.dataset.cat || 'all'); });
             EventManager.register('filterPlayersBy', function(c) { filterPlayersBy(c.dataset.key || 'payment'); });
@@ -8773,6 +9158,7 @@
             EventManager.register('removeParticipantPlayer', function(c) { removeParticipantPlayer(c); });
             EventManager.register('addParticipantStaff', function() { addParticipantStaff(); });
             EventManager.register('removeParticipantStaff', function(c) { removeParticipantStaff(c); });
+            EventManager.register('loadCategoryAsParticipants', function() { loadCategoryAsParticipants(); });
             EventManager.register('createMatchInsideTournament', function() { createMatchInsideTournament(); });
             EventManager.register('addStandingsGroup', function() { addStandingsGroup(); });
             EventManager.register('removeGroup', function(c) { removeGroup(c); });
