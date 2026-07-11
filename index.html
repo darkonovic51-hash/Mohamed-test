@@ -683,44 +683,6 @@
         .tournament-card .tournament-players .player-tag { background:rgba(69,179,255,0.2); border:1px solid rgba(69,179,255,0.3); padding:4px 12px; border-radius:20px; font-size:0.75rem; color:var(--primary-blue); }
         .tournament-card .tournament-players .player-tag.staff { background:rgba(212,160,23,0.2); border-color:rgba(212,160,23,0.3); color:var(--gold); }
 
-        /* ===== الملف الإداري الرسمي (Letterhead) ===== */
-        .official-letterhead {
-            background:#fff; border:2px solid var(--dark-navy); border-radius:16px;
-            padding:18px 22px; margin-bottom:18px; display:flex; align-items:center;
-            justify-content:space-between; gap:16px; flex-wrap:wrap;
-        }
-        .official-letterhead .ol-left { display:flex; align-items:center; gap:14px; }
-        .official-letterhead .ol-left img.ol-logo { height:64px; width:auto; }
-        .official-letterhead .ol-left img.ol-flag { height:50px; width:auto; border:1px solid #ddd; }
-        .official-letterhead .ol-titles { text-align:center; flex:1; }
-        .official-letterhead .ol-titles .ol-line1 { font-weight:800; font-size:1rem; color:var(--dark-navy); }
-        .official-letterhead .ol-titles .ol-line2 { font-weight:700; font-size:0.85rem; color:var(--primary-blue); margin-top:2px; }
-        .official-letterhead .ol-titles .ol-line3 { font-weight:900; font-size:1.1rem; color:var(--gold); margin-top:2px; }
-        .official-letterhead .ol-right { text-align:left; font-size:0.82rem; color:#333; line-height:1.9; }
-        .official-letterhead .ol-right strong { color:var(--dark-navy); }
-        .official-tour-title { text-align:center; margin-bottom:18px; }
-        .official-tour-title h2 { font-size:1.8rem; font-weight:900; color:var(--dark-navy); }
-        .official-tour-title .otd { font-size:0.95rem; color:#888; margin-top:4px; font-weight:600; }
-        .participants-toolbar { display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:12px; }
-        .participants-toolbar input, .participants-toolbar select { padding:9px 14px; border-radius:12px; border:2px solid #e0e0e0; font-family:'Cairo',sans-serif; }
-        .participants-counters { display:flex; gap:12px; flex-wrap:wrap; margin-bottom:14px; }
-        .participants-counters .pc-box { background:var(--light-bg); border-radius:14px; padding:10px 22px; text-align:center; min-width:110px; }
-        .participants-counters .pc-box .pc-num { font-size:1.4rem; font-weight:900; color:var(--primary-blue); }
-        .participants-counters .pc-box .pc-lbl { font-size:0.72rem; color:#888; }
-        .participants-table-wrap tr.role-coach td { background:rgba(69,179,255,0.08); }
-        .participants-table-wrap tr.role-assistant td { background:rgba(212,160,23,0.08); }
-        .participants-table-wrap tr.role-staff td { background:rgba(40,167,69,0.06); }
-        .role-badge { display:inline-flex; align-items:center; gap:4px; padding:2px 10px; border-radius:20px; font-size:0.7rem; font-weight:700; }
-        .role-badge.coach { background:#45B3FF22; color:var(--primary-blue); }
-        .role-badge.assistant { background:#D4A01722; color:var(--gold); }
-        .role-badge.staff { background:#28a74522; color:#28a745; }
-        .role-badge.player { background:#08205c22; color:var(--dark-navy); }
-        .participants-table-wrap input.note-input { width:100%; padding:4px 8px; border-radius:8px; border:1px solid #e0e0e0; font-size:0.78rem; }
-        @media (max-width:768px) {
-            .official-letterhead { flex-direction:column; text-align:center; }
-            .official-letterhead .ol-right { text-align:center; }
-        }
-
         .stats-card-modal { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); backdrop-filter:blur(12px); z-index:999999; display:flex; align-items:center; justify-content:center; padding:20px; }
         .stats-card-modal .stats-card { background:linear-gradient(145deg, #1a1a3e, #0d0d2b); border-radius:24px; padding:30px; max-width:600px; width:100%; border:2px solid var(--gold); box-shadow:0 20px 60px rgba(0,0,0,0.5); color:#fff; position:relative; max-height:90vh; overflow-y:auto; }
         .stats-card-modal .stats-card .card-header { display:flex; align-items:center; gap:20px; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:16px; margin-bottom:16px; }
@@ -918,6 +880,44 @@
         .official-msg-title { font-weight:800; color:var(--dark-navy); font-size:1rem; margin-bottom:4px; }
         .official-msg-meta { font-size:0.75rem; color:#888; margin-bottom:8px; }
         .official-msg-body { color:#333; font-size:0.92rem; line-height:1.7; }
+
+        /* ===== الملف الإداري الرسمي (Letterhead) ===== */
+        .official-letterhead {
+            background:#fff; border:2px solid var(--dark-navy); border-radius:16px;
+            padding:18px 22px; margin-bottom:18px; display:flex; align-items:center;
+            justify-content:space-between; gap:16px; flex-wrap:wrap;
+        }
+        .official-letterhead .ol-left { display:flex; align-items:center; gap:14px; }
+        .official-letterhead .ol-left img.ol-logo { height:64px; width:auto; }
+        .official-letterhead .ol-left img.ol-flag { height:50px; width:auto; border:1px solid #ddd; }
+        .official-letterhead .ol-titles { text-align:center; flex:1; }
+        .official-letterhead .ol-titles .ol-line1 { font-weight:800; font-size:1rem; color:var(--dark-navy); }
+        .official-letterhead .ol-titles .ol-line2 { font-weight:700; font-size:0.85rem; color:var(--primary-blue); margin-top:2px; }
+        .official-letterhead .ol-titles .ol-line3 { font-weight:900; font-size:1.1rem; color:var(--gold); margin-top:2px; }
+        .official-letterhead .ol-right { text-align:left; font-size:0.82rem; color:#333; line-height:1.9; }
+        .official-letterhead .ol-right strong { color:var(--dark-navy); }
+        .official-tour-title { text-align:center; margin-bottom:18px; }
+        .official-tour-title h2 { font-size:1.8rem; font-weight:900; color:var(--dark-navy); }
+        .official-tour-title .otd { font-size:0.95rem; color:#888; margin-top:4px; font-weight:600; }
+        .participants-toolbar { display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:12px; }
+        .participants-toolbar input, .participants-toolbar select { padding:9px 14px; border-radius:12px; border:2px solid #e0e0e0; font-family:'Cairo',sans-serif; }
+        .participants-counters { display:flex; gap:12px; flex-wrap:wrap; margin-bottom:14px; }
+        .participants-counters .pc-box { background:var(--light-bg); border-radius:14px; padding:10px 22px; text-align:center; min-width:110px; }
+        .participants-counters .pc-box .pc-num { font-size:1.4rem; font-weight:900; color:var(--primary-blue); }
+        .participants-counters .pc-box .pc-lbl { font-size:0.72rem; color:#888; }
+        .participants-table-wrap tr.role-coach td { background:rgba(69,179,255,0.08); }
+        .participants-table-wrap tr.role-assistant td { background:rgba(212,160,23,0.08); }
+        .participants-table-wrap tr.role-staff td { background:rgba(40,167,69,0.06); }
+        .role-badge { display:inline-flex; align-items:center; gap:4px; padding:2px 10px; border-radius:20px; font-size:0.7rem; font-weight:700; }
+        .role-badge.coach { background:#45B3FF22; color:var(--primary-blue); }
+        .role-badge.assistant { background:#D4A01722; color:var(--gold); }
+        .role-badge.staff { background:#28a74522; color:#28a745; }
+        .role-badge.player { background:#08205c22; color:var(--dark-navy); }
+        .participants-table-wrap input.note-input { width:100%; padding:4px 8px; border-radius:8px; border:1px solid #e0e0e0; font-size:0.78rem; }
+        @media (max-width:768px) {
+            .official-letterhead { flex-direction:column; text-align:center; }
+            .official-letterhead .ol-right { text-align:center; }
+        }
 
         @media (max-width:1024px) { .hero-content h1 { font-size:3rem; } .about-grid { grid-template-columns:1fr; } .contact-grid { grid-template-columns:1fr; } }
         @media (max-width:768px) {
@@ -2011,6 +2011,7 @@
             { key: 'suspended', label: '🔴 موقوف' },
             { key: 'contractEnded', label: '⚪ منتهي العقد' }
         ];
+
         // ===== بيانات الترويسة الرسمية =====
         const ACADEMY_LETTERHEAD = {
             accreditationNumber: '08/2018',
@@ -2885,13 +2886,13 @@
             }
 
             content.innerHTML = `
-                    <button class="btn-sm btn-sm-secondary" data-action="showCategoryFiles" style="margin-bottom:14px;"><i class="fas fa-arrow-right"></i> رجوع لملفات الفئات</button>
-                    ${renderOfficialLetterheadHtml(false)}
-                    <h2 class="page-title">🗂️ فئة ${categoryId}</h2>
-                    <p class="page-sub">إدارة الأفواج الثلاثة الخاصة بهذه الفئة</p>
-                    ${unassignedHtml}
-                    ${FAWJ_LIST.map(f => renderFawjTableCard(categoryId, f)).join('')}
-                `;
+                <button class="btn-sm btn-sm-secondary" data-action="showCategoryFiles" style="margin-bottom:14px;"><i class="fas fa-arrow-right"></i> رجوع لملفات الفئات</button>
+                ${renderOfficialLetterheadHtml(false)}
+                <h2 class="page-title">🗂️ فئة ${categoryId}</h2>
+                <p class="page-sub">إدارة الأفواج الثلاثة الخاصة بهذه الفئة</p>
+                ${unassignedHtml}
+                ${FAWJ_LIST.map(f => renderFawjTableCard(categoryId, f)).join('')}
+            `;
             window.addDebugLog(`🗂️ عرض ملف فئة ${categoryId}`, 'info');
             EventManager.bindButtons(content);
             updateDashboardActionBar();
@@ -5956,9 +5957,8 @@
                 ]);
                 const data = {
                     name, categoryId, code, phone, roleType, jobTitle,
-                    status, accreditationNumber, appointmentDate,
-                    contractNumber, startDate, contractEndDate, contractDuration, contractType, experienceYears,
-                    email, nationality, address, notes,
+                    status, contractNumber, startDate, contractEndDate, contractDuration, contractType, experienceYears,
+                    email, nationality, address, notes, accreditationNumber, appointmentDate,
                     licenseName, photo, contractDoc, licenseDoc,
                     contractHistory: [],
                     createdAt: new Date().toISOString()
@@ -7135,8 +7135,6 @@
         let currentTournamentId = null;
         let currentTournamentTab = 'dashboard';
         let pendingTournamentIdForMatch = null;
-        let tourParticipantsFilter = { search: '', category: '', fawj: '' };
-        let tourParticipantsSelected = new Set();
 
         const TOUR_TYPES = ['محلية', 'وطنية', 'دولية', 'ودية', 'رسمية'];
         const TOUR_SYSTEM_TYPES = ['مجموعات', 'خروج مباشر', 'دوري'];
@@ -7166,7 +7164,684 @@
             { key: 'report', label: 'التقرير النهائي', icon: 'fa-trophy' }
         ];
 
-        // ===== دوال المعنيين (المرحلة 8) =====
+        function getTournamentById(id) { return allTournaments.find(t => t.id === id); }
+
+        function tourDbRef(id, path) { return path ? db.ref('academy/tournaments/' + id + '/' + path) : db.ref(
+            'academy/tournaments/' + id); }
+
+        function updateTourInFirebase(patch, successMsg) {
+            const t = getTournamentById(currentTournamentId);
+            if (!t) return Promise.reject('no tournament');
+            return db.ref('academy/tournaments/' + t.id).update(patch).then(() => {
+                Object.assign(t, patch);
+                if (successMsg) showToast(successMsg, 'success');
+            }).catch(err => showToast('❌ خطأ: ' + err.message, 'error'));
+        }
+
+        function pushTourTimeline(action) {
+            const t = getTournamentById(currentTournamentId);
+            if (!t) return;
+            const entry = { action, time: new Date().toISOString(),
+            user: currentUser?.data?.name || currentUser?.role || '' };
+            const timeline = [...(t.timeline || []), entry];
+            db.ref('academy/tournaments/' + t.id + '/timeline').set(timeline).then(() => { t.timeline = timeline; });
+        }
+
+        /* ---------- نافذة اختيار متعددة بهوية الأكاديمية (لتوزيع الحافلات/الغرف) ---------- */
+        let rosterPickerOnSaveCallback = null;
+
+        function showRosterPickerModal(title, icon, items, selectedIds, onSave) {
+            closeRosterPicker();
+            rosterPickerOnSaveCallback = onSave;
+            const body = items.map(it => `
+                    <label style="display:flex;align-items:center;gap:10px;padding:9px 10px;border-bottom:1px solid #f0f0f0;cursor:pointer;">
+                        <input type="checkbox" value="${it.id}" ${selectedIds.includes(it.id) ? 'checked' : ''} />
+                        <span style="font-weight:600;">${it.label}</span>
+                    </label>`).join('') || '<p class="text-muted">لا يوجد عناصر متاحة</p>';
+            const container = document.createElement('div');
+            container.className = 'edit-modal-overlay';
+            container.id = 'rosterPickerOverlay';
+            container.innerHTML = `
+                    <div class="edit-modal-box">
+                        <div class="edit-modal-header">
+                            <div class="edit-modal-icon"><i class="fas ${icon}"></i></div>
+                            <div class="edit-modal-title-wrap"><h3>${title}</h3><span>أكاديمية ASSARU — تنظيم الدورة</span></div>
+                            <button class="icon-close-btn on-dark" onclick="window.closeRosterPicker()" title="إغلاق"><i class="fas fa-times"></i></button>
+                        </div>
+                        <div class="edit-modal-body" style="max-height:50vh;">${body}</div>
+                        <div class="edit-modal-footer">
+                            <button class="btn-sm btn-sm-secondary" onclick="window.closeRosterPicker()">إلغاء</button>
+                            <button class="btn-submit" onclick="window.submitRosterPicker()"><i class="fas fa-check"></i> حفظ التوزيع</button>
+                        </div>
+                    </div>`;
+            document.body.appendChild(container);
+            container.addEventListener('click', e => { if (e.target === container) closeRosterPicker(); });
+        }
+
+        function closeRosterPicker() { const el = document.getElementById('rosterPickerOverlay'); if (el) el.remove();
+            rosterPickerOnSaveCallback = null; }
+
+        function submitRosterPicker() {
+            const container = document.getElementById('rosterPickerOverlay');
+            if (!container || !rosterPickerOnSaveCallback) return;
+            const selected = Array.from(container.querySelectorAll('input[type=checkbox]:checked')).map(c => c.value);
+            const cb = rosterPickerOnSaveCallback;
+            closeRosterPicker();
+            cb(selected);
+        }
+        window.closeRosterPicker = closeRosterPicker;
+        window.submitRosterPicker = submitRosterPicker;
+
+        /* =====================================================================
+           إنشاء دورة جديدة — نافذة احترافية مع معاينة حية للهوية البصرية
+           ===================================================================== */
+        function showCreateTournament() {
+            if (!requireRole('admin')) return;
+            const container = document.createElement('div');
+            container.className = 'session-detail-modal';
+            container.id = 'createTourModal';
+            container.innerHTML = `
+                    <div class="modal-content" style="max-width:820px;">
+                        <button class="icon-close-btn abs-top-right" data-action="closeModal" data-id="createTourModal" title="إغلاق"><i class="fas fa-times"></i></button>
+                        <div class="modal-header"><h2><i class="fas fa-trophy" style="color:var(--gold);"></i> إنشاء دورة جديدة</h2></div>
+
+                        <div class="trn-preview-banner" id="tourPreviewBanner" style="background:linear-gradient(135deg, var(--primary-blue), var(--secondary-blue));">
+                            <div class="trn-preview-logo" id="tourPreviewLogo"><i class="fas fa-trophy" style="color:#fff;"></i></div>
+                            <div class="trn-preview-text">
+                                <h4 id="tourPreviewName">اسم الدورة سيظهر هنا</h4>
+                                <span id="tourPreviewMeta">الفئة — النوع — المدينة</span>
+                            </div>
+                        </div>
+
+                        <div class="mf-wrap">
+                            <div class="mf-card">
+                                <div class="mf-card-header"><div class="mf-icon"><i class="fas fa-id-badge"></i></div><h4>الهوية العامة للدورة</h4></div>
+                                <div class="mf-grid-2">
+                                    <div class="form-group"><label>اسم الدورة <span class="required">*</span></label><input type="text" id="tourName" oninput="updateTourPreview()" /></div>
+                                    <div class="form-group"><label>الجهة المنظمة</label><input type="text" id="tourOrganizer" /></div>
+                                    <div class="form-group">
+                                        <label>شعار الدورة (اختياري)</label>
+                                        <div class="upload-area" id="tourLogoUpload"><div class="icon"><i class="fas fa-image"></i></div><div class="text">انقر لاختيار شعار</div><div class="file-name" id="tourLogoName"></div><input type="file" id="tourLogo" accept="image/*" /></div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>صورة الغلاف (اختياري)</label>
+                                        <div class="upload-area" id="tourCoverUpload"><div class="icon"><i class="fas fa-panorama"></i></div><div class="text">انقر لاختيار صورة الغلاف</div><div class="file-name" id="tourCoverName"></div><input type="file" id="tourCover" accept="image/*" /></div>
+                                    </div>
+                                    <div class="form-group"><label>لون الدورة</label><input type="color" id="tourColor" class="trn-color-input" value="#45B3FF" oninput="updateTourPreview()" /></div>
+                                    <div class="form-group full"><label>وصف الدورة</label><textarea id="tourDescription" rows="2"></textarea></div>
+                                </div>
+                            </div>
+
+                            <div class="mf-card">
+                                <div class="mf-card-header"><div class="mf-icon"><i class="fas fa-tags"></i></div><h4>التصنيف والنظام</h4></div>
+                                <div class="mf-grid-3">
+                                    <div class="form-group"><label>نوع الدورة</label><select id="tourType" onchange="updateTourPreview()">${TOUR_TYPES.map(t => `<option value="${t}">${t}</option>`).join('')}</select></div>
+                                    <div class="form-group"><label>الفئة العمرية <span class="required">*</span></label><select id="tourCategory" onchange="updateTourPreview()">${categories.map(c => `<option value="${c}">${c}</option>`).join('')}</select></div>
+                                    <div class="form-group"><label>نظام البطولة</label><select id="tourSystem">${TOUR_SYSTEM_TYPES.map(s => `<option value="${s}">${s}</option>`).join('')}</select></div>
+                                    <div class="form-group"><label>عدد الفرق</label><input type="number" id="tourTeamsCount" min="0" /></div>
+                                    <div class="form-group"><label>رسوم المشاركة</label><input type="number" id="tourFee" min="0" /></div>
+                                    <div class="form-group"><label>حالة الدورة</label><select id="tourStatus">${TOUR_STATUS_LIST.map(s => `<option value="${s}">${s}</option>`).join('')}</select></div>
+                                </div>
+                            </div>
+
+                            <div class="mf-card">
+                                <div class="mf-card-header"><div class="mf-icon"><i class="fas fa-map-marked-alt"></i></div><h4>التوقيت والمكان</h4></div>
+                                <div class="mf-grid-3">
+                                    <div class="form-group"><label>تاريخ البداية <span class="required">*</span></label><input type="date" id="tourStartDate" /></div>
+                                    <div class="form-group"><label>تاريخ النهاية</label><input type="date" id="tourEndDate" /></div>
+                                    <div class="form-group"><label>الملاعب المستعملة</label><input type="text" id="tourVenues" placeholder="افصل بالفاصلة" /></div>
+                                    <div class="form-group"><label>المدينة</label><input type="text" id="tourCity" oninput="updateTourPreview()" /></div>
+                                    <div class="form-group"><label>الولاية</label><input type="text" id="tourProvince" /></div>
+                                    <div class="form-group"><label>الدولة</label><input type="text" id="tourCountry" value="الجزائر" /></div>
+                                </div>
+                            </div>
+
+                            <button class="btn-submit" data-action="saveTournamentDetailed" style="width:100%; justify-content:center;"><i class="fas fa-save"></i> إنشاء الدورة وفتح ملفها</button>
+                        </div>
+                    </div>
+                `;
+            document.body.appendChild(container);
+            container.addEventListener('click', e => { if (e.target === container) container.remove(); });
+            EventManager.bindButtons(container);
+            setupUpload('tourLogo', 'tourLogoName', 'tourLogoUpload');
+            setupUpload('tourCover', 'tourCoverName', 'tourCoverUpload');
+
+            document.getElementById('tourLogo').addEventListener('change', function() {
+                const file = this.files[0];
+                const logoBox = document.getElementById('tourPreviewLogo');
+                if (file) { const r = new FileReader();
+                    r.onload = e => { logoBox.innerHTML =
+                            `<img src="${e.target.result}" style="width:100%;height:100%;object-fit:contain;" />`; };
+                    r.readAsDataURL(file); }
+            });
+            window.updateTourPreview = function() {
+                const name = document.getElementById('tourName').value.trim() || 'اسم الدورة سيظهر هنا';
+                const color = document.getElementById('tourColor').value || '#45B3FF';
+                const cat = document.getElementById('tourCategory').value;
+                const type = document.getElementById('tourType').value;
+                const city = document.getElementById('tourCity').value.trim();
+                document.getElementById('tourPreviewName').textContent = name;
+                document.getElementById('tourPreviewMeta').textContent = `${cat} — ${type}${city ? ' — ' + city : ''}`;
+                document.getElementById('tourPreviewBanner').style.background =
+                    `linear-gradient(135deg, ${color}, var(--dark-navy))`;
+            };
+        }
+
+        function saveTournamentDetailed() {
+            if (!requireRole('admin')) return;
+            const name = document.getElementById('tourName').value.trim();
+            const startDate = document.getElementById('tourStartDate').value;
+            const categoryId = document.getElementById('tourCategory').value;
+            if (!name || !startDate || !categoryId) { showToast('الرجاء ملء الحقول الإجبارية', 'warning'); return; }
+
+            const logoFile = document.getElementById('tourLogo').files[0];
+            const coverFile = document.getElementById('tourCover').files[0];
+
+            const buildData = (logo, cover) => ({
+                name,
+                logo: logo || '',
+                coverImage: cover || '',
+                organizer: document.getElementById('tourOrganizer').value.trim(),
+                description: document.getElementById('tourDescription').value.trim(),
+                tourType: document.getElementById('tourType').value,
+                categoryId,
+                startDate,
+                endDate: document.getElementById('tourEndDate').value,
+                city: document.getElementById('tourCity').value.trim(),
+                province: document.getElementById('tourProvince').value.trim(),
+                country: document.getElementById('tourCountry').value.trim(),
+                venues: document.getElementById('tourVenues').value.trim(),
+                teamsCount: parseInt(document.getElementById('tourTeamsCount').value) || 0,
+                systemType: document.getElementById('tourSystem').value,
+                participationFee: parseFloat(document.getElementById('tourFee').value) || 0,
+                color: document.getElementById('tourColor').value || '#45B3FF',
+                status: document.getElementById('tourStatus').value,
+                season: new Date(startDate).getFullYear().toString(),
+                players: {},
+                coaches: {},
+                companions: [],
+                parentsConsent: {},
+                groups: [],
+                transport: { buses: [] },
+                accommodation: { hotelName: '', rooms: [] },
+                expenses: [],
+                documents: [],
+                gallery: {},
+                finalReport: {},
+                timeline: [{ action: 'تم إنشاء الدورة', time: new Date().toISOString(),
+                    user: currentUser.data.name || currentUser.role }],
+                createdAt: new Date().toISOString()
+            });
+
+            const readAsB64 = (file) => new Promise((res, rej) => { const r = new FileReader();
+                    r.onload = () => res(r.result);
+                    r.onerror = rej;
+                    r.readAsDataURL(file); });
+            const finish = (logo, cover) => {
+                const data = buildData(logo, cover);
+                db.ref('academy/tournaments').push(data).then(snap => {
+                    allTournaments.push({ id: snap.key, ...data });
+                    addLog('إنشاء دورة', `تم إنشاء دورة ${name}`, currentUser.role);
+                    document.getElementById('createTourModal')?.remove();
+                    showToast('✅ تم إنشاء الدورة بنجاح', 'success');
+                    openTournamentWorkspace(snap.key);
+                }).catch(err => showToast('❌ خطأ: ' + err.message, 'error'));
+            };
+            Promise.all([
+                logoFile ? readAsB64(logoFile) : Promise.resolve(''),
+                coverFile ? readAsB64(coverFile) : Promise.resolve('')
+            ]).then(([logo, cover]) => finish(logo, cover)).catch(() => finish('', ''));
+        }
+
+        /* =====================================================================
+           ملف الدورة الكامل (Workspace) — لوحة تنقل بهوية الدورة
+           ===================================================================== */
+        function openTournamentWorkspace(id) {
+            previousViewFunction = currentViewFunction;
+            previousViewArgs = currentViewArgs;
+            currentViewFunction = openTournamentWorkspace;
+            currentViewArgs = [id];
+            currentTournamentId = id;
+            currentTournamentTab = 'dashboard';
+            renderTournamentWorkspaceShell();
+            updateDashboardActionBar();
+            animatePageTransition();
+        }
+
+        function showTournamentDetail(id) { openTournamentWorkspace(id); }
+
+        function renderTournamentWorkspaceShell() {
+            const t = getTournamentById(currentTournamentId);
+            const content = document.getElementById('pageContent');
+            if (!t) { content.innerHTML = '<p class="text-muted text-center">الدورة غير موجودة</p>'; return; }
+            content.innerHTML = `
+                    <button class="btn-sm btn-sm-secondary" data-action="goBackToPrevious" style="margin-bottom:12px;"><i class="fas fa-arrow-right"></i> رجوع</button>
+                    <div class="trn-banner" style="${t.coverImage ? `background-image:url('${t.coverImage}');` : `background:linear-gradient(135deg, ${t.color || '#45B3FF'}, var(--dark-navy));`}">
+                        <div class="trn-banner-content">
+                            <div class="trn-banner-main">
+                                ${t.logo ? `<img src="${t.logo}" class="trn-banner-logo" />` : `<div class="trn-banner-logo" style="display:flex;align-items:center;justify-content:center;"><i class="fas fa-trophy" style="color:#fff;font-size:1.5rem;"></i></div>`}
+                                <div>
+                                    <h2>${t.name}</h2>
+                                    <div class="trn-sub">${t.categoryId} · ${t.tourType || ''} · ${t.city || ''} ${t.startDate ? '· ' + t.startDate : ''}</div>
+                                </div>
+                            </div>
+                            <select class="trn-status-select" data-action="updateTourStatus">${TOUR_STATUS_LIST.map(s => `<option value="${s}" ${s === t.status ? 'selected' : ''}>${s}</option>`).join('')}</select>
+                        </div>
+                    </div>
+                    <div class="trn-tabs" id="tourTabsBar"></div>
+                    <div class="dashboard-action-bar" style="margin-bottom:14px;">
+                        <button class="btn-sm btn-sm-info" data-action="exportCurrentTourTabPDF"><i class="fas fa-file-pdf"></i> تحميل هذه الخانة PDF</button>
+                    </div>
+                    <div id="tourCardBody"></div>
+                `;
+            EventManager.bindButtons(content);
+            renderTourTabsBar();
+            renderTourCard();
+        }
+
+        function renderTourTabsBar() {
+            const bar = document.getElementById('tourTabsBar');
+            if (!bar) return;
+            bar.innerHTML = TOUR_TABS.map(tb =>
+                    `<button class="btn-sm ${currentTournamentTab === tb.key ? 'btn-sm-primary' : 'btn-sm-secondary'}" data-action="switchTourTab" data-tab="${tb.key}" style="white-space:nowrap;"><i class="fas ${tb.icon}"></i> ${tb.label}</button>`
+                    ).join('');
+            EventManager.bindButtons(bar);
+        }
+
+        function switchTourTab(context) { currentTournamentTab = context.dataset.tab;
+            renderTourTabsBar();
+            renderTourCard(); }
+
+        function updateTourStatus(context) {
+            if (!requireRole('admin')) return;
+            updateTourInFirebase({ status: context.value }, '✅ تم تحديث حالة الدورة').then(() => pushTourTimeline(
+                `تم تغيير حالة الدورة إلى ${context.value}`));
+        }
+
+        // استبدال renderTourCard بالكامل في وظيفة الدورات
+        function renderTourCard() {
+            const body = document.getElementById('tourCardBody');
+            const t = getTournamentById(currentTournamentId);
+            if (!body || !t) return;
+            const renderers = {
+                dashboard: renderTourDashboardCard,
+                players: renderTourPlayersCard,
+                coaches: renderTourCoachesCard,
+                parents: renderTourParentsCard,
+                participants: renderTourParticipantsCard,
+                matches: renderTourMatchesCard,
+                standings: renderTourStandingsCard,
+                transport: renderTourTransportCard,
+                accommodation: renderTourAccommodationCard,
+                expenses: renderTourExpensesCard,
+                documents: renderTourDocumentsCard,
+                gallery: renderTourGalleryCard,
+                timeline: renderTourTimelineCard,
+                report: renderTourReportCard
+            };
+            body.innerHTML = renderers[currentTournamentTab](t);
+            EventManager.bindButtons(body);
+        }
+
+        /* ===== سكوربورد ===== */
+        function renderTourScoreboard(t) {
+            const s = computeTourStats(t);
+            return `
+                    <div class="trn-scoreboard">
+                        <div class="scoreboard-shine"></div>
+                        <div class="scoreboard-logo">
+                            ${t.logo ? `<img src="${t.logo}" />` : `<img src="https://raw.githubusercontent.com/darkonovic51-hash/Mohamed-test/4a065c0a8a951b1d39707aa5eb90a5ce7512bec4/1000015625-removebg-preview.png" />`}
+                        </div>
+                        <div class="scoreboard-mid">
+                            <div class="scoreboard-name">${t.name}</div>
+                            <div class="scoreboard-status ${t.status === 'جارية' ? 'live' : ''}">${t.status === 'جارية' ? '🔴 جارية الآن' : t.status}</div>
+                        </div>
+                        <div class="scoreboard-stats">
+                            <div><span>${s.matchesCount}</span><label>مباريات</label></div>
+                            <div><span>${s.wins}</span><label>انتصارات</label></div>
+                            <div><span>${s.goals}</span><label>أهداف</label></div>
+                        </div>
+                    </div>
+                `;
+        }
+
+        /* ===== لوحة المعلومات ===== */
+        function computeTourStats(t) {
+            const matches = allMatches.filter(m => m.tournamentId === t.id);
+            const participants = Object.entries(t.players || {}).filter(([, v]) => v.called).length;
+            const coachesCount = Object.values(t.coaches || {}).filter(Boolean).length;
+            const days = t.startDate && t.endDate ? Math.max(1, Math.round((new Date(t.endDate) - new Date(t.startDate)) /
+                86400000) + 1) : (t.startDate ? 1 : 0);
+            const wins = matches.filter(m => m.result?.winner === 'الأكاديمية').length;
+            const goals = matches.reduce((s, m) => s + (m.result?.scoreHome || 0), 0);
+            let injuries = 0,
+                cards = 0;
+            matches.forEach(m => (m.events || []).forEach(e => { if (e.type === 'injury') injuries++;
+                if (e.type === 'yellow' || e.type === 'red') cards++; }));
+            return { participants, coachesCount, matchesCount: matches.length, days, wins, goals, injuries, cards };
+        }
+
+        function renderTourDashboardCard(t) {
+            const s = computeTourStats(t);
+            const boxes = [
+                { num: s.participants, lbl: '👥 اللاعبون المشاركون' }, { num: s.coachesCount, lbl: '🧑‍🏫 المدربون' },
+                { num: s.matchesCount, lbl: '⚽ المباريات' }, { num: s.days, lbl: '📅 أيام الدورة' },
+                { num: s.wins, lbl: '🏆 الانتصارات' }, { num: s.goals, lbl: '⚽ الأهداف' },
+                { num: s.injuries, lbl: '🩹 الإصابات' }, { num: s.cards, lbl: '🟨 البطاقات' },
+                { num: (t.companions || []).length, lbl: '🧳 المرافقون' }
+            ];
+            const infoTiles = [
+                { icon: 'fa-building', label: 'الجهة المنظمة', value: t.organizer || '-' },
+                { icon: 'fa-sitemap', label: 'نظام البطولة', value: t.systemType || '-' },
+                { icon: 'fa-users-rectangle', label: 'عدد الفرق', value: t.teamsCount || '-' },
+                { icon: 'fa-coins', label: 'رسوم المشاركة', value: t.participationFee || 0 },
+                { icon: 'fa-map-pin', label: 'الملاعب', value: t.venues || '-' },
+                { icon: 'fa-earth-africa', label: 'الولاية / الدولة', value: `${t.province || '-'} / ${t.country || '-'}` },
+                { icon: 'fa-calendar-check', label: 'تاريخ البداية', value: t.startDate || '-' },
+                { icon: 'fa-calendar-xmark', label: 'تاريخ النهاية', value: t.endDate || '-' }
+            ];
+            return `
+                    ${renderTourScoreboard(t)}
+                    <div class="stats-row">${boxes.map(b => `<div class="tour-mini-stat"><div class="num">${b.num}</div><div class="lbl">${b.lbl}</div></div>`).join('')}</div>
+                    ${t.description ? `<div class="form-card"><h3>📝 وصف الدورة</h3><p class="text-muted">${t.description}</p></div>` : ''}
+                    <div class="form-card">
+                        <h3>ℹ️ معلومات عامة</h3>
+                        <div class="tour-info-grid">
+                            ${infoTiles.map(f => `
+                                <div class="tour-info-card">
+                                    <div class="tic-icon"><i class="fas ${f.icon}"></i></div>
+                                    <div class="tic-body"><div class="tic-label">${f.label}</div><div class="tic-value">${f.value}</div></div>
+                                </div>`).join('')}
+                        </div>
+                    </div>
+                `;
+        }
+
+        /* ===== اللاعبون (استدعاء/استبعاد + الحالة الصحية + المرافقون) ===== */
+        function renderTourPlayersCard(t) {
+            const canEdit = currentUser?.role === 'admin' || currentUser?.role === 'coach';
+            const activeCats = [t.categoryId, ...(t.extraCategories || [])].filter((v, i, a) => v && a.indexOf(v) === i);
+            const catsCheckboxes = categories.map(c => `
+                <label style="display:inline-flex;align-items:center;gap:6px;margin:4px 14px 4px 0;">
+                    <input type="checkbox" data-action="toggleTourCategory" data-cat="${c}" ${activeCats.includes(c) ? 'checked' : ''} ${c === t.categoryId ? 'disabled' : ''} />
+                    ${c}${c === t.categoryId ? ' (الرئيسية)' : ''}
+                </label>`).join('');
+
+            let bodyRows = '';
+            activeCats.forEach(cat => {
+                const players = allPlayers.filter(p => p.categoryId === cat && p.status === 'approved');
+                if (players.length === 0) return;
+                const roster = t.players || {};
+                const catCalledCount = players.filter(p => roster[p.id]?.called).length;
+                bodyRows += `
+                    <tr class="callup-cat-row">
+                        <td colspan="5">
+                            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+                                <span><i class="fas fa-layer-group"></i> فئة ${cat} <span style="font-weight:600; color:#888; font-size:0.75rem;">(${catCalledCount}/${players.length} مستدعى)</span></span>
+                                ${canEdit ? `
+                                    <div style="display:flex; gap:6px;">
+                                        <button class="btn-sm btn-sm-success" data-action="callupAllInCategory" data-cat="${cat}"><i class="fas fa-check-double"></i> استدعاء الكل</button>
+                                        <button class="btn-sm btn-sm-danger" data-action="excludeAllInCategory" data-cat="${cat}"><i class="fas fa-times-circle"></i> استبعاد الكل</button>
+                                    </div>` : ''}
+                            </div>
+                        </td>
+                    </tr>`;
+                players.forEach(p => {
+                    const r = roster[p.id] || { called: false, healthStatus: 'ready' };
+                    const imgSrc = p.photo && p.photo.startsWith('data:image') ? p.photo : 'https://via.placeholder.com/36';
+                    bodyRows += `
+                        <tr class="${r.called ? 'row-called' : ''}">
+                            <td><img src="${imgSrc}" class="callup-avatar" /></td>
+                            <td style="font-weight:700; text-align:right;">${p.firstName} ${p.lastName}</td>
+                            <td><span class="health-badge ${r.healthStatus || 'ready'}">${HEALTH_STATUS_LIST.find(h => h.key === (r.healthStatus || 'ready'))?.label || ''}</span></td>
+                            <td>${canEdit ? `<select class="attendance-select" data-action="setTourHealthStatus" data-player-id="${p.id}">${HEALTH_STATUS_LIST.map(h => `<option value="${h.key}" ${h.key === (r.healthStatus || 'ready') ? 'selected' : ''}>${h.label}</option>`).join('')}</select>` : '-'}</td>
+                            <td>
+                                ${canEdit ? `
+                                    <div style="display:flex; gap:6px; justify-content:center; flex-wrap:wrap;">
+                                        <button class="sp-toggle-btn called" data-action="callupSinglePlayer" data-player-id="${p.id}" ${r.called ? 'disabled' : ''}>
+                                            <i class="fas fa-check-circle"></i> استدعاء
+                                        </button>
+                                        <button class="sp-toggle-btn excused" data-action="excludeSinglePlayer" data-player-id="${p.id}" ${!r.called ? 'disabled' : ''}>
+                                            <i class="fas fa-user-slash"></i> استبعاد
+                                        </button>
+                                    </div>` : `<span class="badge-status ${r.called ? 'present' : 'absent'}">${r.called ? '✅ مستدعى' : '❌ غير مستدعى'}</span>`}
+                            </td>
+                        </tr>`;
+                });
+            });
+
+            const companions = t.companions || [];
+            const companionsHtml = companions.map((c, i) => {
+                const label = typeof c === 'string' ? c : `${c.name} — ${c.role || 'مرافق'}`;
+                return `<span class="companion-tag">${label}<button data-action="removeCompanion" data-index="${i}"><i class="fas fa-times"></i></button></span>`;
+            }).join('') || '<span class="text-muted">لا يوجد مرافقون</span>';
+
+            const coachOptions = allCoaches.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+
+            return `
+                <div class="form-card">
+                    <h3>🏷️ الفئات المستدعاة لهذه الدورة</h3>
+                    <div>${catsCheckboxes}</div>
+                </div>
+                <div class="form-card">
+                    <h3>👥 قائمة استدعاء اللاعبين <span style="font-size:0.7rem;color:#888;">(يُحفظ فورًا بدون زر حفظ)</span></h3>
+                    <div class="table-wrap">
+                        <table class="callup-table">
+                            <thead><tr><th>الصورة</th><th>الاسم</th><th>الحالة الصحية</th><th>تحديث الحالة</th><th>الاستدعاء</th></tr></thead>
+                            <tbody>${bodyRows || '<tr><td colspan="5" class="text-muted" style="padding:16px;">لا يوجد لاعبون</td></tr>'}</tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="form-card">
+                    <h3>🧳 المرافقون والإداريون</h3>
+                    <div style="margin-bottom:10px;">${companionsHtml}</div>
+                    <div class="form-grid">
+                        <div class="form-group"><label>اسم المرافق</label><input type="text" id="newCompanionName" placeholder="مثال: أحمد بلال" /></div>
+                        <div class="form-group"><label>الصفة</label><input type="text" id="newCompanionRole" placeholder="إداري / طبيب / سائق..." /></div>
+                        <div class="form-group"><label>ربط بملف مدرب (اختياري)</label><select id="newCompanionCoach"><option value="">بدون ربط</option>${coachOptions}</select></div>
+                        <div class="form-group full"><button class="btn-sm btn-sm-primary" data-action="addCompanion"><i class="fas fa-plus"></i> إضافة</button></div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function callupSinglePlayer(context) {
+            if (!requireOpsRole()) return;
+            const playerId = context.dataset.playerId;
+            guardedAction('tourCallup_' + playerId, () => {
+                const t = getTournamentById(currentTournamentId);
+                const players = { ...(t.players || {}) };
+                if (players[playerId]?.called) { showToast('ℹ️ اللاعب مستدعى بالفعل', 'info'); return; }
+                players[playerId] = { ...(players[playerId] || { healthStatus: 'ready' }), called: true };
+                delete players[playerId].reason;
+                updateTourInFirebase({ players }, '✅ تم استدعاء اللاعب').then(() => {
+                    const current = allPlayerDetails[playerId]?.tournamentsCount || 0;
+                    db.ref('academy/playerDetails/' + playerId + '/tournamentsCount').set(current + 1);
+                    if (!allPlayerDetails[playerId]) allPlayerDetails[playerId] = {};
+                    allPlayerDetails[playerId].tournamentsCount = current + 1;
+                    renderTourCard();
+                });
+            });
+        }
+
+        function excludeSinglePlayer(context) {
+            if (!requireOpsRole()) return;
+            const playerId = context.dataset.playerId;
+            guardedAction('tourCallup_' + playerId, () => {
+                const t = getTournamentById(currentTournamentId);
+                const players = { ...(t.players || {}) };
+                if (!players[playerId]?.called) { showToast('ℹ️ اللاعب مستبعد بالفعل', 'info'); return; }
+                players[playerId] = { ...(players[playerId] || {}), called: false };
+                updateTourInFirebase({ players }, '✅ تم استبعاد اللاعب').then(() => {
+                    const current = allPlayerDetails[playerId]?.tournamentsCount || 0;
+                    db.ref('academy/playerDetails/' + playerId + '/tournamentsCount').set(Math.max(0, current - 1));
+                    if (!allPlayerDetails[playerId]) allPlayerDetails[playerId] = {};
+                    allPlayerDetails[playerId].tournamentsCount = Math.max(0, current - 1);
+                    renderTourCard();
+                });
+            });
+        }
+
+        function callupAllInCategory(context) {
+            if (!requireOpsRole()) return;
+            const cat = context.dataset.cat;
+            guardedAction('tourCallupAll_' + cat, () => {
+                const t = getTournamentById(currentTournamentId);
+                const catPlayers = allPlayers.filter(p => p.categoryId === cat && p.status === 'approved');
+                const players = { ...(t.players || {}) };
+                catPlayers.forEach(p => {
+                    players[p.id] = { ...(players[p.id] || { healthStatus: 'ready' }), called: true };
+                    delete players[p.id].reason;
+                });
+                updateTourInFirebase({ players }, `✅ تم استدعاء جميع لاعبي فئة ${cat}`).then(() => {
+                    pushTourTimeline(`تم استدعاء جميع لاعبي فئة ${cat}`);
+                    renderTourCard();
+                });
+            });
+        }
+
+        function excludeAllInCategory(context) {
+            if (!requireOpsRole()) return;
+            const cat = context.dataset.cat;
+            guardedAction('tourCallupAll_' + cat, () => {
+                const t = getTournamentById(currentTournamentId);
+                const catPlayers = allPlayers.filter(p => p.categoryId === cat && p.status === 'approved');
+                const players = { ...(t.players || {}) };
+                catPlayers.forEach(p => { players[p.id] = { ...(players[p.id] || {}), called: false }; });
+                updateTourInFirebase({ players }, `✅ تم استبعاد جميع لاعبي فئة ${cat}`).then(() => {
+                    pushTourTimeline(`تم استبعاد جميع لاعبي فئة ${cat}`);
+                    renderTourCard();
+                });
+            });
+        }
+
+        function setTourExclusionReason(context) {
+            if (!requireOpsRole()) return;
+            const t = getTournamentById(currentTournamentId);
+            const players = { ...(t.players || {}) };
+            players[context.dataset.playerId] = { ...(players[context.dataset.playerId] || {}), reason: context.value };
+            updateTourInFirebase({ players });
+        }
+
+        function setTourHealthStatus(context) {
+            if (!requireOpsRole()) return;
+            const t = getTournamentById(currentTournamentId);
+            const players = { ...(t.players || {}) };
+            players[context.dataset.playerId] = { ...(players[context.dataset.playerId] || { called: true }), healthStatus: context.value };
+            updateTourInFirebase({ players }, '✅ تم تحديث الحالة الصحية').then(() => renderTourCard());
+        }
+
+        function toggleTourCategory(context) {
+            if (!requireOpsRole()) return;
+            const t = getTournamentById(currentTournamentId);
+            const cat = context.dataset.cat;
+            let extra = [...(t.extraCategories || [])];
+            if (context.checked) { if (!extra.includes(cat)) extra.push(cat); } else { extra = extra.filter(c => c !== cat); }
+            updateTourInFirebase({ extraCategories: extra }, '✅ تم تحديث الفئات').then(() => renderTourCard());
+        }
+
+        function addCompanion() {
+            if (!requireOpsRole()) return;
+            const name = document.getElementById('newCompanionName').value.trim();
+            const role = document.getElementById('newCompanionRole').value.trim() || 'مرافق';
+            const linkedCoachId = document.getElementById('newCompanionCoach')?.value || '';
+            if (!name) { showToast('أدخل اسم المرافق', 'warning'); return; }
+            const t = getTournamentById(currentTournamentId);
+            const companions = [...(t.companions || []), { name, role, coachId: linkedCoachId || null }];
+            updateTourInFirebase({ companions }, '✅ تمت الإضافة').then(() => {
+                if (linkedCoachId) db.ref('academy/coaches/' + linkedCoachId + '/tournaments/' + t.id).set(true);
+                pushTourTimeline(`تمت إضافة ${role}: ${name}`);
+                renderTourCard();
+            });
+        }
+
+        function removeCompanion(context) {
+            if (!requireOpsRole()) return;
+            const t = getTournamentById(currentTournamentId);
+            const companions = [...(t.companions || [])];
+            companions.splice(parseInt(context.dataset.index), 1);
+            updateTourInFirebase({ companions }, '✅ تم الحذف').then(() => renderTourCard());
+        }
+
+        /* ===== الطاقم الفني ===== */
+        function renderTourCoachesCard(t) {
+            const coaches = t.coaches || {};
+            const options = allCoaches.map(c => `<option value="${c.id}">${c.name} (${c.categoryId})</option>`).join('');
+            return `
+                    <div class="form-card">
+                        <h3>🧑‍🏫 الطاقم الفني والإداري</h3>
+                        <div class="form-grid">
+                            ${COACH_ROLES.map(r => `
+                                <div class="form-group">
+                                    <label>${r.label}</label>
+                                    <select data-action="assignTourCoachRole" data-role="${r.key}">
+                                        <option value="">-- غير معيّن --</option>${allCoaches.map(c => `<option value="${c.id}" ${coaches[r.key] === c.id ? 'selected' : ''}>${c.name} (${c.categoryId})</option>`).join('')}
+                                    </select>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+        }
+
+        function assignTourCoachRole(context) {
+            if (!requireRole('admin')) return;
+            const t = getTournamentById(currentTournamentId);
+            const role = context.dataset.role;
+            const newCoachId = context.value;
+            const oldCoachId = (t.coaches || {})[role];
+            const coaches = { ...(t.coaches || {}), [role]: newCoachId };
+            updateTourInFirebase({ coaches }, '✅ تم التعيين').then(() => {
+                if (oldCoachId) db.ref('academy/coaches/' + oldCoachId + '/tournaments/' + t.id).remove();
+                if (newCoachId) db.ref('academy/coaches/' + newCoachId + '/tournaments/' + t.id).set(true);
+                pushTourTimeline(`تم تعيين ${COACH_ROLES.find(r => r.key === role)?.label} جديد`);
+            });
+        }
+
+        /* ===== أولياء الأمور ===== */
+        function renderTourParentsCard(t) {
+            const roster = Object.keys(t.players || {}).filter(pid => t.players[pid]?.called);
+            const consent = t.parentsConsent || {};
+            const rows = roster.map(pid => {
+                const p = allPlayers.find(x => x.id === pid);
+                if (!p) return '';
+                const c = consent[pid] || {};
+                return `
+                        <div class="roster-row">
+                            <span class="roster-name">${p.firstName} ${p.lastName}</span>
+                            <span class="text-muted">${p.guardianName || ''} — ${p.guardianPhone || ''}</span>
+                            <select class="attendance-select" data-action="setParentApproval" data-player-id="${pid}">
+                                <option value="yes" ${c.approved ? 'selected' : ''}>✅ موافق</option>
+                                <option value="no" ${!c.approved ? 'selected' : ''}>❌ غير موافق</option>
+                            </select>
+                            <label style="display:flex;align-items:center;gap:4px;font-size:0.8rem;">
+                                <input type="checkbox" data-action="setDocReceived" data-player-id="${pid}" ${c.docReceived ? 'checked' : ''} /> استلام التصريح
+                            </label>
+                        </div>`;
+            }).join('') || '<p class="text-muted">لا يوجد لاعبون مستدعون بعد</p>';
+            return `<div class="form-card"><h3>👨‍👦 أولياء الأمور</h3>${rows}</div>`;
+        }
+
+        function setParentApproval(context) {
+            if (!requireOpsRole()) return;
+            const t = getTournamentById(currentTournamentId);
+            const consent = { ...(t.parentsConsent || {}) };
+            consent[context.dataset.playerId] = { ...(consent[context.dataset.playerId] || {}), approved: context.value === 'yes' };
+            updateTourInFirebase({ parentsConsent: consent }, '✅ تم التحديث');
+        }
+
+        function setDocReceived(context) {
+            if (!requireOpsRole()) return;
+            const t = getTournamentById(currentTournamentId);
+            const consent = { ...(t.parentsConsent || {}) };
+            consent[context.dataset.playerId] = { ...(consent[context.dataset.playerId] || {}), docReceived: context.checked };
+            updateTourInFirebase({ parentsConsent: consent });
+        }
+
+        /* ===== المعنيون (participants) — استبدال الدالة بالكامل ===== */
+        let tourParticipantsFilter = { search: '', category: '', fawj: '' };
+        let tourParticipantsSelected = new Set();
+
         function buildTourParticipantsList(t) {
             const list = [];
             Object.entries(t.players || {}).forEach(([pid, info]) => {
@@ -7469,41 +8144,1572 @@
             exportHtmlToPDF(wrapper, `المعنيون_${t.name.replace(/\s+/g, '_')}`, { title: `قائمة المعنيين — ${t.name}`, orientation: 'landscape' });
         }
 
-        // ===== الدوال الأساسية للدورات (الباقي كما هو) =====
-        function getTournamentById(id) { return allTournaments.find(t => t.id === id); }
-
-        function tourDbRef(id, path) { return path ? db.ref('academy/tournaments/' + id + '/' + path) : db.ref(
-            'academy/tournaments/' + id); }
-
-        function updateTourInFirebase(patch, successMsg) {
-            const t = getTournamentById(currentTournamentId);
-            if (!t) return Promise.reject('no tournament');
-            return db.ref('academy/tournaments/' + t.id).update(patch).then(() => {
-                Object.assign(t, patch);
-                if (successMsg) showToast(successMsg, 'success');
-            }).catch(err => showToast('❌ خطأ: ' + err.message, 'error'));
+        function addParticipantPlayer() {
+            if (!requireOpsRole()) return;
+            const select = document.getElementById('participantPlayerSelect');
+            const playerId = select?.value;
+            if (!playerId) { showToast('اختر لاعبًا أولاً', 'warning'); return; }
+            guardedAction('addParticipantPlayer_' + playerId, () => {
+                const t = getTournamentById(currentTournamentId);
+                const players = { ...(t.players || {}) };
+                if (players[playerId]?.called) { showToast('ℹ️ اللاعب مضاف بالفعل', 'info'); return; }
+                players[playerId] = { ...(players[playerId] || { healthStatus: 'ready' }), called: true, manual: true };
+                updateTourInFirebase({ players }, '✅ تمت إضافة اللاعب لقائمة المعنيين').then(() => {
+                    const p = allPlayers.find(x => x.id === playerId);
+                    pushTourTimeline(`تمت إضافة اللاعب ${p ? p.firstName + ' ' + p.lastName : ''} يدويًا لقائمة المعنيين`);
+                    const current = allPlayerDetails[playerId]?.tournamentsCount || 0;
+                    db.ref('academy/playerDetails/' + playerId + '/tournamentsCount').set(current + 1);
+                    if (!allPlayerDetails[playerId]) allPlayerDetails[playerId] = {};
+                    allPlayerDetails[playerId].tournamentsCount = current + 1;
+                    renderTourCard();
+                });
+            });
         }
 
-        function pushTourTimeline(action) {
-            const t = getTournamentById(currentTournamentId);
-            if (!t) return;
-            const entry = { action, time: new Date().toISOString(),
-            user: currentUser?.data?.name || currentUser?.role || '' };
-            const timeline = [...(t.timeline || []), entry];
-            db.ref('academy/tournaments/' + t.id + '/timeline').set(timeline).then(() => { t.timeline = timeline; });
+        function removeParticipantPlayer(context) {
+            if (!requireOpsRole()) return;
+            const playerId = context.dataset.id;
+            guardedAction('removeParticipantPlayer_' + playerId, () => {
+                const t = getTournamentById(currentTournamentId);
+                const players = { ...(t.players || {}) };
+                if (!players[playerId]?.called) { showToast('ℹ️ اللاعب غير مدرج أصلاً', 'info'); return; }
+                players[playerId] = { ...(players[playerId] || {}), called: false };
+                updateTourInFirebase({ players }, '✅ تمت إزالة اللاعب من المعنيين').then(() => {
+                    const current = allPlayerDetails[playerId]?.tournamentsCount || 0;
+                    db.ref('academy/playerDetails/' + playerId + '/tournamentsCount').set(Math.max(0, current - 1));
+                    if (!allPlayerDetails[playerId]) allPlayerDetails[playerId] = {};
+                    allPlayerDetails[playerId].tournamentsCount = Math.max(0, current - 1);
+                    renderTourCard();
+                });
+            });
         }
 
-        // ===== باقي دوال الدورات (لا تتغير) =====
-        // ... (نظام الدورات الكامل موجود مسبقاً، نضيف فقط ما سبق)
-        // سنقوم بإدراج بقية الدوال ولكن بما أن الكود طويل جداً، سأكتبها مختصرة مع الإشارة إلى أنها موجودة.
-        // ولكن بما أننا نعيد إنتاج الكود الكامل، يجب أن نضمن وجود جميع الدوال.
-        // سأقوم بإدراج الدوال المتبقية (showCreateTournament, saveTournamentDetailed, openTournamentWorkspace, renderTournamentWorkspaceShell, renderTourTabsBar, switchTourTab, updateTourStatus, renderTourCard, renderTourScoreboard, computeTourStats, renderTourDashboardCard, renderTourPlayersCard, renderTourCoachesCard, renderTourParentsCard, renderTourMatchesCard, renderTourStandingsCard, renderTourTransportCard, renderTourAccommodationCard, renderTourExpensesCard, renderTourDocumentsCard, renderTourGalleryCard, renderTourTimelineCard, renderTourReportCard, saveTourFinalReport, renderTournamentsList, showAdminTournaments, applyTourFilters, showTournamentArchive, deleteTournament, completeTournament, exportCurrentTourTabPDF) – هذه الدوال موجودة بالفعل في الكود السابق ولم تتغير، لذا سأضمّنها كما هي.
+        function addParticipantStaff() {
+            if (!requireOpsRole()) return;
+            const select = document.getElementById('participantStaffSelect');
+            const coachId = select?.value;
+            if (!coachId) { showToast('اختر عضوًا أولاً', 'warning'); return; }
+            const roleText = document.getElementById('participantStaffRole')?.value.trim() || '';
+            guardedAction('addParticipantStaff_' + coachId, () => {
+                const t = getTournamentById(currentTournamentId);
+                const participantStaff = { ...(t.participantStaff || {}) };
+                if (participantStaff[coachId]) { showToast('ℹ️ العضو مضاف بالفعل', 'info'); return; }
+                participantStaff[coachId] = roleText || true;
+                updateTourInFirebase({ participantStaff }, '✅ تمت إضافة العضو لقائمة المعنيين').then(() => {
+                    db.ref('academy/coaches/' + coachId + '/tournaments/' + t.id).set(true);
+                    const c = allCoaches.find(x => x.id === coachId);
+                    pushTourTimeline(`تمت إضافة ${c ? c.name : ''} لقائمة المعنيين بالدورة`);
+                    renderTourCard();
+                });
+            });
+        }
 
-        // لكن لضمان عدم حدوث أخطاء، سأكتب الكود الكامل للدوال المتبقية في قسم الدورات (مع إعادة استخدام ما هو موجود).
+        function removeParticipantStaff(context) {
+            if (!requireOpsRole()) return;
+            const coachId = context.dataset.id;
+            guardedAction('removeParticipantStaff_' + coachId, () => {
+                const t = getTournamentById(currentTournamentId);
+                const participantStaff = { ...(t.participantStaff || {}) };
+                delete participantStaff[coachId];
+                updateTourInFirebase({ participantStaff }, '✅ تمت إزالة العضو من المعنيين').then(() => {
+                    db.ref('academy/coaches/' + coachId + '/tournaments/' + t.id).remove();
+                    renderTourCard();
+                });
+            });
+        }
 
-        // بما أن الرد محدود الطول، سأقوم بتضمين الكود الكامل في الرد النهائي.
+        function loadCategoryAsParticipants() {
+            if (!requireOpsRole()) return;
+            const categoryId = document.getElementById('participantCategorySelect')?.value;
+            if (!categoryId) { showToast('اختر فئة أولاً', 'warning'); return; }
+            const t = getTournamentById(currentTournamentId);
+            const catPlayers = allPlayers.filter(p => p.categoryId === categoryId && p.status === 'approved');
+            if (catPlayers.length === 0) { showToast('لا يوجد لاعبون معتمدون في هذه الفئة', 'warning'); return; }
+            const players = { ...(t.players || {}) };
+            let addedCount = 0;
+            catPlayers.forEach(p => {
+                if (!players[p.id]?.called) addedCount++;
+                players[p.id] = { ...(players[p.id] || { healthStatus: 'ready' }), called: true };
+            });
+            updateTourInFirebase({ players }, `✅ تم تحميل ${addedCount} لاعب جديد من فئة ${categoryId}`).then(() => {
+                pushTourTimeline(`تم تحميل جميع لاعبي فئة ${categoryId} كمعنيين بالدورة`);
+                renderTourCard();
+            });
+        }
 
-        // سنقوم بإنهاء الكود الآن.
+        /* ===== المباريات (إعادة استخدام نظام المباريات الحالي بالكامل) ===== */
+        function renderTourMatchesCard(t) {
+            const matches = allMatches.filter(m => m.tournamentId === t.id);
+            return `
+                    <div class="form-card">
+                        <h3>⚽ مباريات الدورة</h3>
+                        <button class="btn-sm btn-sm-primary" data-action="createMatchInsideTournament" style="margin-bottom:14px;"><i class="fas fa-plus"></i> إنشاء مباراة ضمن هذه الدورة</button>
+                        <div id="tourMatchesList"></div>
+                    </div>
+                `;
+        }
+
+        function createMatchInsideTournament() {
+            if (!requireOpsRole()) return;
+            pendingTournamentIdForMatch = currentTournamentId;
+            openCreateMatchModal();
+        }
+
+        /* ===== الترتيب (مجموعات يديرها المدير يدوياً) ===== */
+        function renderTourStandingsCard(t) {
+            const groups = t.groups || [];
+            const groupsHtml = groups.map((g, gi) => {
+                const teams = [...(g.teams || [])].map((team, ti) => ({ ...team, ti }))
+                    .sort((a, b) => (b.won * 3 + b.draw) - (a.won * 3 + a.draw) || (b.gf - b.ga) - (a.gf - a.ga));
+                const rows = teams.map(team => `
+                        <tr>
+                            <td style="text-align:right; font-weight:700;">${team.name}</td>
+                            <td><input type="number" min="0" value="${team.played || 0}" data-action="updateTeamStat" data-group="${gi}" data-team="${team.ti}" data-field="played" /></td>
+                            <td><input type="number" min="0" value="${team.won || 0}" data-action="updateTeamStat" data-group="${gi}" data-team="${team.ti}" data-field="won" /></td>
+                            <td><input type="number" min="0" value="${team.draw || 0}" data-action="updateTeamStat" data-group="${gi}" data-team="${team.ti}" data-field="draw" /></td>
+                            <td><input type="number" min="0" value="${team.lost || 0}" data-action="updateTeamStat" data-group="${gi}" data-team="${team.ti}" data-field="lost" /></td>
+                            <td><input type="number" min="0" value="${team.gf || 0}" data-action="updateTeamStat" data-group="${gi}" data-team="${team.ti}" data-field="gf" /></td>
+                            <td><input type="number" min="0" value="${team.ga || 0}" data-action="updateTeamStat" data-group="${gi}" data-team="${team.ti}" data-field="ga" /></td>
+                            <td><strong>${team.won * 3 + team.draw}</strong></td>
+                            <td><button class="btn-sm btn-sm-danger" data-action="removeTeamFromGroup" data-group="${gi}" data-team="${team.ti}"><i class="fas fa-trash"></i></button></td>
+                        </tr>
+                    `).join('');
+                return `
+                        <div class="trn-group-card">
+                            <div class="group-header"><h4>${g.name}</h4><button class="btn-sm btn-sm-danger" data-action="removeGroup" data-group="${gi}"><i class="fas fa-trash"></i> حذف المجموعة</button></div>
+                            <div class="table-wrap"><table class="trn-standings-table">
+                                <thead><tr><th>الفريق</th><th>لعب</th><th>فاز</th><th>تعادل</th><th>خسر</th><th>له</th><th>عليه</th><th>نقاط</th><th></th></tr></thead>
+                                <tbody>${rows}</tbody>
+                            </table></div>
+                            <div class="form-grid" style="margin-top:10px;">
+                                <div class="form-group"><label>اسم فريق جديد</label><input type="text" id="newTeamName_${gi}" /></div>
+                                <div class="form-group full"><button class="btn-sm btn-sm-primary" data-action="addTeamToGroup" data-group="${gi}"><i class="fas fa-plus"></i> إضافة فريق</button></div>
+                            </div>
+                        </div>`;
+            }).join('') || '<p class="text-muted">لا توجد مجموعات بعد</p>';
+            return `
+                    <div class="form-card">
+                        <h3>📊 ترتيب المجموعات</h3>
+                        <div class="form-grid" style="margin-bottom:16px;">
+                            <div class="form-group"><label>اسم المجموعة الجديدة</label><input type="text" id="newGroupName" placeholder="مثال: المجموعة أ" /></div>
+                            <div class="form-group full"><button class="btn-sm btn-sm-primary" data-action="addStandingsGroup"><i class="fas fa-plus"></i> إضافة مجموعة</button></div>
+                        </div>
+                    </div>
+                    ${groupsHtml}
+                `;
+        }
+
+        function addStandingsGroup() {
+            if (!requireOpsRole()) return;
+            const name = document.getElementById('newGroupName').value.trim();
+            if (!name) { showToast('أدخل اسم المجموعة', 'warning'); return; }
+            const t = getTournamentById(currentTournamentId);
+            const groups = [...(t.groups || []), { name, teams: [] }];
+            updateTourInFirebase({ groups }, '✅ تمت الإضافة').then(() => renderTourCard());
+        }
+
+        function removeGroup(context) {
+            if (!requireOpsRole()) return;
+            const t = getTournamentById(currentTournamentId);
+            const groups = [...(t.groups || [])];
+            groups.splice(parseInt(context.dataset.group), 1);
+            updateTourInFirebase({ groups }, '✅ تم الحذف').then(() => renderTourCard());
+        }
+
+        function addTeamToGroup(context) {
+            if (!requireOpsRole()) return;
+            const gi = parseInt(context.dataset.group);
+            const nameInput = document.getElementById('newTeamName_' + gi);
+            const name = nameInput.value.trim();
+            if (!name) { showToast('أدخل اسم الفريق', 'warning'); return; }
+            const t = getTournamentById(currentTournamentId);
+            const groups = [...(t.groups || [])];
+            groups[gi].teams = [...(groups[gi].teams || []), { name, played: 0, won: 0, draw: 0, lost: 0, gf: 0, ga: 0 }];
+            updateTourInFirebase({ groups }, '✅ تمت الإضافة').then(() => renderTourCard());
+        }
+
+        function removeTeamFromGroup(context) {
+            if (!requireOpsRole()) return;
+            const t = getTournamentById(currentTournamentId);
+            const groups = [...(t.groups || [])];
+            const gi = parseInt(context.dataset.group),
+                ti = parseInt(context.dataset.team);
+            groups[gi].teams.splice(ti, 1);
+            updateTourInFirebase({ groups }, '✅ تم الحذف').then(() => renderTourCard());
+        }
+
+        function updateTeamStat(context) {
+            if (!requireOpsRole()) return;
+            const t = getTournamentById(currentTournamentId);
+            const groups = [...(t.groups || [])];
+            const gi = parseInt(context.dataset.group),
+                ti = parseInt(context.dataset.team),
+                field = context.dataset.field;
+            groups[gi].teams[ti][field] = parseInt(context.value) || 0;
+            updateTourInFirebase({ groups });
+        }
+
+        /* ===== النقل ===== */
+        function renderTourTransportCard(t) {
+            const buses = t.transport?.buses || [];
+            const busesHtml = buses.map((b, i) => `
+                    <div class="log-entry-item">
+                        <div><div class="log-action">🚌 ${b.name}</div><div class="log-details">السائق: ${b.driver || '-'} | الانطلاق: ${b.departureTime || '-'} | نقطة التجمع: ${b.meetingPoint || '-'} | المقاعد: ${b.seats || 0} (${(b.assignedPlayers || []).length} معيّن)</div></div>
+                        <div style="display:flex; gap:6px;">
+                            <button class="btn-sm btn-sm-info" data-action="assignBusPlayers" data-index="${i}"><i class="fas fa-users"></i> توزيع اللاعبين</button>
+                            <button class="btn-sm btn-sm-danger" data-action="removeBus" data-index="${i}"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </div>`).join('') || '<p class="text-muted">لا توجد حافلات بعد</p>';
+            return `
+                    <div class="form-card">
+                        <h3>🚌 إدارة النقل</h3>
+                        <div class="form-grid" style="margin-bottom:14px;">
+                            <div class="form-group"><label>اسم الحافلة/الرقم</label><input type="text" id="busName" /></div>
+                            <div class="form-group"><label>السائق</label><input type="text" id="busDriver" /></div>
+                            <div class="form-group"><label>وقت الانطلاق</label><input type="time" id="busDepartureTime" /></div>
+                            <div class="form-group"><label>نقطة التجمع</label><input type="text" id="busMeetingPoint" /></div>
+                            <div class="form-group"><label>عدد المقاعد</label><input type="number" id="busSeats" min="0" /></div>
+                            <div class="form-group full"><button class="btn-sm btn-sm-primary" data-action="addBus"><i class="fas fa-plus"></i> إضافة حافلة</button></div>
+                        </div>
+                        ${busesHtml}
+                    </div>
+                `;
+        }
+
+        function addBus() {
+            if (!requireOpsRole()) return;
+            const t = getTournamentById(currentTournamentId);
+            const bus = {
+                name: document.getElementById('busName').value.trim() || 'حافلة',
+                driver: document.getElementById('busDriver').value.trim(),
+                departureTime: document.getElementById('busDepartureTime').value,
+                meetingPoint: document.getElementById('busMeetingPoint').value.trim(),
+                seats: parseInt(document.getElementById('busSeats').value) || 0,
+                assignedPlayers: []
+            };
+            const transport = { buses: [...(t.transport?.buses || []), bus] };
+            updateTourInFirebase({ transport }, '✅ تمت إضافة الحافلة').then(() => renderTourCard());
+        }
+
+        function removeBus(context) {
+            if (!requireOpsRole()) return;
+            const t = getTournamentById(currentTournamentId);
+            const buses = [...(t.transport?.buses || [])];
+            buses.splice(parseInt(context.dataset.index), 1);
+            updateTourInFirebase({ transport: { buses } }, '✅ تم الحذف').then(() => renderTourCard());
+        }
+
+        function assignBusPlayers(context) {
+            if (!requireOpsRole()) return;
+            const t = getTournamentById(currentTournamentId);
+            const idx = parseInt(context.dataset.index);
+            const bus = t.transport.buses[idx];
+            const roster = Object.keys(t.players || {}).filter(pid => t.players[pid]?.called).map(pid => {
+                const p = allPlayers.find(x => x.id === pid);
+                return p ? { id: pid, label: p.firstName + ' ' + p.lastName } : null;
+            }).filter(Boolean);
+            showRosterPickerModal('توزيع اللاعبين على: ' + bus.name, 'fa-bus', roster, bus.assignedPlayers || [],
+                (selected) => {
+                    const buses = [...t.transport.buses];
+                    buses[idx].assignedPlayers = selected;
+                    updateTourInFirebase({ transport: { buses } }, '✅ تم التوزيع').then(() => renderTourCard());
+                });
+        }
+
+        /* ===== الإقامة ===== */
+        function renderTourAccommodationCard(t) {
+            const acc = t.accommodation || { hotelName: '', rooms: [] };
+            const roomsHtml = (acc.rooms || []).map((r, i) => `
+                    <div class="log-entry-item">
+                        <div><div class="log-action">🛏️ غرفة ${r.number} (${r.type || '-'})</div><div class="log-details">السعة: ${r.capacity || 0} | المشغولون: ${(r.occupants || []).length}</div></div>
+                        <div style="display:flex; gap:6px;">
+                            <button class="btn-sm btn-sm-info" data-action="assignRoomOccupants" data-index="${i}"><i class="fas fa-users"></i> توزيع</button>
+                            <button class="btn-sm btn-sm-danger" data-action="removeRoom" data-index="${i}"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </div>`).join('') || '<p class="text-muted">لا توجد غرف بعد</p>';
+            return `
+                    <div class="form-card">
+                        <h3>🏨 الإقامة</h3>
+                        <div class="form-group" style="max-width:320px; margin-bottom:14px;"><label>اسم الفندق</label><input type="text" id="hotelName" value="${acc.hotelName || ''}" data-action="saveHotelName" /></div>
+                        <div class="form-grid" style="margin-bottom:14px;">
+                            <div class="form-group"><label>رقم الغرفة</label><input type="text" id="roomNumber" /></div>
+                            <div class="form-group"><label>النوع</label><input type="text" id="roomType" placeholder="مزدوجة / ثلاثية..." /></div>
+                            <div class="form-group"><label>السعة</label><input type="number" id="roomCapacity" min="1" /></div>
+                            <div class="form-group full"><button class="btn-sm btn-sm-primary" data-action="addRoom"><i class="fas fa-plus"></i> إضافة غرفة</button></div>
+                        </div>
+                        ${roomsHtml}
+                    </div>
+                `;
+        }
+
+        function saveHotelName(context) {
+            if (!requireOpsRole()) return;
+            const t = getTournamentById(currentTournamentId);
+            updateTourInFirebase({ accommodation: { ...(t.accommodation || {}), hotelName: context.value } });
+        }
+
+        function addRoom() {
+            if (!requireOpsRole()) return;
+            const t = getTournamentById(currentTournamentId);
+            const room = {
+                number: document.getElementById('roomNumber').value.trim(),
+                type: document.getElementById('roomType').value.trim(),
+                capacity: parseInt(document.getElementById('roomCapacity').value) || 1,
+                occupants: []
+            };
+            const accommodation = { ...(t.accommodation || {}), rooms: [...(t.accommodation?.rooms || []), room] };
+            updateTourInFirebase({ accommodation }, '✅ تمت إضافة الغرفة').then(() => renderTourCard());
+        }
+
+        function removeRoom(context) {
+            if (!requireOpsRole()) return;
+            const t = getTournamentById(currentTournamentId);
+            const rooms = [...(t.accommodation?.rooms || [])];
+            rooms.splice(parseInt(context.dataset.index), 1);
+            updateTourInFirebase({ accommodation: { ...t.accommodation, rooms } }, '✅ تم الحذف').then(() => renderTourCard());
+        }
+
+        function assignRoomOccupants(context) {
+            if (!requireOpsRole()) return;
+            const t = getTournamentById(currentTournamentId);
+            const idx = parseInt(context.dataset.index);
+            const room = t.accommodation.rooms[idx];
+            const rosterPlayers = Object.keys(t.players || {}).filter(pid => t.players[pid]?.called).map(pid => {
+                const p = allPlayers.find(x => x.id === pid);
+                return p ? { id: pid, label: '👤 ' + p.firstName + ' ' + p.lastName } : null;
+            }).filter(Boolean);
+            const rosterCoaches = Object.values(t.coaches || {}).filter(Boolean).map(cid => {
+                const c = allCoaches.find(x => x.id === cid);
+                return c ? { id: cid, label: '🧑‍🏫 ' + c.name } : null;
+            }).filter(Boolean);
+            showRosterPickerModal('توزيع غرفة رقم: ' + room.number, 'fa-hotel', [...rosterPlayers, ...rosterCoaches],
+                room.occupants || [], (selected) => {
+                    const rooms = [...t.accommodation.rooms];
+                    rooms[idx].occupants = selected;
+                    updateTourInFirebase({ accommodation: { ...t.accommodation, rooms } }, '✅ تم التوزيع').then(() => renderTourCard());
+                });
+        }
+
+        /* ===== المصاريف ===== */
+        function renderTourExpensesCard(t) {
+            const expenses = t.expenses || [];
+            const total = expenses.reduce((s, e) => s + (e.amount || 0), 0);
+            const rows = expenses.map((e, i) =>
+                    `<div class="log-entry-item"><div><div class="log-action">${e.category}</div><div class="log-details">${e.description || ''}</div></div><div style="display:flex;align-items:center;gap:10px;"><strong>${e.amount}</strong><button class="btn-sm btn-sm-danger" data-action="removeExpense" data-index="${i}"><i class="fas fa-trash"></i></button></div></div>`
+                    ).join('') || '<p class="text-muted">لا توجد مصاريف مسجلة</p>';
+            return `
+                    <div class="expense-total-banner"><i class="fas fa-coins"></i> الإجمالي: ${total}</div>
+                    <div class="form-card">
+                        <h3>💰 المصاريف</h3>
+                        <div class="form-grid" style="margin-bottom:14px;">
+                            <div class="form-group"><label>الفئة</label><select id="expCategory">${EXPENSE_CATEGORIES.map(c => `<option value="${c}">${c}</option>`).join('')}</select></div>
+                            <div class="form-group"><label>الوصف</label><input type="text" id="expDescription" /></div>
+                            <div class="form-group"><label>المبلغ</label><input type="number" id="expAmount" min="0" /></div>
+                            <div class="form-group full"><button class="btn-sm btn-sm-primary" data-action="addExpense"><i class="fas fa-plus"></i> إضافة مصروف</button></div>
+                        </div>
+                        ${rows}
+                    </div>
+                `;
+        }
+
+        function addExpense() {
+            if (!requireRole('admin')) return;
+            const t = getTournamentById(currentTournamentId);
+            const item = {
+                category: document.getElementById('expCategory').value,
+                description: document.getElementById('expDescription').value.trim(),
+                amount: parseFloat(document.getElementById('expAmount').value) || 0
+            };
+            const expenses = [...(t.expenses || []), item];
+            updateTourInFirebase({ expenses }, '✅ تمت الإضافة').then(() => renderTourCard());
+        }
+
+        function removeExpense(context) {
+            if (!requireRole('admin')) return;
+            const t = getTournamentById(currentTournamentId);
+            const expenses = [...(t.expenses || [])];
+            expenses.splice(parseInt(context.dataset.index), 1);
+            updateTourInFirebase({ expenses }, '✅ تم الحذف').then(() => renderTourCard());
+        }
+
+        /* ===== الوثائق ===== */
+        function renderTourDocumentsCard(t) {
+            const docs = t.documents || [];
+            const rows = docs.map((d, i) =>
+                    `<div class="log-entry-item"><a href="${d.data}" download="${d.name}" class="log-action">📎 ${d.name}</a><button class="btn-sm btn-sm-danger" data-action="removeTourDocument" data-index="${i}"><i class="fas fa-trash"></i></button></div>`
+                    ).join('') || '<p class="text-muted">لا توجد وثائق بعد</p>';
+            return `
+                    <div class="form-card">
+                        <h3>📄 الوثائق (دعوات، شهادات، قوانين، ملفات PDF)</h3>
+                        <input type="file" id="tourDocInput" multiple />
+                        <button class="btn-sm btn-sm-primary" data-action="uploadTourDocuments" style="margin:10px 0;"><i class="fas fa-upload"></i> رفع الملفات</button>
+                        ${rows}
+                    </div>
+                `;
+        }
+
+        function uploadTourDocuments() {
+            if (!requireOpsRole()) return;
+            const files = document.getElementById('tourDocInput').files;
+            if (!files.length) { showToast('اختر ملفات أولاً', 'warning'); return; }
+            const t = getTournamentById(currentTournamentId);
+            const readers = Array.from(files).map(f => new Promise((res, rej) => { const r = new FileReader();
+                    r.onload = () => res({ name: f.name, data: r.result });
+                    r.onerror = rej;
+                    r.readAsDataURL(f); }));
+            showProgress('جاري رفع الملفات...', 0);
+            Promise.all(readers).then(newDocs => {
+                const documents = [...(t.documents || []), ...newDocs];
+                updateTourInFirebase({ documents }, '✅ تم الرفع').then(() => { hideProgress(); renderTourCard(); });
+            }).catch(() => { hideProgress(); showToast('❌ فشل الرفع', 'error'); });
+        }
+
+        function removeTourDocument(context) {
+            if (!requireOpsRole()) return;
+            const t = getTournamentById(currentTournamentId);
+            const documents = [...(t.documents || [])];
+            documents.splice(parseInt(context.dataset.index), 1);
+            updateTourInFirebase({ documents }, '✅ تم الحذف').then(() => renderTourCard());
+        }
+
+        /* ===== معرض الصور (مصنّف + حر) ===== */
+        function renderTourGalleryCard(t) {
+            const gallery = t.gallery || {};
+            const albumsHtml = GALLERY_CATEGORIES.map(cat => {
+                const photos = gallery[cat] || [];
+                const photosHtml = photos.map((p, i) =>
+                        `<div style="position:relative;"><img src="${p}" style="width:90px;height:90px;object-fit:cover;border-radius:10px;" /><button class="icon-close-btn" style="position:absolute;top:2px;left:2px;width:22px;height:22px;font-size:0.6rem;" data-action="removeGalleryPhoto" data-category="${cat}" data-index="${i}"><i class="fas fa-times"></i></button></div>`
+                        ).join('');
+                return `<div class="gallery-album-title">${cat}</div><div style="display:flex; gap:8px; flex-wrap:wrap;">${photosHtml || '<span class="text-muted">لا توجد صور</span>'}</div>`;
+            }).join('');
+
+            const freeGallery = t.freeGallery || [];
+            const slotsHtml = freeGallery.map((p, i) => `
+                    <div class="free-gallery-slot filled">
+                        <img src="${p}" />
+                        <button class="icon-close-btn on-dark" data-action="removeFreeGalleryPhoto" data-index="${i}"><i class="fas fa-times"></i></button>
+                    </div>`).join('');
+            const emptySlot = `
+                    <label class="free-gallery-slot empty">
+                        <i class="fas fa-plus"></i>
+                        <span>إضافة صورة</span>
+                        <input type="file" accept="image/*" multiple style="display:none;" onchange="uploadFreeGalleryPhotos(this.files)" />
+                    </label>`;
+
+            return `
+                    <div class="form-card">
+                        <h3>🖼️ معرض صور مصنّف</h3>
+                        <div class="form-grid" style="margin-bottom:14px;">
+                            <div class="form-group"><label>التصنيف</label><select id="galleryCategory">${GALLERY_CATEGORIES.map(c => `<option value="${c}">${c}</option>`).join('')}</select></div>
+                            <div class="form-group"><label>الصور</label><input type="file" id="galleryPhotosInput" accept="image/*" multiple /></div>
+                            <div class="form-group full"><button class="btn-sm btn-sm-primary" data-action="uploadGalleryPhotos"><i class="fas fa-upload"></i> رفع للألبوم</button></div>
+                        </div>
+                        ${albumsHtml}
+                    </div>
+                    <div class="form-card">
+                        <h3>📷 ألبوم حر (بدون تصنيف)</h3>
+                        <p class="text-muted" style="margin-bottom:10px;">أضف أي عدد من الصور، تبقى محفوظة داخل ملف الدورة ويمكن الرجوع إليها في أي وقت.</p>
+                        <div class="free-gallery-grid">${slotsHtml}${emptySlot}</div>
+                    </div>
+                `;
+        }
+
+        function uploadGalleryPhotos() {
+            if (!requireOpsRole()) return;
+            const cat = document.getElementById('galleryCategory').value;
+            const files = document.getElementById('galleryPhotosInput').files;
+            if (!files.length) { showToast('اختر صوراً أولاً', 'warning'); return; }
+            const t = getTournamentById(currentTournamentId);
+            const readers = Array.from(files).map(f => new Promise((res, rej) => { const r = new FileReader();
+                    r.onload = () => res(r.result);
+                    r.onerror = rej;
+                    r.readAsDataURL(f); }));
+            showProgress('جاري رفع الصور...', 0);
+            Promise.all(readers).then(dataUrls => {
+                const gallery = { ...(t.gallery || {}) };
+                gallery[cat] = [...(gallery[cat] || []), ...dataUrls];
+                updateTourInFirebase({ gallery }, '✅ تم الرفع').then(() => { hideProgress(); renderTourCard(); });
+            }).catch(() => { hideProgress(); showToast('❌ فشل الرفع', 'error'); });
+        }
+
+        function removeGalleryPhoto(context) {
+            if (!requireOpsRole()) return;
+            const t = getTournamentById(currentTournamentId);
+            const gallery = { ...(t.gallery || {}) };
+            const cat = context.dataset.category;
+            gallery[cat] = [...(gallery[cat] || [])];
+            gallery[cat].splice(parseInt(context.dataset.index), 1);
+            updateTourInFirebase({ gallery }, '✅ تم الحذف').then(() => renderTourCard());
+        }
+
+        function uploadFreeGalleryPhotos(files) {
+            if (!requireOpsRole()) return;
+            if (!files || !files.length) return;
+            const t = getTournamentById(currentTournamentId);
+            const readers = Array.from(files).map(f => new Promise((res, rej) => { const r = new FileReader();
+                    r.onload = () => res(r.result);
+                    r.onerror = rej;
+                    r.readAsDataURL(f); }));
+            showProgress('جاري رفع الصور...', 0);
+            Promise.all(readers).then(dataUrls => {
+                const freeGallery = [...(t.freeGallery || []), ...dataUrls];
+                updateTourInFirebase({ freeGallery }, '✅ تم الرفع').then(() => { hideProgress(); renderTourCard(); });
+            }).catch(() => { hideProgress(); showToast('❌ فشل الرفع', 'error'); });
+        }
+        window.uploadFreeGalleryPhotos = uploadFreeGalleryPhotos;
+
+        function removeFreeGalleryPhoto(context) {
+            if (!requireOpsRole()) return;
+            const t = getTournamentById(currentTournamentId);
+            const freeGallery = [...(t.freeGallery || [])];
+            freeGallery.splice(parseInt(context.dataset.index), 1);
+            updateTourInFirebase({ freeGallery }, '✅ تم الحذف').then(() => renderTourCard());
+        }
+
+        /* ===== السجل الزمني ===== */
+        function renderTourTimelineCard(t) {
+            const timeline = [...(t.timeline || [])].reverse();
+            const html = timeline.map(e => `
+                    <div class="log-entry-item">
+                        <div><div class="log-action">${e.action}</div></div>
+                        <div style="text-align:left;"><div class="log-user">${e.user || ''}</div><div class="log-time">${new Date(e.time).toLocaleString('ar-EG')}</div></div>
+                    </div>`).join('') || '<p class="text-muted text-center">لا يوجد سجل بعد</p>';
+            return `<div class="form-card"><h3>🕒 السجل الزمني للدورة</h3>${html}</div>`;
+        }
+
+        /* ===== التقرير النهائي ===== */
+        function renderTourReportCard(t) {
+            const s = computeTourStats(t);
+            const matches = allMatches.filter(m => m.tournamentId === t.id);
+            const losses = matches.filter(m => m.result?.winner && m.result.winner !== 'الأكاديمية' && m.result.winner !== 'تعادل').length;
+            const roster = Object.keys(t.players || {}).filter(pid => t.players[pid]?.called);
+            const rosterPlayers = roster.map(pid => allPlayers.find(p => p.id === pid)).filter(Boolean);
+            const options = rosterPlayers.map(p =>
+                    `<option value="${p.id}" ${t.finalReport?.bestPlayer === p.id ? 'selected' : ''}>${p.firstName} ${p.lastName}</option>`
+                    ).join('');
+            const scorerOptions = rosterPlayers.map(p =>
+                    `<option value="${p.id}" ${t.finalReport?.topScorer === p.id ? 'selected' : ''}>${p.firstName} ${p.lastName}</option>`
+                    ).join('');
+            const attendance = roster.length ? Math.round((Object.values(t.parentsConsent || {}).filter(c => c.approved).length / roster.length) * 100) : 0;
+            const r = t.finalReport || {};
+            return `
+                    <div class="stats-row">
+                        <div class="tour-mini-stat"><div class="num">${s.matchesCount}</div><div class="lbl">المباريات</div></div>
+                        <div class="tour-mini-stat"><div class="num">${s.wins}</div><div class="lbl">الانتصارات</div></div>
+                        <div class="tour-mini-stat"><div class="num">${losses}</div><div class="lbl">الخسائر</div></div>
+                        <div class="tour-mini-stat"><div class="num">${attendance}%</div><div class="lbl">نسبة موافقة الأولياء</div></div>
+                    </div>
+                    <div class="form-card">
+                        <h3>🏆 التقرير النهائي للدورة</h3>
+                        <div class="form-grid">
+                            <div class="form-group"><label>أفضل لاعب</label><select id="repBestPlayer"><option value="">اختر</option>${options}</select></div>
+                            <div class="form-group"><label>أفضل هداف</label><select id="repTopScorer"><option value="">اختر</option>${scorerOptions}</select></div>
+                            <div class="form-group full"><label>التوصيات</label><textarea id="repRecommendations" rows="2">${r.recommendations || ''}</textarea></div>
+                            <div class="form-group full"><label>الجوائز</label><textarea id="repAwards" rows="2" placeholder="افصل كل جائزة بسطر">${r.awards || ''}</textarea></div>
+                            <div class="form-group full"><button class="btn-submit" data-action="saveTourFinalReport"><i class="fas fa-check-double"></i> اعتماد التقرير النهائي وإغلاق الدورة</button></div>
+                        </div>
+                    </div>
+                `;
+        }
+
+        function saveTourFinalReport() {
+            if (!requireRole('admin')) return;
+            const t = getTournamentById(currentTournamentId);
+            const s = computeTourStats(t);
+            const matches = allMatches.filter(m => m.tournamentId === t.id);
+            const losses = matches.filter(m => m.result?.winner && m.result.winner !== 'الأكاديمية' && m.result.winner !== 'تعادل').length;
+            const finalReport = {
+                matchesCount: s.matchesCount,
+                wins: s.wins,
+                losses,
+                bestPlayer: document.getElementById('repBestPlayer').value,
+                topScorer: document.getElementById('repTopScorer').value,
+                recommendations: document.getElementById('repRecommendations').value.trim(),
+                awards: document.getElementById('repAwards').value.trim(),
+                finalizedAt: new Date().toISOString()
+            };
+            updateTourInFirebase({ finalReport, status: 'منتهية' }, '✅ تم اعتماد التقرير النهائي').then(() => {
+                pushTourTimeline('تم اعتماد التقرير النهائي وإغلاق الدورة');
+                renderTournamentWorkspaceShell();
+            });
+        }
+
+        /* =====================================================================
+           استبدال الدوال القديمة الخاصة بالدورات + التوسيع البسيط لنظام المباريات
+           ===================================================================== */
+        function renderTournamentsList() {
+            const container = document.getElementById('tournamentsList');
+            if (!container) return;
+            const active = allTournaments.filter(tt => tt.status === 'قادمة' || tt.status === 'جارية');
+            if (active.length === 0) { container.innerHTML =
+                `<p class="text-muted text-center">لا توجد دورات مجدولة حالياً</p>`; return; }
+            container.innerHTML = active.map(t => `
+                    <div class="tournament-card" data-action="showTournamentDetail" data-id="${t.id}" style="cursor:pointer;">
+                        <div class="tournament-header">
+                            <span class="title">${t.name}</span>
+                            ${t.logo ? `<img src="${t.logo}" class="logo" />` : ''}
+                        </div>
+                        <div class="tournament-info">
+                            <div class="item"><div class="label">الفئة</div><div class="value">${t.categoryId}</div></div>
+                            <div class="item"><div class="label">البداية</div><div class="value">${t.startDate || '-'}</div></div>
+                            <div class="item"><div class="label">المدينة</div><div class="value">${t.city || '-'}</div></div>
+                            <div class="item"><div class="label">الحالة</div><div class="value">${t.status}</div></div>
+                        </div>
+                    </div>
+                `).join('');
+            EventManager.bindButtons(container);
+        }
+
+        function showAdminTournaments() {
+            currentViewFunction = showAdminTournaments;
+            currentViewArgs = [];
+            const content = document.getElementById('pageContent');
+            content.innerHTML = `
+                    <h2 class="page-title">🏆 الدورات</h2>
+                    <p class="page-sub">الدورات المجدولة والجارية حالياً</p>
+                    <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:20px;">
+                        <button class="btn-submit" data-action="showCreateTournament"><i class="fas fa-plus"></i> إنشاء دورة جديدة</button>
+                        <button class="btn-submit" data-action="showTournamentArchive" style="background:linear-gradient(135deg,#6c757d,#495057);"><i class="fas fa-archive"></i> أرشيف الدورات</button>
+                    </div>
+                    <div id="tournamentsList"></div>
+                `;
+            setActiveMenu(4);
+            renderTournamentsList();
+            window.addDebugLog(`🏆 عرض الدورات المجدولة`, 'info');
+            EventManager.bindButtons(content);
+        }
+
+        function applyTourFilters() {
+            const search = (document.getElementById('tourSearch')?.value || '').toLowerCase();
+            const cat = document.getElementById('tourFilterCategory')?.value || '';
+            const city = document.getElementById('tourFilterCity')?.value || '';
+            const status = document.getElementById('tourFilterStatus')?.value || '';
+            let list = allTournaments.filter(t => t.status === 'منتهية' || t.status === 'مؤجلة' || t.status === 'ملغاة');
+            if (search) list = list.filter(t => (t.name || '').toLowerCase().includes(search));
+            if (cat) list = list.filter(t => t.categoryId === cat);
+            if (city) list = list.filter(t => t.city === city);
+            if (status) list = list.filter(t => t.status === status);
+            const container = document.getElementById('tournamentArchiveList');
+            if (!container) return;
+            container.innerHTML = list.map(t => `
+                    <div class="tournament-card" data-action="showTournamentDetail" data-id="${t.id}" style="cursor:pointer;">
+                        <div class="tournament-header"><span class="title">${t.name}</span>${t.logo ? `<img src="${t.logo}" class="logo" />` : ''}</div>
+                        <div class="tournament-info">
+                            <div class="item"><div class="label">الفئة</div><div class="value">${t.categoryId}</div></div>
+                            <div class="item"><div class="label">البداية</div><div class="value">${t.startDate || '-'}</div></div>
+                            <div class="item"><div class="label">المدينة</div><div class="value">${t.city || '-'}</div></div>
+                            <div class="item"><div class="label">الحالة</div><div class="value">${t.status}</div></div>
+                        </div>
+                    </div>`).join('') || '<p class="text-muted text-center">لا توجد نتائج</p>';
+            EventManager.bindButtons(container);
+        }
+        window.applyTourFilters = applyTourFilters;
+
+        function showTournamentArchive() {
+            currentViewFunction = showTournamentArchive;
+            currentViewArgs = [];
+            const content = document.getElementById('pageContent');
+            const completedList = allTournaments.filter(t => t.status === 'منتهية' || t.status === 'مؤجلة' || t.status === 'ملغاة');
+            const cities = [...new Set(allTournaments.map(t => t.city).filter(Boolean))];
+
+            content.innerHTML = `
+                    <h2 class="page-title">🗄️ أرشيف الدورات</h2>
+                    <p class="page-sub">الدورات المنتهية والمؤجلة والملغاة</p>
+                    <button class="btn-sm btn-sm-secondary" data-action="showAdminTournaments" style="margin-bottom:16px;"><i class="fas fa-arrow-right"></i> رجوع</button>
+                    <div class="form-card">
+                        <div class="form-grid">
+                            <div class="form-group"><label>بحث بالاسم</label><input type="text" id="tourSearch" oninput="applyTourFilters()" /></div>
+                            <div class="form-group"><label>الفئة</label><select id="tourFilterCategory" onchange="applyTourFilters()"><option value="">الكل</option>${categories.map(c => `<option value="${c}">${c}</option>`).join('')}</select></div>
+                            <div class="form-group"><label>المدينة</label><select id="tourFilterCity" onchange="applyTourFilters()"><option value="">الكل</option>${cities.map(c => `<option value="${c}">${c}</option>`).join('')}</select></div>
+                            <div class="form-group"><label>الحالة</label><select id="tourFilterStatus" onchange="applyTourFilters()"><option value="">الكل</option>${TOUR_STATUS_LIST.map(s => `<option value="${s}">${s}</option>`).join('')}</select></div>
+                        </div>
+                    </div>
+                    <div id="tournamentArchiveList"></div>
+                `;
+            applyTourFilters();
+            window.addDebugLog('🗄️ عرض أرشيف الدورات', 'info');
+            EventManager.bindButtons(content);
+            updateDashboardActionBar();
+            animatePageTransition();
+        }
+
+        function deleteTournament(id) {
+            if (!requireRole('admin')) return;
+            if (!confirm('حذف هذه الدورة؟ سيبقى تاريخ المباريات المرتبطة بها محفوظاً بشكل مستقل.')) return;
+            db.ref('academy/tournaments/' + id).remove()
+                .then(() => { allTournaments = allTournaments.filter(t => t.id !== id);
+                    showToast('✅ تم الحذف', 'success');
+                    refreshCurrentView(); })
+                .catch(err => showToast('❌ خطأ: ' + err.message, 'error'));
+        }
+
+        function completeTournament(id) {
+            if (!requireRole('admin')) return;
+            if (!confirm('إنهاء هذه الدورة؟')) return;
+            db.ref('academy/tournaments/' + id).update({ status: 'منتهية' })
+                .then(() => { const idx = allTournaments.findIndex(t => t.id === id); if (idx !== -1) allTournaments[idx].status = 'منتهية';
+                    showToast('✅ تم إنهاء الدورة', 'success');
+                    refreshCurrentView(); })
+                .catch(err => showToast('❌ خطأ: ' + err.message, 'error'));
+        }
+
+        /* ---------- توسيع نظام المباريات: ربط اختياري بالدورة ---------- */
+        const originalRenderTourCard = renderTourCard;
+        renderTourCard = function() {
+            originalRenderTourCard();
+            const t = getTournamentById(currentTournamentId);
+            if (currentTournamentTab === 'matches') {
+                const list = document.getElementById('tourMatchesList');
+                if (list && t) renderMatchesList(list, allMatches.filter(m => m.tournamentId === t.id));
+            }
+            if (currentTournamentTab === 'participants' && t) {
+                renderParticipantsTableBody(t);
+            }
+        };
+
+        function exportCurrentTourTabPDF() {
+            const t = getTournamentById(currentTournamentId);
+            const tabInfo = TOUR_TABS.find(tb => tb.key === currentTournamentTab);
+            const body = document.getElementById('tourCardBody');
+            if (!body) { showToast('لا يوجد محتوى للتصدير', 'warning'); return; }
+            exportHtmlToPDF(body, `${(t?.name || 'دورة').replace(/\s+/g, '_')}_${tabInfo?.label || currentTournamentTab}`, {
+                title: `${t?.name || ''} — ${tabInfo?.label || ''}`
+            });
+        }
+
+        // ================================================================
+        // دوال إدارة الملفات والوثائق
+        // ================================================================
+
+        function showManageDocumentsModal(playerId) {
+            if (!canManageAdminDocs()) { showToast('❌ ليس لديك صلاحية إدارة الوثائق', 'error'); return; }
+            const p = allPlayers.find(x => x.id === playerId);
+            if (!p) return;
+            const container = document.createElement('div');
+            container.className = 'edit-modal-overlay';
+            container.id = 'manageDocsModal';
+            container.innerHTML = `
+                    <div class="edit-modal-box">
+                        <div class="edit-modal-header">
+                            <div class="edit-modal-icon"><i class="fas fa-folder-open"></i></div>
+                            <div class="edit-modal-title-wrap"><h3>تحديث وثائق ${p.firstName} ${p.lastName}</h3><span>أكاديمية ASSARU — إدارة الوثائق</span></div>
+                            <button class="icon-close-btn on-dark" onclick="document.getElementById('manageDocsModal').remove()" title="إغلاق"><i class="fas fa-times"></i></button>
+                        </div>
+                        <div class="edit-modal-body">
+                            <div class="edit-modal-group">
+                                <label>الترخيص الأبوي (استبدال)</label>
+                                <div class="upload-area" id="mdParentalUpload"><div class="icon"><i class="fas fa-file-signature"></i></div><div class="text">انقر لاختيار ملف جديد</div><div class="file-name" id="mdParentalName"></div><input type="file" id="mdParentalFile" accept="image/*,application/pdf" /></div>
+                            </div>
+                            <div class="edit-modal-group">
+                                <label>القانون الداخلي (استبدال)</label>
+                                <div class="upload-area" id="mdInternalUpload"><div class="icon"><i class="fas fa-file-contract"></i></div><div class="text">انقر لاختيار ملف جديد</div><div class="file-name" id="mdInternalName"></div><input type="file" id="mdInternalFile" accept="image/*,application/pdf" /></div>
+                            </div>
+                        </div>
+                        <div class="edit-modal-footer">
+                            <button class="btn-sm btn-sm-secondary" onclick="document.getElementById('manageDocsModal').remove()">إلغاء</button>
+                            <button class="btn-submit" data-action="saveManagedDocuments" data-id="${playerId}"><i class="fas fa-check"></i> حفظ الوثائق</button>
+                        </div>
+                    </div>
+                `;
+            document.body.appendChild(container);
+            container.addEventListener('click', e => { if (e.target === container) container.remove(); });
+            setupUpload('mdParentalFile', 'mdParentalName', 'mdParentalUpload');
+            setupUpload('mdInternalFile', 'mdInternalName', 'mdInternalUpload');
+        }
+
+        async function saveManagedDocuments(context) {
+            if (!canManageAdminDocs()) { showToast('❌ ليس لديك صلاحية إدارة الوثائق', 'error'); return; }
+            const playerId = context.dataset.id;
+            const parentalFile = document.getElementById('mdParentalFile').files[0];
+            const internalFile = document.getElementById('mdInternalFile').files[0];
+            if (!parentalFile && !internalFile) { showToast('اختر ملفاً واحداً على الأقل', 'warning'); return; }
+            showLoading('جاري حفظ الوثائق...');
+            try {
+                const update = {};
+                if (parentalFile) update.parentalDoc = await readFileAsBase64(parentalFile);
+                if (internalFile) update.internalDoc = await readFileAsBase64(internalFile);
+                await db.ref('academy/players/' + playerId).update(update);
+                const idx = allPlayers.findIndex(x => x.id === playerId);
+                if (idx !== -1) Object.assign(allPlayers[idx], update);
+                addLog('تحديث وثائق', `تم تحديث وثائق اللاعب ${allPlayers[idx]?.firstName || ''}`, currentUser?.role);
+                hideLoading();
+                document.getElementById('manageDocsModal')?.remove();
+                showToast('✅ تم تحديث الوثائق بنجاح', 'success');
+                showPlayerDetailPage(playerId);
+            } catch (err) {
+                hideLoading();
+                showToast('❌ خطأ: ' + err.message, 'error');
+            }
+        }
+
+        // ================================================================
+        // دوال الطاقم الطبي
+        // ================================================================
+
+        function showMedicalStaffPlayers() {
+            currentViewFunction = showMedicalStaffPlayers;
+            currentViewArgs = [];
+            const content = document.getElementById('pageContent');
+            const players = allPlayers.filter(p => p.status === 'approved');
+            const rows = players.map(p => {
+                const details = allPlayerDetails[p.id] || {};
+                const statusInfo = getMedicalStatusInfo(details.injuryStatus || 'healthy');
+                const recordsCount = Object.keys(details.medicalRecords || {}).length;
+                const imgSrc = p.photo && p.photo.startsWith('data:image') ? p.photo : 'https://via.placeholder.com/40';
+                return `
+                    <tr>
+                        <td><img src="${imgSrc}" style="width:36px;height:36px;border-radius:50%;object-fit:cover;border:2px solid var(--primary-blue);" /></td>
+                        <td style="font-weight:700;">${p.firstName} ${p.lastName}</td>
+                        <td>${p.categoryId}</td>
+                        <td><span class="badge-status ${statusInfo.cls}">${statusInfo.label}</span></td>
+                        <td>${recordsCount}</td>
+                        <td><button class="btn-sm btn-sm-info" data-action="showPlayerDetailPage" data-id="${p.id}"><i class="fas fa-notes-medical"></i> فتح السجل الطبي</button></td>
+                    </tr>`;
+            }).join('') || '<tr><td colspan="6" class="text-muted" style="padding:20px;text-align:center;">لا يوجد لاعبون</td></tr>';
+
+            content.innerHTML = `
+                    <h2 class="page-title">⚕️ السجلات الطبية</h2>
+                    <p class="page-sub">متابعة الحالة الصحية والإصابات لجميع لاعبي الأكاديمية</p>
+                    <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px;">
+                        <input type="text" id="medicalSearchInput" placeholder="🔍 بحث عن لاعب..." style="flex:1; min-width:200px; padding:10px 16px; border-radius:12px; border:2px solid #e0e0e0; font-family:'Cairo',sans-serif;" oninput="applyMedicalSearchFilter()" />
+                    </div>
+                    <div class="table-wrap"><table>
+                        <thead><tr><th>الصورة</th><th>الاسم</th><th>الفئة</th><th>الحالة الصحية</th><th>عدد السجلات</th><th>إجراء</th></tr></thead>
+                        <tbody id="medicalPlayersTableBody">${rows}</tbody>
+                    </table></div>
+                `;
+            window.addDebugLog(`⚕️ عرض قائمة السجلات الطبية (${players.length})`, 'info');
+            EventManager.bindButtons(content);
+            updateDashboardActionBar();
+            animatePageTransition();
+        }
+
+        function applyMedicalSearchFilter() {
+            const term = document.getElementById('medicalSearchInput')?.value.trim().toLowerCase() || '';
+            const players = allPlayers.filter(p => p.status === 'approved' &&
+                (!term || `${p.firstName} ${p.lastName}`.toLowerCase().includes(term)));
+            const tbody = document.getElementById('medicalPlayersTableBody');
+            if (!tbody) return;
+            tbody.innerHTML = players.map(p => {
+                const details = allPlayerDetails[p.id] || {};
+                const statusInfo = getMedicalStatusInfo(details.injuryStatus || 'healthy');
+                const recordsCount = Object.keys(details.medicalRecords || {}).length;
+                const imgSrc = p.photo && p.photo.startsWith('data:image') ? p.photo : 'https://via.placeholder.com/40';
+                return `
+                    <tr>
+                        <td><img src="${imgSrc}" style="width:36px;height:36px;border-radius:50%;object-fit:cover;border:2px solid var(--primary-blue);" /></td>
+                        <td style="font-weight:700;">${p.firstName} ${p.lastName}</td>
+                        <td>${p.categoryId}</td>
+                        <td><span class="badge-status ${statusInfo.cls}">${statusInfo.label}</span></td>
+                        <td>${recordsCount}</td>
+                        <td><button class="btn-sm btn-sm-info" data-action="showPlayerDetailPage" data-id="${p.id}"><i class="fas fa-notes-medical"></i> فتح السجل الطبي</button></td>
+                    </tr>`;
+            }).join('') || '<tr><td colspan="6" class="text-muted" style="padding:20px;text-align:center;">لا نتائج</td></tr>';
+            EventManager.bindButtons(tbody);
+        }
+        window.applyMedicalSearchFilter = applyMedicalSearchFilter;
+
+        function showAddMedicalRecordModal(playerId) {
+            if (!canManageMedicalRecord()) { showToast('❌ ليس لديك صلاحية إضافة سجل طبي', 'error'); return; }
+            const p = allPlayers.find(x => x.id === playerId);
+            if (!p) return;
+            const currentStatus = (allPlayerDetails[playerId] || {}).injuryStatus || 'healthy';
+            const container = document.createElement('div');
+            container.className = 'edit-modal-overlay';
+            container.id = 'addMedicalModal';
+            container.innerHTML = `
+                    <div class="edit-modal-box">
+                        <div class="edit-modal-header">
+                            <div class="edit-modal-icon"><i class="fas fa-notes-medical"></i></div>
+                            <div class="edit-modal-title-wrap"><h3>سجل طبي جديد: ${p.firstName} ${p.lastName}</h3><span>أكاديمية ASSARU — الطاقم الطبي</span></div>
+                            <button class="icon-close-btn on-dark" onclick="document.getElementById('addMedicalModal').remove()" title="إغلاق"><i class="fas fa-times"></i></button>
+                        </div>
+                        <div class="edit-modal-body">
+                            <div class="edit-modal-group">
+                                <label>الحالة الصحية الحالية</label>
+                                <select id="medStatusSelect" class="edit-modal-field">
+                                    ${MEDICAL_STATUS_LIST.map(m => `<option value="${m.key}" ${m.key === currentStatus ? 'selected' : ''}>${m.label}</option>`).join('')}
+                                </select>
+                            </div>
+                            <div class="edit-modal-group"><label>التشخيص</label><input type="text" id="medDiagnosis" class="edit-modal-field" placeholder="مثال: التواء في الكاحل" /></div>
+                            <div class="edit-modal-group"><label>ملاحظات طبية</label><textarea id="medNote" class="edit-modal-field" rows="3"></textarea></div>
+                            <div class="edit-modal-group"><label>تاريخ العودة المتوقع</label><input type="date" id="medReturnDate" class="edit-modal-field" /></div>
+                            <div class="edit-modal-group">
+                                <label>تقرير طبي مرفق (اختياري)</label>
+                                <div class="upload-area" id="medReportUpload"><div class="icon"><i class="fas fa-file-medical"></i></div><div class="text">انقر لرفع تقرير</div><div class="file-name" id="medReportName"></div><input type="file" id="medReportFile" accept="image/*,application/pdf" /></div>
+                            </div>
+                        </div>
+                        <div class="edit-modal-footer">
+                            <button class="btn-sm btn-sm-secondary" onclick="document.getElementById('addMedicalModal').remove()">إلغاء</button>
+                            <button class="btn-submit" data-action="saveMedicalRecord" data-id="${playerId}"><i class="fas fa-check"></i> حفظ السجل</button>
+                        </div>
+                    </div>
+                `;
+            document.body.appendChild(container);
+            container.addEventListener('click', e => { if (e.target === container) container.remove(); });
+            setupUpload('medReportFile', 'medReportName', 'medReportUpload');
+        }
+
+        async function saveMedicalRecord(context) {
+            if (!canManageMedicalRecord()) { showToast('❌ ليس لديك صلاحية إضافة سجل طبي', 'error'); return; }
+            const playerId = context.dataset.id;
+            const status = document.getElementById('medStatusSelect').value;
+            const diagnosis = document.getElementById('medDiagnosis').value.trim();
+            const note = document.getElementById('medNote').value.trim();
+            const expectedReturnDate = document.getElementById('medReturnDate').value;
+            const reportFile = document.getElementById('medReportFile').files[0];
+            if (!diagnosis && !note) { showToast('أدخل التشخيص أو ملاحظة على الأقل', 'warning'); return; }
+
+            showLoading('جاري حفظ السجل الطبي...');
+            try {
+                const reportDoc = reportFile ? await readFileAsBase64(reportFile) : '';
+                const record = {
+                    diagnosis, note, status, expectedReturnDate, reportDoc,
+                    date: new Date().toISOString(),
+                    addedBy: currentUser?.data?.name || currentUser?.role
+                };
+                const snap = await db.ref('academy/playerDetails/' + playerId + '/medicalRecords').push(record);
+                await db.ref('academy/playerDetails/' + playerId).update({ injuryStatus: status });
+
+                if (!allPlayerDetails[playerId]) allPlayerDetails[playerId] = {};
+                if (!allPlayerDetails[playerId].medicalRecords) allPlayerDetails[playerId].medicalRecords = {};
+                allPlayerDetails[playerId].medicalRecords[snap.key] = record;
+                allPlayerDetails[playerId].injuryStatus = status;
+
+                addLog('سجل طبي', `تمت إضافة سجل طبي للاعب ${allPlayers.find(x => x.id === playerId)?.firstName || ''}`, currentUser?.role);
+                hideLoading();
+                document.getElementById('addMedicalModal')?.remove();
+                showToast('✅ تم حفظ السجل الطبي بنجاح', 'success');
+                showPlayerDetailPage(playerId);
+            } catch (err) {
+                hideLoading();
+                showToast('❌ خطأ: ' + err.message, 'error');
+            }
+        }
+
+        function renderMedicalRecordsHtml(playerId) {
+            const details = allPlayerDetails[playerId] || {};
+            const records = Object.values(details.medicalRecords || {}).sort((a, b) => new Date(b.date) - new Date(a.date));
+            if (records.length === 0) return '<p class="text-muted text-center" style="padding:14px;">لا توجد سجلات طبية بعد</p>';
+            return records.map(r => {
+                const statusInfo = getMedicalStatusInfo(r.status);
+                return `
+                    <div class="log-entry-item" style="border-right-color:${statusInfo.cls === 'absent' ? '#dc3545' : statusInfo.cls === 'excused' ? '#ffc107' : '#28a745'};">
+                        <div>
+                            <div class="log-action">${statusInfo.label} ${r.diagnosis ? '— ' + r.diagnosis : ''}</div>
+                            ${r.note ? `<div class="log-details">${r.note}</div>` : ''}
+                            ${r.expectedReturnDate ? `<div class="log-details">📅 العودة المتوقعة: ${r.expectedReturnDate}</div>` : ''}
+                            ${r.reportDoc ? `<button class="btn-sm btn-sm-info" style="margin-top:6px;" onclick="window.viewDocument('${r.reportDoc}')"><i class="fas fa-file-medical"></i> عرض التقرير</button>` : ''}
+                        </div>
+                        <div style="text-align:left;"><div class="log-user">${r.addedBy || ''}</div><div class="log-time">${new Date(r.date).toLocaleString('ar-EG')}</div></div>
+                    </div>`;
+            }).join('');
+        }
+
+        // ================================================================
+        // دوال متابعة الاشتراكات للإداري
+        // ================================================================
+
+        function showSubscriptionsOverview() {
+            currentViewFunction = showSubscriptionsOverview;
+            currentViewArgs = [];
+            const content = document.getElementById('pageContent');
+            const rows = allPlayers.filter(p => p.status === 'approved').map(p => {
+                const payment = allPayments.find(pay => pay.playerId === p.id) || {};
+                const monthly = payment.monthly || {};
+                // السنة كاملة (12 شهراً) بدل الاعتماد على تاريخ الانضمام
+                const visibleMonthsIdx = MONTHS_AR.map((m, i) => i);
+                const paidCount = visibleMonthsIdx.filter(i => monthly[`2026_${String(i + 1).padStart(2, '0')}`]?.paid).length;
+                const unpaidCount = visibleMonthsIdx.length - paidCount;
+                return { p, paidCount, unpaidCount };
+            }).sort((a, b) => b.unpaidCount - a.unpaidCount);
+
+            content.innerHTML = `
+                    <h2 class="page-title">📋 متابعة الاشتراكات</h2>
+                    <p class="page-sub">نظرة شاملة على حالة الدفع الشهري لجميع اللاعبين المعتمدين — 2026</p>
+                    <div class="table-wrap"><table>
+                        <thead><tr><th>#</th><th>اللاعب</th><th>الفئة</th><th>ولي الأمر</th><th>الهاتف</th><th>أشهر مدفوعة</th><th>أشهر غير مدفوعة</th><th>إجراء</th></tr></thead>
+                        <tbody>
+                            ${rows.map((r, idx) => `
+                                <tr>
+                                    <td>${idx + 1}</td>
+                                    <td style="font-weight:700;">${r.p.firstName} ${r.p.lastName}</td>
+                                    <td>${r.p.categoryId}</td>
+                                    <td>${r.p.guardianName || '-'}</td>
+                                    <td>${r.p.guardianPhone || '-'}</td>
+                                    <td><span class="badge-status paid">${r.paidCount}</span></td>
+                                    <td><span class="badge-status ${r.unpaidCount > 0 ? 'unpaid' : 'paid'}">${r.unpaidCount}</span></td>
+                                    <td><button class="btn-sm btn-sm-info" data-action="showPlayerDetailPage" data-id="${r.p.id}"><i class="fas fa-eye"></i> فتح ملف الدفع</button></td>
+                                </tr>
+                            `).join('') || '<tr><td colspan="8" class="text-muted" style="padding:20px;text-align:center;">لا يوجد لاعبون معتمدون</td></tr>'}
+                        </tbody>
+                    </table></div>
+                `;
+            window.addDebugLog(`📋 عرض متابعة الاشتراكات (${rows.length} لاعب)`, 'info');
+            EventManager.bindButtons(content);
+            updateDashboardActionBar();
+            animatePageTransition();
+        }
+
+        // ================================================================
+        // دوال إدارة الصلاحيات
+        // ================================================================
+
+        function showPermissionsManagement() {
+            if (!requireRole('admin')) return;
+            currentViewFunction = showPermissionsManagement;
+            currentViewArgs = [];
+            const content = document.getElementById('pageContent');
+            content.innerHTML = `
+                    <button class="btn-sm btn-sm-secondary" data-action="showHRHub" style="margin-bottom:14px;"><i class="fas fa-arrow-right"></i> رجوع لمركز الموارد البشرية</button>
+                    <h2 class="page-title">🛡️ إدارة صلاحيات النظام</h2>
+                    <p class="page-sub">أضف، عدّل، فعّل أو عطّل أي صلاحية. كل صلاحية مرفقة بشرح واضح لوظيفتها وتأثيرها داخل النظام.</p>
+                    <div class="table-wrap"><table>
+                        <thead><tr><th>الصلاحية</th><th>الشرح</th><th>المناصب الافتراضية</th><th>الحالة</th><th>إجراءات</th></tr></thead>
+                        <tbody id="permissionsTableBody"></tbody>
+                    </table></div>
+                    <div class="form-card">
+                        <h3>➕ إضافة صلاحية جديدة</h3>
+                        <div class="form-grid">
+                            <div class="form-group"><label>اسم الصلاحية <span class="required">*</span></label><input type="text" id="newPermLabel" placeholder="مثال: إدارة معرض الصور" /></div>
+                            <div class="form-group full"><label>شرح وظيفة الصلاحية وتأثيرها <span class="required">*</span></label><textarea id="newPermDescription" rows="2" placeholder="اشرح بوضوح ماذا يستطيع صاحب هذه الصلاحية فعله..."></textarea></div>
+                            <div class="form-group full">
+                                <label>المناصب التي تملكها افتراضياً</label>
+                                <div style="display:flex; gap:14px; flex-wrap:wrap; margin-top:6px;">
+                                    ${HR_ROLE_TYPES.map(r => `
+                                        <label style="display:inline-flex; align-items:center; gap:6px; font-size:0.85rem;">
+                                            <input type="checkbox" class="newPermRoleCheckbox" value="${r.key}" /> ${r.label}
+                                        </label>`).join('')}
+                                </div>
+                            </div>
+                            <div class="form-group full"><button class="btn-submit" data-action="addPermissionDefinition"><i class="fas fa-save"></i> حفظ الصلاحية الجديدة</button></div>
+                        </div>
+                    </div>
+                `;
+            renderPermissionsTable();
+            window.addDebugLog('🛡️ عرض صفحة إدارة الصلاحيات', 'info');
+            EventManager.bindButtons(content);
+            updateDashboardActionBar();
+            animatePageTransition();
+        }
+
+        function renderPermissionsTable() {
+            const tbody = document.getElementById('permissionsTableBody');
+            if (!tbody) return;
+            if (allPermissionDefinitions.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:#888;padding:20px;">لا توجد صلاحيات معرّفة بعد</td></tr>`;
+                return;
+            }
+            tbody.innerHTML = allPermissionDefinitions.map(p => {
+                const rolesLabels = (p.defaultRoles || []).map(rt => getHrRoleLabel(rt)).join('، ') || '<span class="text-muted">لا يوجد</span>';
+                return `
+                    <tr>
+                        <td style="font-weight:700; color:var(--dark-navy);">${p.label}</td>
+                        <td style="max-width:320px; font-size:0.85rem; color:#555;">${p.description || '-'}</td>
+                        <td style="font-size:0.8rem;">${rolesLabels}</td>
+                        <td><span class="badge-status ${p.enabled ? 'present' : 'absent'}">${p.enabled ? '🟢 مفعّلة' : '🔴 معطّلة'}</span></td>
+                        <td>
+                            <button class="btn-sm ${p.enabled ? 'btn-sm-warning' : 'btn-sm-success'}" data-action="togglePermissionEnabled" data-id="${p.id}"><i class="fas ${p.enabled ? 'fa-pause' : 'fa-play'}"></i> ${p.enabled ? 'تعطيل' : 'تفعيل'}</button>
+                            <button class="btn-sm btn-sm-info" data-action="editPermissionDefinition" data-id="${p.id}"><i class="fas fa-edit"></i> تعديل</button>
+                            <button class="btn-sm btn-sm-danger" data-action="deletePermissionDefinition" data-id="${p.id}"><i class="fas fa-trash"></i> حذف</button>
+                        </td>
+                    </tr>`;
+            }).join('');
+            EventManager.bindButtons(tbody);
+        }
+
+        function addPermissionDefinition() {
+            if (!requireRole('admin')) return;
+            const label = document.getElementById('newPermLabel').value.trim();
+            const description = document.getElementById('newPermDescription').value.trim();
+            const roles = Array.from(document.querySelectorAll('.newPermRoleCheckbox:checked')).map(el => el.value);
+            if (!label || !description) { showToast('الرجاء ملء اسم الصلاحية وشرحها', 'warning'); return; }
+            const key = 'perm_' + Date.now();
+            const data = { label, description, defaultRoles: roles, enabled: true };
+            db.ref('academy/permissionDefinitions/' + key).set(data)
+                .then(() => {
+                    allPermissionDefinitions.push({ id: key, ...data });
+                    addLog('إضافة صلاحية', `تمت إضافة صلاحية جديدة: ${label}`, currentUser?.role);
+                    showToast('✅ تمت إضافة الصلاحية', 'success');
+                    showPermissionsManagement();
+                })
+                .catch(err => showToast('❌ خطأ: ' + err.message, 'error'));
+        }
+
+        function togglePermissionEnabled(context) {
+            if (!requireRole('admin')) return;
+            const id = context.dataset.id;
+            const p = allPermissionDefinitions.find(x => x.id === id);
+            if (!p) return;
+            const newEnabled = !p.enabled;
+            db.ref('academy/permissionDefinitions/' + id + '/enabled').set(newEnabled)
+                .then(() => {
+                    p.enabled = newEnabled;
+                    addLog('تعديل صلاحية', `تم ${newEnabled ? 'تفعيل' : 'تعطيل'} صلاحية: ${p.label}`, currentUser?.role);
+                    showToast(`✅ تم ${newEnabled ? 'تفعيل' : 'تعطيل'} الصلاحية`, 'success');
+                    renderPermissionsTable();
+                })
+                .catch(err => showToast('❌ خطأ: ' + err.message, 'error'));
+        }
+
+        function editPermissionDefinition(context) {
+            if (!requireRole('admin')) return;
+            const id = context.dataset.id;
+            const p = allPermissionDefinitions.find(x => x.id === id);
+            if (!p) return;
+            showEditModal({
+                title: `تعديل صلاحية: ${p.label}`,
+                icon: 'fa-shield-halved',
+                fields: [
+                    { id: 'label', label: 'اسم الصلاحية', value: p.label },
+                    { id: 'description', label: 'الشرح', type: 'textarea', value: p.description || '' }
+                ],
+                onSave: (values) => {
+                    const label = values.label.trim();
+                    const description = values.description.trim();
+                    if (!label || !description) { showToast('الحقول إجبارية', 'warning'); return; }
+                    db.ref('academy/permissionDefinitions/' + id).update({ label, description })
+                        .then(() => {
+                            p.label = label; p.description = description;
+                            addLog('تعديل صلاحية', `تم تعديل صلاحية: ${label}`, currentUser?.role);
+                            showToast('✅ تم التحديث', 'success');
+                            renderPermissionsTable();
+                        })
+                        .catch(err => showToast('❌ خطأ: ' + err.message, 'error'));
+                }
+            });
+        }
+
+        function deletePermissionDefinition(context) {
+            if (!requireRole('admin')) return;
+            const id = context.dataset.id;
+            const p = allPermissionDefinitions.find(x => x.id === id);
+            if (!confirm(`حذف صلاحية "${p?.label || ''}" نهائياً؟ سيفقد جميع الأعضاء هذه الصلاحية.`)) return;
+            db.ref('academy/permissionDefinitions/' + id).remove()
+                .then(() => {
+                    allPermissionDefinitions = allPermissionDefinitions.filter(x => x.id !== id);
+                    addLog('حذف صلاحية', `تم حذف صلاحية: ${p?.label || ''}`, currentUser?.role);
+                    showToast('✅ تم الحذف', 'success');
+                    renderPermissionsTable();
+                })
+                .catch(err => showToast('❌ خطأ: ' + err.message, 'error'));
+        }
+
+        // ================================================================
+        // تسجيل جميع الإجراءات
+        // ================================================================
+
+        function registerAllActions() {
+            EventManager.register('openDashboard', function() { const wrapper = document.getElementById('dashboardWrapper'); if (wrapper) wrapper.classList.add('active');
+                showLoginScreen(); });
+            EventManager.register('closeDashboardPanel', function() { document.getElementById('dashboardWrapper').classList.remove('active'); });
+            EventManager.register('logoutDashboard', function() {
+                if (confirm('تسجيل الخروج؟')) {
+                    currentUser = null;
+                    document.getElementById('dashboardWrapper').classList.remove('active');
+                    closeModal('sessionDetailModal');
+                    closeModal('matchLineupBuilderModal');
+                    closeModal('matchPlayerSelectorModal');
+                    closeModal('matchCompleteModal');
+                    closeModal('tournamentPlayerSelectorModal');
+                    addLog('تسجيل خروج', `تسجيل خروج المستخدم`, 'unknown');
+                    showToast('✅ تم تسجيل الخروج', 'success');
+                }
+            });
+            EventManager.register('loginAs_admin', function() { loginAs('admin'); });
+            EventManager.register('loginAs_coach', function() { loginAs('coach'); });
+            EventManager.register('loginAs_parent', function() { loginAs('parent'); });
+            EventManager.register('showAdminHome', function() { showAdminHome(); });
+            EventManager.register('showJoinRequests', function() { showJoinRequests(); });
+            EventManager.register('acceptJoinRequest', function(c) { acceptJoinRequest(c); });
+            EventManager.register('rejectJoinRequest', function(c) { rejectJoinRequest(c); });
+            EventManager.register('showCategoryFiles', function() { showCategoryFiles(); });
+            EventManager.register('showCategoryFawjFile', function(c) { showCategoryFawjFile(c); });
+            EventManager.register('assignPlayerToFawj', function(c) { assignPlayerToFawj(c); });
+            EventManager.register('setFawjCoach', function(c) { setFawjCoach(c); });
+            EventManager.register('transferPlayerFawj', function(c) { transferPlayerFawj(c); });
+            EventManager.register('exportFawjPDF', function(c) { exportFawjPDF(c); });
+            EventManager.register('showAdminPlayers', function() { showAdminPlayers(); });
+            EventManager.register('filterPlayers', function(c) { filterPlayers(c.dataset.cat || 'all'); });
+            EventManager.register('filterPlayersBy', function(c) { filterPlayersBy(c.dataset.key || 'payment'); });
+            EventManager.register('applyPlayerFilters', function() { applyPlayerFilters(); });
+            EventManager.register('resetPlayerFilters', function() { resetPlayerFilters(); });
+            EventManager.register('approvePlayer', function(c) { approvePlayer(c.dataset.id); });
+            EventManager.register('rejectPlayer', function(c) { rejectPlayer(c.dataset.id); });
+            EventManager.register('deletePlayer', function(c) { deletePlayer(c.dataset.id); });
+            EventManager.register('changePlayerCategoryInline', function(c) { changePlayerCategoryInline(c); });
+            EventManager.register('showPlayerDetailPage', function(c) { showPlayerDetailPage(c.dataset.id); });
+            EventManager.register('showCoachHome', function() { showCoachHome(); });
+            EventManager.register('showCoachPlayers', function() { showCoachPlayers(); });
+            EventManager.register('showCoachTrainingSessions', function() { showCoachTrainingSessions(); });
+            EventManager.register('showFitnessSessions', function() { showFitnessSessions(); });
+            EventManager.register('showSubscriptionsOverview', function() { showSubscriptionsOverview(); });
+            EventManager.register('showMedicalStaffPlayers', function() { showMedicalStaffPlayers(); });
+            EventManager.register('showAddMedicalRecordModal', function(c) { showAddMedicalRecordModal(c.dataset.id); });
+            EventManager.register('saveMedicalRecord', function(c) { saveMedicalRecord(c); });
+            EventManager.register('coachRatePlayer', function(c) { coachRatePlayer(c.dataset.id); });
+            EventManager.register('showAdminTrainingSessions', function() { showAdminTrainingSessions(); });
+            EventManager.register('showCreateTrainingSession', function() { showCreateTrainingSession(); });
+            EventManager.register('saveTrainingSession', function() { saveTrainingSession(); });
+            EventManager.register('selectAllSessionPlayers', function() { selectAllSessionPlayers(); });
+            EventManager.register('deselectAllSessionPlayers', function() { deselectAllSessionPlayers(); });
+            EventManager.register('toggleSessionPlayerCall', function(c) { toggleSessionPlayerCall(c); });
+            EventManager.register('openSessionDetail', function(c) { openSessionDetail(c.dataset.id); });
+            EventManager.register('autoSaveSessionField', function(c) { autoSaveSessionField(c); });
+            EventManager.register('completeSessionWithAttendance', function(c) { completeSessionWithAttendance(c.dataset.id); });
+            EventManager.register('exportSessionDetailPDF', function(c) { exportSessionDetailPDF(c); });
+            EventManager.register('deleteSession', function(c) { deleteSession(c.dataset.id); });
+            EventManager.register('permanentDeleteSession', function(c) { permanentDeleteSession(c); });
+            EventManager.register('showTrainingSessionsArchive', function() { showTrainingSessionsArchive(); });
+            EventManager.register('exportSessionsArchivePDF', function() { exportSessionsArchivePDF(); });
+            EventManager.register('showAdminMatches', function() { showAdminMatches(); });
+            EventManager.register('showCoachMatches', function() { showCoachMatches(); });
+            EventManager.register('deleteMatchUI', function(c) { deleteMatchUI(c.dataset.id); });
+            EventManager.register('openCreateMatchModal', function() { openCreateMatchModal(); });
+            EventManager.register('saveMatchDetailed', function() { saveMatchDetailed(); });
+            EventManager.register('showMatchesArchive', function() { showMatchesArchive(); });
+            EventManager.register('exportMatchesArchivePDF', function() { exportMatchesArchivePDF(); });
+            EventManager.register('exportMatchFilePDF', function() { exportMatchFilePDF(); });
+            EventManager.register('showMatchDetailPage', function(c) { showMatchDetailPage(c.dataset.id); });
+            EventManager.register('switchMatchTab', function(c) { switchMatchTab(c); });
+            EventManager.register('updateMatchStatus', function(c) { updateMatchStatus(c); });
+            EventManager.register('callupMatchPlayer', function(c) { callupMatchPlayer(c); });
+            EventManager.register('excludeMatchPlayer', function(c) { excludeMatchPlayer(c); });
+            EventManager.register('selectAllMatchCallups', function() { selectAllMatchCallups(); });
+            EventManager.register('deselectAllMatchCallups', function() { deselectAllMatchCallups(); });
+            EventManager.register('updateMatchCallupAttendance', function(c) { updateMatchCallupAttendance(c); });
+            EventManager.register('updateMatchCallupReason', function(c) { updateMatchCallupReason(c); });
+            EventManager.register('addPlayerToPitch', function(c) { addPlayerToPitch(c); });
+            EventManager.register('changeFormation', function(c) { changeFormation(c); });
+            EventManager.register('applySubstitution', function() { applySubstitution(); });
+            EventManager.register('setCaptain', function(c) { setCaptain(c); });
+            EventManager.register('setViceCaptain', function(c) { setViceCaptain(c); });
+            EventManager.register('addMatchEvent', function() { addMatchEvent(); });
+            EventManager.register('deleteMatchEvent', function(c) { deleteMatchEvent(c); });
+            EventManager.register('saveMatchStats', function() { saveMatchStats(); });
+            EventManager.register('saveMatchPlayerRating', function(c) { saveMatchPlayerRating(c); });
+            EventManager.register('saveMatchReport', function() { saveMatchReport(); });
+            EventManager.register('saveMatchResult', function() { saveMatchResult(); });
+            EventManager.register('showAdminCoaches', function() { showAdminCoaches(); });
+            EventManager.register('addCoach', function() { addCoach(); });
+            EventManager.register('deleteCoach', function(c) { deleteCoach(c.dataset.id); });
+            EventManager.register('editCoachField', function(c) { editCoachField(c.dataset.id, c.dataset.field, c.dataset.current); });
+            EventManager.register('showCoachDetailPage', function(c) { showCoachDetailPage(c.dataset.id); });
+            EventManager.register('changeCoachStatus', function(c) { changeCoachStatus(c); });
+            EventManager.register('permanentDeleteCoach', function(c) { permanentDeleteCoach(c); });
+            EventManager.register('showHRHub', function() { showHRHub(); });
+            EventManager.register('showHRSectionList', function(c) { showHRSectionList(c.dataset.section); });
+            EventManager.register('showAdminLogs', function() { showAdminLogs(); });
+            EventManager.register('refreshLogs', function() { refreshLogs(); });
+            EventManager.register('clearLogs', function() { clearLogs(); });
+            EventManager.register('showParentHome', function() { showParentHome(); });
+            EventManager.register('refreshDashboardData', function() { refreshDashboardData(); });
+            EventManager.register('showFullImage', function(c) { showFullImage(c.dataset.src); });
+            EventManager.register('showStatsCard', function(c) { showStatsCard(c.dataset.id); });
+            EventManager.register('showAttendanceFull', function(c) { showAttendanceFull(c.dataset.id); });
+            EventManager.register('exportAttendanceSheetPDF', function(c) { exportAttendanceSheetPDF(c); });
+            EventManager.register('exportPlayersListPDF', function() { exportPlayersListPDF(); });
+            EventManager.register('toggleMonthPaymentSimple', function(c) { toggleMonthPaymentSimple(c.dataset.playerId, c.dataset.monthKey); });
+            EventManager.register('editPlayerField', function(c) { editPlayerField(c.dataset.id, c.dataset.field, c.dataset.current, c.dataset.label); });
+            EventManager.register('editPlayerStat', function(c) { editPlayerStat(c.dataset.id, c.dataset.key, c.dataset.current, c.dataset.label); });
+            EventManager.register('showSendMessageModal', function(c) { showSendMessageModal(c.dataset.id); });
+            EventManager.register('deletePlayerMessage', function(c) { deletePlayerMessage(c); });
+            EventManager.register('closeParentMessagesModal', function(c) { closeParentMessagesModal(c); });
+            EventManager.register('showManageDocumentsModal', function(c) { showManageDocumentsModal(c.dataset.id); });
+            EventManager.register('saveManagedDocuments', function(c) { saveManagedDocuments(c); });
+            EventManager.register('goBackToPrevious', function() { goBackToPrevious(); });
+            EventManager.register('closeModal', function(c) { closeModal(c.dataset.id); });
+            EventManager.register('closeEditModal', function() { closeEditModal(); });
+            EventManager.register('submitEditModal', function() { submitEditModal(); });
+            EventManager.register('filterTrainingSessionsByCategoryUI', function(c) { filterTrainingSessionsByCategoryUI(c); });
+            EventManager.register('filterMatchesByCategoryUI', function(c) { filterMatchesByCategoryUI(c); });
+            EventManager.register('showAdminTournaments', function() { showAdminTournaments(); });
+            EventManager.register('showCreateTournament', function() { showCreateTournament(); });
+            EventManager.register('saveTournamentDetailed', function() { saveTournamentDetailed(); });
+            EventManager.register('showTournamentDetail', function(c) { showTournamentDetail(c.dataset.id); });
+            EventManager.register('deleteTournament', function(c) { deleteTournament(c.dataset.id); });
+            EventManager.register('completeTournament', function(c) { completeTournament(c.dataset.id); });
+            EventManager.register('showTournamentArchive', function() { showTournamentArchive(); });
+            EventManager.register('updateTourStatus', function(c) { updateTourStatus(c); });
+            EventManager.register('switchTourTab', function(c) { switchTourTab(c); });
+            EventManager.register('toggleTourCategory', function(c) { toggleTourCategory(c); });
+            EventManager.register('callupSinglePlayer', function(c) { callupSinglePlayer(c); });
+            EventManager.register('excludeSinglePlayer', function(c) { excludeSinglePlayer(c); });
+            EventManager.register('callupAllInCategory', function(c) { callupAllInCategory(c); });
+            EventManager.register('excludeAllInCategory', function(c) { excludeAllInCategory(c); });
+            EventManager.register('setTourExclusionReason', function(c) { setTourExclusionReason(c); });
+            EventManager.register('setTourHealthStatus', function(c) { setTourHealthStatus(c); });
+            EventManager.register('addCompanion', function() { addCompanion(); });
+            EventManager.register('removeCompanion', function(c) { removeCompanion(c); });
+            EventManager.register('assignTourCoachRole', function(c) { assignTourCoachRole(c); });
+            EventManager.register('setParentApproval', function(c) { setParentApproval(c); });
+            EventManager.register('setDocReceived', function(c) { setDocReceived(c); });
+            EventManager.register('addParticipantPlayer', function() { addParticipantPlayer(); });
+            EventManager.register('removeParticipantPlayer', function(c) { removeParticipantPlayer(c); });
+            EventManager.register('addParticipantStaff', function() { addParticipantStaff(); });
+            EventManager.register('removeParticipantStaff', function(c) { removeParticipantStaff(c); });
+            EventManager.register('loadCategoryAsParticipants', function() { loadCategoryAsParticipants(); });
+            EventManager.register('callupFawjToTournament', function() { callupFawjToTournament(); });
+            EventManager.register('toggleParticipantRowSelect', function(c) { toggleParticipantRowSelect(c); });
+            EventManager.register('selectAllParticipantsRows', function() { selectAllParticipantsRows(); });
+            EventManager.register('deselectAllParticipantsRows', function() { deselectAllParticipantsRows(); });
+            EventManager.register('deleteSelectedParticipants', function() { deleteSelectedParticipants(); });
+            EventManager.register('togglePinParticipant', function(c) { togglePinParticipant(c); });
+            EventManager.register('saveParticipantNote', function(c) { saveParticipantNote(c); });
+            EventManager.register('removeTourCoachRole', function(c) { removeTourCoachRole(c); });
+            EventManager.register('addParticipantStaffFromExtra', function() { addParticipantStaffFromExtra(); });
+            EventManager.register('exportParticipantsPDF', function() { exportParticipantsPDF(); });
+            EventManager.register('createMatchInsideTournament', function() { createMatchInsideTournament(); });
+            EventManager.register('addStandingsGroup', function() { addStandingsGroup(); });
+            EventManager.register('removeGroup', function(c) { removeGroup(c); });
+            EventManager.register('addTeamToGroup', function(c) { addTeamToGroup(c); });
+            EventManager.register('removeTeamFromGroup', function(c) { removeTeamFromGroup(c); });
+            EventManager.register('updateTeamStat', function(c) { updateTeamStat(c); });
+            EventManager.register('addBus', function() { addBus(); });
+            EventManager.register('removeBus', function(c) { removeBus(c); });
+            EventManager.register('assignBusPlayers', function(c) { assignBusPlayers(c); });
+            EventManager.register('saveHotelName', function(c) { saveHotelName(c); });
+            EventManager.register('addRoom', function() { addRoom(); });
+            EventManager.register('removeRoom', function(c) { removeRoom(c); });
+            EventManager.register('assignRoomOccupants', function(c) { assignRoomOccupants(c); });
+            EventManager.register('addExpense', function() { addExpense(); });
+            EventManager.register('removeExpense', function(c) { removeExpense(c); });
+            EventManager.register('uploadTourDocuments', function() { uploadTourDocuments(); });
+            EventManager.register('removeTourDocument', function(c) { removeTourDocument(c); });
+            EventManager.register('uploadGalleryPhotos', function() { uploadGalleryPhotos(); });
+            EventManager.register('removeGalleryPhoto', function(c) { removeGalleryPhoto(c); });
+            EventManager.register('uploadFreeGalleryPhotos', function() { showToast('استخدم زر إضافة الصورة في الألبوم الحر', 'info'); });
+            EventManager.register('removeFreeGalleryPhoto', function(c) { removeFreeGalleryPhoto(c); });
+            EventManager.register('saveTourFinalReport', function() { saveTourFinalReport(); });
+            EventManager.register('exportCurrentTourTabPDF', function() { exportCurrentTourTabPDF(); });
+            EventManager.register('showParentTournamentFile', function(c) { showParentTournamentFile(c.dataset.id); });
+            EventManager.register('showPeriodicReportsExecutive', function() { showPeriodicReportsExecutive(); });
+            EventManager.register('showPeriodicReportsTechnical', function() { showPeriodicReportsTechnical(); });
+            EventManager.register('switchReportTab', function(c) { switchReportTab(c); });
+            EventManager.register('exportCurrentReportPDF', function() { exportCurrentReportPDF(); });
+            EventManager.register('showPermissionsManagement', function() { showPermissionsManagement(); });
+            EventManager.register('addPermissionDefinition', function() { addPermissionDefinition(); });
+            EventManager.register('togglePermissionEnabled', function(c) { togglePermissionEnabled(c); });
+            EventManager.register('editPermissionDefinition', function(c) { editPermissionDefinition(c); });
+            EventManager.register('deletePermissionDefinition', function(c) { deletePermissionDefinition(c); });
+            EventManager.register('toggleCoachPermissionOverride', function(c) { toggleCoachPermissionOverride(c); });
+            EventManager.register('resetCoachPermissionOverride', function(c) { resetCoachPermissionOverride(c); });
+            EventManager.register('showSendOfficialMessageModal', function(c) { showSendOfficialMessageModal(c.dataset.id); });
+            EventManager.register('closeOfficialMessagesPopup', function(c) { closeOfficialMessagesPopup(c); });
+            EventManager.register('exportCoachReportPDF', function(c) { exportCoachReportPDF(c); });
+            EventManager.register('switchCoachFileTab', function(c) { switchCoachFileTab(c); });
+            EventManager.register('openRenewContractModal', function(c) { openRenewContractModal(c); });
+            EventManager.register('saveContractRenewal', function(c) { saveContractRenewal(c); });
+
+            window.addDebugLog && window.addDebugLog('📝 تم تسجيل جميع الإجراءات', 'success');
+        }
+
+        // ================================================================
+        // 26. تهيئة النظام
+        // ================================================================
+        function initSystem() {
+            registerAllActions();
+            EventManager.enableDelegation();
+            EventManager.bindButtons();
+
+            if (db) {
+                loadAllData(false, true).catch(() => {});
+            }
+
+            setupUpload('regPhoto', 'photoFileName', 'uploadPhoto');
+            setupUpload('regParental', 'parentalFileName', 'uploadParental');
+            setupUpload('regInternal', 'internalFileName', 'uploadInternal');
+
+            const regPhotoInputEl = document.getElementById('regPhoto');
+            if (regPhotoInputEl) {
+                regPhotoInputEl.addEventListener('change', function() {
+                    const file = this.files[0];
+                    const iconBox = document.querySelector('#uploadPhoto .icon');
+                    if (!iconBox) return;
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = e => {
+                            iconBox.innerHTML =
+                                `<img src="${e.target.result}" style="width:50px;height:50px;border-radius:50%;object-fit:cover;border:2px solid #2ecc71;" />`;
+                        };
+                        reader.readAsDataURL(file);
+                    } else {
+                        iconBox.innerHTML = '<i class="fas fa-camera"></i>';
+                    }
+                });
+            }
+
+            const regForm = document.getElementById('registrationForm');
+            if (regForm) {
+                regForm.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    const submitBtn = document.getElementById('regSubmitBtn');
+                    if (submitBtn.disabled) return;
+
+                    const firstName = document.getElementById('regFirstName').value.trim();
+                    const lastName = document.getElementById('regLastName').value.trim();
+                    const categoryId = document.getElementById('regCategory').value;
+                    const birthDate = document.getElementById('regBirthDate').value;
+                    const birthPlace = document.getElementById('regBirthPlace').value.trim();
+                    const studyLevel = document.getElementById('regStudyLevel').value.trim();
+                    const health = document.getElementById('regHealth').value.trim();
+                    const bloodType = document.getElementById('regBloodType').value.trim();
+                    const guardianName = document.getElementById('regGuardianName').value.trim();
+                    const guardianPhone = document.getElementById('regGuardianPhone').value.trim();
+                    const photoFile = document.getElementById('regPhoto').files[0];
+                    const parentalFile = document.getElementById('regParental').files[0];
+                    const internalFile = document.getElementById('regInternal').files[0];
+
+                    if (!firstName || !lastName || !categoryId || !birthDate || !birthPlace || !studyLevel ||
+                        !guardianName || !guardianPhone || !photoFile || !parentalFile || !internalFile) {
+                        showToast('⚠️ الرجاء ملء جميع الحقول الإجبارية', 'warning');
+                        return;
+                    }
+                    if (!db) { showToast('❌ لا يوجد اتصال بقاعدة البيانات', 'error'); return; }
+
+                    const originalBtnHtml = submitBtn.innerHTML;
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الإرسال...';
+
+                    try {
+                        const [photoData, parentalData, internalData] = await Promise.all([
+                            readFileAsBase64(photoFile),
+                            readFileAsBase64(parentalFile),
+                            readFileAsBase64(internalFile)
+                        ]);
+                        const parentCode =
+                            `${firstName} ${lastName} ${new Date(birthDate).getFullYear()} ${categoryId}`;
+                        const newPlayer = {
+                            firstName,
+                            lastName,
+                            categoryId,
+                            birthDate,
+                            birthPlace,
+                            studyLevel,
+                            health: health || 'سليم',
+                            bloodType,
+                            guardianName,
+                            guardianPhone,
+                            parentCode,
+                            status: 'pending',
+                            registrationDate: new Date().toISOString(),
+                            photo: photoData,
+                            parentalDoc: parentalData,
+                            internalDoc: internalData
+                        };
+                        const newPlayerRef = db.ref('academy/players').push();
+                        await newPlayerRef.set(newPlayer);
+                        await db.ref('academy/playerCodeIndex/' + sanitizeCodeKey(parentCode)).set(newPlayerRef.key);
+
+                        regForm.reset();
+                        document.querySelectorAll('.upload-area').forEach(el => el.classList.remove('has-file'));
+                        const photoIconBox = document.querySelector('#uploadPhoto .icon');
+                        if (photoIconBox) photoIconBox.innerHTML = '<i class="fas fa-camera"></i>';
+                        document.getElementById('confirmInfo').innerHTML = `
+                                <p><strong>الاسم:</strong> ${firstName} ${lastName}</p>
+                                <p><strong>الفئة:</strong> ${categoryId}</p>
+                                <p><strong>كود ولي الأمر:</strong> ${parentCode}</p>
+                                <p style="color:#e74c3c;">احتفظ بالكود لمتابعة حالة طلب ابنك</p>
+                            `;
+                        document.getElementById('confirmPopup').classList.add('active');
+                    } catch (err) {
+                        showToast('❌ خطأ أثناء الإرسال: ' + err.message, 'error');
+                    } finally {
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = originalBtnHtml;
+                    }
+                });
+            }
+
+            renderGallery();
+
+            const navbar = document.getElementById('navbar');
+            window.addEventListener('scroll', () => { if (navbar) navbar.classList.toggle('scrolled', window.scrollY > 60); });
+
+            const menuBtn = document.getElementById('menuBtn');
+            if (menuBtn) {
+                menuBtn.addEventListener('click', () => {
+                    const navLinks = document.getElementById('navLinks');
+                    if (navLinks) navLinks.classList.toggle('show');
+                });
+            }
+
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const target = document.querySelector(this.getAttribute('href'));
+                    if (target) {
+                        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        const navLinks = document.getElementById('navLinks');
+                        if (navLinks) navLinks.classList.remove('show');
+                    }
+                });
+            });
+
+            const words = ['الرائد', 'النخبة', 'الأبطال', 'المستقبل'];
+            let wordIndex = 0,
+                charIndex = 0,
+                isDeleting = false;
+            const dynamicText = document.getElementById('dynamicText');
+
+            function typeEffect() {
+                if (!dynamicText) return;
+                const currentWord = words[wordIndex];
+                if (isDeleting) { dynamicText.textContent = currentWord.substring(0, charIndex - 1);
+                    charIndex--; } else { dynamicText.textContent = currentWord.substring(0, charIndex + 1);
+                    charIndex++; }
+                if (!isDeleting && charIndex === currentWord.length) { isDeleting = true;
+                    setTimeout(typeEffect, 2000); } else if (isDeleting && charIndex === 0) { isDeleting = false;
+                    wordIndex = (wordIndex + 1) % words.length;
+                    setTimeout(typeEffect, 300); } else { setTimeout(typeEffect, isDeleting ? 50 : 120); }
+            }
+            typeEffect();
+
+            const confirmPopup = document.getElementById('confirmPopup');
+            if (confirmPopup) {
+                confirmPopup.addEventListener('click', function(e) { if (e.target === this) closeConfirmPopup(); });
+            }
+
+            window.addDebugLog('✅ تم تهيئة النظام بالكامل', 'success');
+            console.log('✅ النظام جاهز مع Event Manager وتسجيل دخول سريع');
+        }
+
+        // ================================================================
+        // 27. بدء التشغيل
+        // ================================================================
+        document.addEventListener('DOMContentLoaded', function() {
+            initSystem();
+
+            window.viewDocument = function(dataUrl) {
+                if (!dataUrl) return;
+                const win = window.open();
+                win.document.write(`<img src="${dataUrl}" style="max-width:100%; max-height:100vh;" />`);
+            };
+            window.goBackToPrevious = goBackToPrevious;
+            window.closeConfirmPopup = closeConfirmPopup;
+            window.showToast = showToast;
+            window.showLoading = showLoading;
+            window.hideLoading = hideLoading;
+            window.showProgress = showProgress;
+            window.updateProgress = updateProgress;
+            window.hideProgress = hideProgress;
+            window.closeModal = closeModal;
+            window.openDashboard = function() {
+                EventManager.execute('openDashboard', document.querySelector('[data-action="openDashboard"]'));
+            };
+            window.logoutDashboard = function() {
+                EventManager.execute('logoutDashboard', document.querySelector('[data-action="logoutDashboard"]'));
+            };
+            window.EventManager = EventManager;
+        });
+
+        window.addEventListener('load', function() {
+            window.addDebugLog('📦 تم تحميل جميع الموارد', 'success');
+        });
+
+        console.log('✅ النظام جاهز مع Event Manager الموحد وتسجيل دخول سريع');
+        console.log('🔍 لتفعيل Debug اضغط Ctrl+Shift+D أو انقر 5 مرات على الشعار');
+        console.log('📋 جميع الأزرار تعمل عبر data-action مع EventManager');
     </script>
 </body>
 </html>
