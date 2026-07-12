@@ -2837,9 +2837,10 @@
                 updates['academy/playerCodeIndex/' + sanitizeCodeKey(parentCode)] = newRef.key;
             }
 
-            db.ref().update(updates)
+            return db.ref().update(updates)
                 .then(() => {
                     addLog('توليد بيانات تجريبية', 'تم إنشاء 300 لاعب تجريبي للاختبار', currentUser?.role);
+                    window.addDebugLog('✅ تم إنشاء 300 لاعب في Firebase بنجاح', 'success');
                     return loadAllData(true, true);
                 })
                 .then(() => {
@@ -2847,7 +2848,12 @@
                     showToast('✅ تم إنشاء 300 لاعب تجريبي بنجاح، لكل لاعب ملفه الخاص', 'success');
                     showAdminPlayers();
                 })
-                .catch(err => { hideLoading(); showToast('❌ خطأ: ' + err.message, 'error'); });
+                .catch(err => {
+                    hideLoading();
+                    console.error('generateTestPlayers failed:', err);
+                    window.addDebugLog('❌ فشل توليد اللاعبين: ' + err.message, 'error');
+                    showToast('❌ فشل التوليد: ' + err.message, 'error');
+                });
         }
 
         // ================================================================
