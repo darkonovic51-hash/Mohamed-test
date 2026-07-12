@@ -393,11 +393,26 @@
         .dashboard-content .page-sub { color: #888; margin-bottom:20px; }
 
         .dashboard-content #pageContent.page-anim {
-            animation: pageFadeIn 0.35s cubic-bezier(0.2, 0.9, 0.4, 1);
+            animation: pageFadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1);
         }
         @keyframes pageFadeIn {
-            from { opacity: 0; transform: translateY(8px); }
-            to { opacity: 1; transform: translateY(0); }
+            0% { opacity: 0; transform: translateY(18px) scale(0.985); filter: blur(3px); }
+            60% { opacity: 1; filter: blur(0); }
+            100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+        }
+        .dashboard-wrapper.active {
+            animation: dashboardFadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        @keyframes dashboardFadeIn {
+            from { opacity: 0; transform: scale(0.98); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        .dashboard-sidebar .menu-item {
+            animation: sidebarItemIn 0.4s cubic-bezier(0.16,1,0.3,1) backwards;
+        }
+        @keyframes sidebarItemIn {
+            from { opacity:0; transform: translateX(-14px); }
+            to { opacity:1; transform: translateX(0); }
         }
 
         .dashboard-action-bar {
@@ -773,7 +788,28 @@
         .trn-preview-text h4 { font-size:1.1rem; font-weight:800; }
         .trn-preview-text span { font-size:0.8rem; color:rgba(255,255,255,0.75); }
         .trn-color-input { width:56px; height:42px; border:2px solid #e0e0e0; border-radius:10px; cursor:pointer; padding:2px; background:#fff; }
-        .trn-tabs { display:flex; gap:8px; overflow-x:auto; padding-bottom:8px; margin-bottom:16px; }
+        .trn-tabs {
+            display:flex; gap:10px; overflow-x:auto; padding:10px 12px; margin-bottom:20px;
+            background:linear-gradient(135deg, var(--dark-navy), var(--navy-blue));
+            border-radius:18px; box-shadow:0 10px 30px rgba(4,26,56,0.2);
+        }
+        .trn-tabs::-webkit-scrollbar { height:5px; }
+        .trn-tabs::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.25); border-radius:10px; }
+        .trn-tabs .btn-sm {
+            border-radius:30px; padding:9px 20px; font-weight:700; letter-spacing:0.3px;
+            transition: all 0.25s cubic-bezier(0.2,0.9,0.4,1); box-shadow:none; white-space:nowrap;
+        }
+        .trn-tabs .btn-sm-secondary {
+            background:rgba(255,255,255,0.08); color:rgba(255,255,255,0.75); border:1px solid rgba(255,255,255,0.12);
+        }
+        .trn-tabs .btn-sm-secondary:hover { background:rgba(255,255,255,0.16); color:#fff; transform:translateY(-2px); }
+        .trn-tabs .btn-sm-primary {
+            background:linear-gradient(135deg, var(--primary-blue), var(--secondary-blue));
+            color:#fff; box-shadow:0 6px 18px rgba(69,179,255,0.4); transform:translateY(-1px);
+            border:1px solid rgba(255,255,255,0.2);
+        }
+        .trn-tabs .btn-sm-primary:hover { transform:translateY(-3px); box-shadow:0 10px 24px rgba(69,179,255,0.5); }
+
         .roster-row { display:flex; align-items:center; gap:10px; flex-wrap:wrap; padding:10px 14px; background:var(--light-bg); border-radius:12px; margin-bottom:8px; }
         .roster-name { font-weight:700; color:var(--dark-navy); min-width:140px; }
         .health-badge { display:inline-block; padding:3px 12px; border-radius:20px; font-size:0.7rem; font-weight:700; }
@@ -1997,6 +2033,8 @@
         // ===== نظام الموارد البشرية للأكاديمية =====
         const HR_ROLE_TYPES = [
             { key: 'coach', label: '🧑‍🏫 مدرب فئة', section: 'coaches' },
+            { key: 'headCoach', label: '⭐ مدرب رئيسي فئة', section: 'coaches' },
+            { key: 'assistantCoach', label: '🥈 مدرب مساعد فئة', section: 'coaches' },
             { key: 'executiveDirector', label: '👔 المدير التنفيذي', section: 'technicalStaff' },
             { key: 'technicalDirectorDTS', label: '🧭 المدير التقني (DTS)', section: 'technicalStaff' },
             { key: 'fitnessCoach', label: '💪 المحضر البدني', section: 'technicalStaff' },
@@ -2630,6 +2668,7 @@
                     <button class="btn-sm btn-sm-secondary" data-action="applyPlayerFilters"><i class="fas fa-search"></i> بحث</button>
                     <button class="btn-sm btn-sm-warning" data-action="resetPlayerFilters"><i class="fas fa-undo"></i> إعادة تعيين</button>
                     <button class="btn-sm btn-sm-info" data-action="exportPlayersListPDF"><i class="fas fa-file-pdf"></i> تحميل PDF</button>
+                    <button class="btn-sm btn-sm-warning" data-action="generateTestPlayers"><i class="fas fa-flask"></i> توليد 300 لاعب تجريبي</button>
                 </div>
             `;
             html += `<div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px;">`;
@@ -2759,6 +2798,58 @@
                 .catch(err => showToast('❌ خطأ: ' + err.message, 'error'));
         }
 
+        // ===== دوال اختبار توليد اللاعبين =====
+        const FAKE_FIRST_NAMES = ['محمد','أحمد','يوسف','عبدالله','خالد','سفيان','إلياس','رياض','وليد','كريم','أمين','نبيل','سامي','بلال','حمزة','ياسين','عادل','مراد','فارس','آدم','معاذ','طه','زين','رفيق','هشام'];
+        const FAKE_LAST_NAMES = ['بن علي','بلحاج','مرابط','قاسمي','بوزيد','شريف','عمراني','زروقي','حمداوي','بودربالة','لعرابة','عيساوي','براهيمي','تواتي','خليفي','مزياني','دراجي','سعيدي','بلعيد','رحماني'];
+        const FAKE_GUARDIAN_PREFIX = ['السيد','والد اللاعب','ولي الأمر'];
+        const FAKE_CITIES = ['سطيف','قسنطينة','برج بوعريريج','باتنة','ميلة','جيجل','بجاية'];
+
+        function generateTestPlayers() {
+            if (!requireRole('admin')) return;
+            if (!confirm('سيتم إنشاء 300 لاعب تجريبي (وهمي) لأغراض الاختبار فقط، دون حذف أي بيانات حالية. متابعة؟')) return;
+
+            showLoading('جاري توليد 300 لاعب تجريبي...');
+            const updates = {};
+            const now = new Date();
+
+            for (let i = 1; i <= 300; i++) {
+                const cat = categories[i % categories.length];
+                const fawj = FAWJ_LIST[i % FAWJ_LIST.length];
+                const firstName = FAKE_FIRST_NAMES[Math.floor(Math.random() * FAKE_FIRST_NAMES.length)];
+                const lastName = FAKE_LAST_NAMES[Math.floor(Math.random() * FAKE_LAST_NAMES.length)];
+                const birthYear = now.getFullYear() - (7 + Math.floor(Math.random() * 7));
+                const birthDate = `${birthYear}-${String(1 + Math.floor(Math.random() * 12)).padStart(2, '0')}-${String(1 + Math.floor(Math.random() * 28)).padStart(2, '0')}`;
+                const guardianName = `${FAKE_GUARDIAN_PREFIX[Math.floor(Math.random() * FAKE_GUARDIAN_PREFIX.length)]} ${lastName}`;
+                const guardianPhone = `05${Math.floor(10000000 + Math.random() * 89999999)}`;
+                const parentCode = `${firstName} ${lastName} ${birthYear} ${cat} #${i}`;
+                const newRef = db.ref('academy/players').push();
+                const data = {
+                    firstName, lastName, categoryId: cat, fawj,
+                    birthDate, birthPlace: FAKE_CITIES[Math.floor(Math.random() * FAKE_CITIES.length)],
+                    studyLevel: 'سنة ' + (1 + (i % 5)) + ' ابتدائي',
+                    health: 'سليم', bloodType: '-',
+                    guardianName, guardianPhone, parentCode,
+                    status: 'approved', approvedAt: now.toISOString(), registrationDate: now.toISOString(),
+                    photo: '', parentalDoc: '', internalDoc: '',
+                    isTestData: true
+                };
+                updates['academy/players/' + newRef.key] = data;
+                updates['academy/playerCodeIndex/' + sanitizeCodeKey(parentCode)] = newRef.key;
+            }
+
+            db.ref().update(updates)
+                .then(() => {
+                    addLog('توليد بيانات تجريبية', 'تم إنشاء 300 لاعب تجريبي للاختبار', currentUser?.role);
+                    return loadAllData(true, true);
+                })
+                .then(() => {
+                    hideLoading();
+                    showToast('✅ تم إنشاء 300 لاعب تجريبي بنجاح، لكل لاعب ملفه الخاص', 'success');
+                    showAdminPlayers();
+                })
+                .catch(err => { hideLoading(); showToast('❌ خطأ: ' + err.message, 'error'); });
+        }
+
         // ================================================================
         // دوال ملفات الفئات
         // ================================================================
@@ -2798,6 +2889,37 @@
             return `<option value="">-- غير معيّن --</option>` + allCoaches.map(c =>
                 `<option value="${c.id}" ${c.id === selectedId ? 'selected' : ''}>${c.name}${c.categoryId ? ' (' + c.categoryId + ')' : ''}</option>`
             ).join('');
+        }
+
+        function renderCategoryHeadCoachesCard(categoryId) {
+            const heads = allCoaches.filter(c => c.roleType === 'headCoach' && c.categoryId === categoryId);
+            const assistants = allCoaches.filter(c => c.roleType === 'assistantCoach' && c.categoryId === categoryId);
+            const renderList = (list, emptyText) => list.length ? list.map(c => `
+                <div class="companion-tag" style="cursor:pointer;" data-action="showCoachDetailPage" data-id="${c.id}">
+                    <i class="fas fa-user-tie"></i> ${c.name}
+                </div>`).join('') : `<span class="text-muted">${emptyText}</span>`;
+            return `
+                <div class="form-card" style="border:2px solid var(--gold);">
+                    <h3><i class="fas fa-star"></i> الطاقم الفني العام لفئة ${categoryId}</h3>
+                    <div class="mf-grid-2">
+                        <div>
+                            <label style="font-weight:700;color:var(--dark-navy);display:block;margin-bottom:8px;">⭐ المدرب الرئيسي للفئة</label>
+                            <div style="display:flex;flex-wrap:wrap;gap:6px;">${renderList(heads, 'لم يُعيّن بعد')}</div>
+                        </div>
+                        <div>
+                            <label style="font-weight:700;color:var(--dark-navy);display:block;margin-bottom:8px;">🥈 المدرب المساعد للفئة</label>
+                            <div style="display:flex;flex-wrap:wrap;gap:6px;">${renderList(assistants, 'لم يُعيّن بعد')}</div>
+                        </div>
+                    </div>
+                    <p class="text-muted" style="margin-top:10px;">يتم ربط هذه البيانات تلقائياً فور إنشاء ملف "مدرب رئيسي" أو "مدرب مساعد" لهذه الفئة من قسم إدارة الموارد البشرية، دون أي إجراء إضافي.</p>
+                </div>`;
+        }
+
+        function renderFawjQuickNavBar(categoryId) {
+            return `
+                <div class="trn-tabs">
+                    ${FAWJ_LIST.map(f => `<button class="btn-sm btn-sm-secondary" onclick="document.getElementById('fawjCard_${categoryId}_${f}').scrollIntoView({behavior:'smooth', block:'start'})"><i class="fas fa-layer-group"></i> الفوج ${f}</button>`).join('')}
+                </div>`;
         }
 
         function renderFawjTableCard(categoryId, fawj) {
@@ -2890,6 +3012,8 @@
                 ${renderOfficialLetterheadHtml(false)}
                 <h2 class="page-title">🗂️ فئة ${categoryId}</h2>
                 <p class="page-sub">إدارة الأفواج الثلاثة الخاصة بهذه الفئة</p>
+                ${renderCategoryHeadCoachesCard(categoryId)}
+                ${renderFawjQuickNavBar(categoryId)}
                 ${unassignedHtml}
                 ${FAWJ_LIST.map(f => renderFawjTableCard(categoryId, f)).join('')}
             `;
@@ -5910,10 +6034,11 @@
         function toggleNewCoachCategoryField() {
             const roleType = document.getElementById('newCoachRoleType')?.value;
             const isCoach = roleType === 'coach';
+            const needsCategory = roleType === 'coach' || roleType === 'headCoach' || roleType === 'assistantCoach';
             const wrap = document.getElementById('newCoachCategoryWrap');
             const licenseWrap = document.getElementById('newCoachLicenseWrap');
             const licenseFileWrap = document.getElementById('newCoachLicenseFileWrap');
-            if (wrap) wrap.style.display = isCoach ? 'flex' : 'none';
+            if (wrap) wrap.style.display = needsCategory ? 'flex' : 'none';
             if (licenseWrap) licenseWrap.style.display = isCoach ? 'flex' : 'none';
             if (licenseFileWrap) licenseFileWrap.style.display = isCoach ? 'flex' : 'none';
         }
@@ -5926,7 +6051,8 @@
             const code = document.getElementById('newCoachCode').value.trim();
             if (!name || !code) { showToast('الرجاء ملء الاسم والكود', 'warning'); return; }
 
-            const categoryId = roleType === 'coach' ? document.getElementById('newCoachCategory').value : '';
+            const needsCategory = roleType === 'coach' || roleType === 'headCoach' || roleType === 'assistantCoach';
+            const categoryId = needsCategory ? document.getElementById('newCoachCategory').value : '';
             const licenseName = roleType === 'coach' ? document.getElementById('newCoachLicenseName').value.trim() : '';
             const phone = document.getElementById('newCoachPhone').value.trim();
             const jobTitle = document.getElementById('newCoachJobTitle').value.trim();
@@ -6227,6 +6353,7 @@
             if (!c) { content.innerHTML = '<p class="text-muted text-center">العضو غير موجود</p>'; return; }
             const rt = c.roleType || 'coach';
             const isCoachRole = rt === 'coach';
+            const hasCategoryRole = rt === 'coach' || rt === 'headCoach' || rt === 'assistantCoach';
             const imgSrc = c.photo && c.photo.startsWith('data:image') ? c.photo : '';
             const statusInfo = HR_STATUS_LIST.find(st => st.key === c.status) || HR_STATUS_LIST[0];
 
@@ -6280,6 +6407,7 @@
         function renderCoachInfoTab(c) {
             const rt = c.roleType || 'coach';
             const isCoachRole = rt === 'coach';
+            const hasCategoryRole = rt === 'coach' || rt === 'headCoach' || rt === 'assistantCoach';
             const s = computeCoachStats(c);
             const canEdit = currentUser?.role === 'admin';
 
@@ -6294,8 +6422,10 @@
                 { label: 'الجنسية', key: 'nationality', value: c.nationality || '-' },
                 { label: 'العنوان', key: 'address', value: c.address || '-' }
             ];
-            if (isCoachRole) {
+            if (hasCategoryRole) {
                 personalFields.splice(1, 0, { label: 'الفئة المشرف عليها', key: 'categoryId', value: c.categoryId || '-' });
+            }
+            if (isCoachRole) {
                 personalFields.push({ label: 'الرخصة التدريبية', key: 'licenseName', value: c.licenseName || '-' });
             }
 
@@ -7838,7 +7968,7 @@
             updateTourInFirebase({ parentsConsent: consent });
         }
 
-        /* ===== المعنيون (participants) — استبدال الدالة بالكامل ===== */
+        /* ===== المعنيون (participants) ===== */
         let tourParticipantsFilter = { search: '', category: '', fawj: '' };
         let tourParticipantsSelected = new Set();
 
@@ -8144,6 +8274,7 @@
             exportHtmlToPDF(wrapper, `المعنيون_${t.name.replace(/\s+/g, '_')}`, { title: `قائمة المعنيين — ${t.name}`, orientation: 'landscape' });
         }
 
+        // ===== دوال إدارة المشاركين (بقيت كما هي لكنها مستخدمة من الكود أعلاه) =====
         function addParticipantPlayer() {
             if (!requireOpsRole()) return;
             const select = document.getElementById('participantPlayerSelect');
@@ -9330,6 +9461,7 @@
             EventManager.register('transferPlayerFawj', function(c) { transferPlayerFawj(c); });
             EventManager.register('exportFawjPDF', function(c) { exportFawjPDF(c); });
             EventManager.register('showAdminPlayers', function() { showAdminPlayers(); });
+            EventManager.register('generateTestPlayers', function() { generateTestPlayers(); });
             EventManager.register('filterPlayers', function(c) { filterPlayers(c.dataset.cat || 'all'); });
             EventManager.register('filterPlayersBy', function(c) { filterPlayersBy(c.dataset.key || 'payment'); });
             EventManager.register('applyPlayerFilters', function() { applyPlayerFilters(); });
