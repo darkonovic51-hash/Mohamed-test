@@ -2804,94 +2804,61 @@
         const FAKE_GUARDIAN_PREFIX = ['السيد','والد اللاعب','ولي الأمر'];
         const FAKE_CITIES = ['سطيف','قسنطينة','برج بوعريريج','باتنة','ميلة','جيجل','بجاية'];
 
-        // === الكود الجديد للدالة generateTestPlayers ===
         function generateTestPlayers() {
             if (!requireRole('admin')) return;
-            if (!confirm('سيتم إنشاء 300 لاعب تجريبي (وهمي) لأغراض الاختبار فقط. متابعة؟')) return;
+            if (!confirm('سيتم إنشاء 300 لاعب تجريبي (وهمي) لأغراض الاختبار فقط، دون حذف أي بيانات حالية. متابعة؟')) return;
 
             showLoading('جاري توليد 300 لاعب تجريبي...');
+            const updates = {};
             const now = new Date();
-            const BATCH_SIZE = 50; // كتابة على دفعات بدل عملية واحدة ضخمة
-            const totalPlayers = 300;
-            let created = 0;
-            let batchIndex = 0;
 
-            function buildBatch(startIdx, count) {
-                const updates = {};
-                for (let i = startIdx; i < startIdx + count; i++) {
-                    const cat = categories[i % categories.length];
-                    const fawj = FAWJ_LIST[i % FAWJ_LIST.length];
-                    const firstName = FAKE_FIRST_NAMES[Math.floor(Math.random() * FAKE_FIRST_NAMES.length)];
-                    const lastName = FAKE_LAST_NAMES[Math.floor(Math.random() * FAKE_LAST_NAMES.length)];
-                    const birthYear = now.getFullYear() - (7 + Math.floor(Math.random() * 7));
-                    const birthDate = `${birthYear}-${String(1 + Math.floor(Math.random() * 12)).padStart(2, '0')}-${String(1 + Math.floor(Math.random() * 28)).padStart(2, '0')}`;
-                    const guardianName = `${FAKE_GUARDIAN_PREFIX[Math.floor(Math.random() * FAKE_GUARDIAN_PREFIX.length)]} ${lastName}`;
-                    const guardianPhone = `05${Math.floor(10000000 + Math.random() * 89999999)}`;
-                    const parentCode = `${firstName} ${lastName} ${birthYear} ${cat} #${i}`;
-                    const newRef = db.ref('academy/players').push();
-                    const data = {
-                        firstName, lastName, categoryId: cat, fawj,
-                        birthDate, birthPlace: FAKE_CITIES[Math.floor(Math.random() * FAKE_CITIES.length)],
-                        studyLevel: 'سنة ' + (1 + (i % 5)) + ' ابتدائي',
-                        health: 'سليم', bloodType: '-',
-                        guardianName, guardianPhone, parentCode,
-                        status: 'approved', approvedAt: now.toISOString(), registrationDate: now.toISOString(),
-                        photo: '', parentalDoc: '', internalDoc: '',
-                        isTestData: true
-                    };
-                    updates['academy/players/' + newRef.key] = data;
-                    updates['academy/playerCodeIndex/' + sanitizeCodeKey(parentCode)] = newRef.key;
-                }
-                return updates;
+            for (let i = 1; i <= 300; i++) {
+                const cat = categories[i % categories.length];
+                const fawj = FAWJ_LIST[i % FAWJ_LIST.length];
+                const firstName = FAKE_FIRST_NAMES[Math.floor(Math.random() * FAKE_FIRST_NAMES.length)];
+                const lastName = FAKE_LAST_NAMES[Math.floor(Math.random() * FAKE_LAST_NAMES.length)];
+                const birthYear = now.getFullYear() - (7 + Math.floor(Math.random() * 7));
+                const birthDate = `${birthYear}-${String(1 + Math.floor(Math.random() * 12)).padStart(2, '0')}-${String(1 + Math.floor(Math.random() * 28)).padStart(2, '0')}`;
+                const guardianName = `${FAKE_GUARDIAN_PREFIX[Math.floor(Math.random() * FAKE_GUARDIAN_PREFIX.length)]} ${lastName}`;
+                const guardianPhone = `05${Math.floor(10000000 + Math.random() * 89999999)}`;
+                const parentCode = `${firstName} ${lastName} ${birthYear} ${cat} #${i}`;
+                const newRef = db.ref('academy/players').push();
+                const data = {
+                    firstName, lastName, categoryId: cat, fawj,
+                    birthDate, birthPlace: FAKE_CITIES[Math.floor(Math.random() * FAKE_CITIES.length)],
+                    studyLevel: 'سنة ' + (1 + (i % 5)) + ' ابتدائي',
+                    health: 'سليم', bloodType: '-',
+                    guardianName, guardianPhone, parentCode,
+                    status: 'approved', approvedAt: now.toISOString(), registrationDate: now.toISOString(),
+                    photo: '', parentalDoc: '', internalDoc: '',
+                    isTestData: true
+                };
+                updates['academy/players/' + newRef.key] = data;
+                updates['academy/playerCodeIndex/' + sanitizeCodeKey(parentCode)] = newRef.key;
             }
 
-            function writeNextBatch() {
-                const remaining = totalPlayers - created;
-                if (remaining <= 0) {
-                    db.ref('academy/players').orderByChild('isTestData').equalTo(true).once('value').then(snap => {
-                        const actualCount = snap.val() ? Object.keys(snap.val()).length : 0;
-                        hideLoading();
-                        addLog('توليد بيانات تجريبية', `تم إنشاء ${actualCount} لاعب تجريبي فعليًا في القاعدة`, currentUser?.role);
-                        window.addDebugLog(`✅ تحقق فعلي: ${actualCount} لاعب تجريبي في Firebase`, 'success');
-                        if (actualCount === 0) {
-                            showToast('❌ لم يتم إنشاء أي لاعب فعليًا - تحقق من قواعد الأمان (Security Rules) في Firebase', 'error');
-                        } else if (actualCount < totalPlayers) {
-                            showToast(`⚠️ تم إنشاء ${actualCount} من أصل ${totalPlayers} فقط - راجع سجل الأخطاء`, 'warning');
-                        } else {
-                            showToast(`✅ تم التأكد من إنشاء ${actualCount} لاعب تجريبي بنجاح`, 'success');
-                        }
-                        loadAllData(true, true).then(() => showAdminPlayers());
-                    }).catch(err => {
-                        hideLoading();
-                        showToast('⚠️ تعذر التحقق من العدد الفعلي: ' + err.message, 'warning');
-                        loadAllData(true, true).then(() => showAdminPlayers());
-                    });
-                    return;
-                }
-                const batchCount = Math.min(BATCH_SIZE, remaining);
-                const updates = buildBatch(created, batchCount);
-                showProgress('جاري إنشاء اللاعبين...', Math.round((created / totalPlayers) * 100));
-
-                db.ref().update(updates)
-                    .then(() => {
-                        created += batchCount;
-                        batchIndex++;
-                        window.addDebugLog(`✅ دفعة ${batchIndex}: تم إنشاء ${created}/${totalPlayers}`, 'success');
-                        setTimeout(writeNextBatch, 150);
-                    })
-                    .catch(err => {
-                        hideLoading();
-                        console.error('فشلت دفعة اللاعبين:', err);
-                        window.addDebugLog(`❌ فشلت الدفعة ${batchIndex + 1} عند اللاعب رقم ${created}: ${err.message}`, 'error');
-                        showToast(`❌ توقف التوليد عند اللاعب ${created}/${totalPlayers}: ${err.message}`, 'error');
-                        showToast('السبب الغالب: قواعد أمان Firebase (Security Rules) تمنع الكتابة', 'warning');
-                    });
-            }
-
-            writeNextBatch();
+            return db.ref().update(updates)
+                .then(() => {
+                    addLog('توليد بيانات تجريبية', 'تم إنشاء 300 لاعب تجريبي للاختبار', currentUser?.role);
+                    window.addDebugLog('✅ تم إنشاء 300 لاعب في Firebase بنجاح', 'success');
+                    return loadAllData(true, true);
+                })
+                .then(() => {
+                    hideLoading();
+                    showToast('✅ تم إنشاء 300 لاعب تجريبي بنجاح، لكل لاعب ملفه الخاص', 'success');
+                    showAdminPlayers();
+                })
+                .catch(err => {
+                    hideLoading();
+                    console.error('generateTestPlayers failed:', err);
+                    window.addDebugLog('❌ فشل توليد اللاعبين: ' + err.message, 'error');
+                    showToast('❌ فشل التوليد: ' + err.message, 'error');
+                });
         }
 
-        // ===== دوال ملفات الفئات =====
+        // ================================================================
+        // دوال ملفات الفئات
+        // ================================================================
         const FAWJ_LIST = ['A', 'B', 'C'];
 
         function showCategoryFiles() {
