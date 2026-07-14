@@ -2562,6 +2562,65 @@
             }
         }
 
+        // ================================================================
+        // 10.5 دالة renderDashboard (المضافة حديثاً)
+        // ================================================================
+        function renderDashboard() {
+            const sidebar = document.getElementById('sidebarMenu');
+            if (!sidebar) return;
+
+            let menuItems = [];
+
+            if (currentUser?.role === 'admin') {
+                menuItems = [
+                    { label: 'الرئيسية', icon: 'fa-home', action: 'showAdminHome' },
+                    { label: 'طلبات الانضمام', icon: 'fa-inbox', action: 'showJoinRequests' },
+                    { label: 'ملفات الفئات', icon: 'fa-layer-group', action: 'showCategoryFiles' },
+                    { label: 'اللاعبون', icon: 'fa-users', action: 'showAdminPlayers' },
+                    { label: 'الحصص التدريبية', icon: 'fa-futbol', action: 'showAdminTrainingSessions' },
+                    { label: 'المباريات', icon: 'fa-handshake', action: 'showAdminMatches' },
+                    { label: 'الدورات', icon: 'fa-trophy', action: 'showAdminTournaments' },
+                    { label: 'متابعة الاشتراكات', icon: 'fa-money-check-dollar', action: 'showSubscriptionsOverview' },
+                    { label: 'السجلات الطبية', icon: 'fa-notes-medical', action: 'showMedicalStaffPlayers' },
+                    { label: 'الموارد البشرية', icon: 'fa-building-user', action: 'showHRHub' },
+                    { label: 'التقارير الدورية', icon: 'fa-chart-pie', action: 'showPeriodicReportsExecutive' },
+                    { label: 'التقارير الفنية', icon: 'fa-flask', action: 'showPeriodicReportsTechnical' },
+                    { label: 'سجل التعديلات', icon: 'fa-clipboard-list', action: 'showAdminLogs' }
+                ];
+            } else if (currentUser?.role === 'coach') {
+                menuItems = [
+                    { label: 'الرئيسية', icon: 'fa-home', action: 'showCoachHome' },
+                    { label: 'لاعبو فئتي', icon: 'fa-users', action: 'showCoachPlayers' }
+                ];
+                if (canDo('manageSessions')) menuItems.push({ label: 'حصصي التدريبية', icon: 'fa-futbol', action: 'showCoachTrainingSessions' });
+                if (isFitnessCoach()) menuItems.push({ label: 'الحصص (كل الفئات)', icon: 'fa-dumbbell', action: 'showFitnessSessions' });
+                if (canDo('manageMatches')) menuItems.push({ label: 'المباريات', icon: 'fa-handshake', action: 'showCoachMatches' });
+                if (canDo('manageTournaments') || canDo('manageTournamentParticipants')) menuItems.push({ label: 'الدورات', icon: 'fa-trophy', action: 'showAdminTournaments' });
+                if (canManageMedicalRecord()) menuItems.push({ label: 'السجلات الطبية', icon: 'fa-notes-medical', action: 'showMedicalStaffPlayers' });
+                if (canDo('managePayments')) menuItems.push({ label: 'متابعة الاشتراكات', icon: 'fa-money-check-dollar', action: 'showSubscriptionsOverview' });
+                if (canDo('manageHR')) menuItems.push({ label: 'الموارد البشرية', icon: 'fa-building-user', action: 'showHRHub' });
+                if (canDo('viewReports')) {
+                    menuItems.push({ label: 'التقارير الدورية', icon: 'fa-chart-pie', action: 'showPeriodicReportsExecutive' });
+                    menuItems.push({ label: 'التقارير الفنية', icon: 'fa-flask', action: 'showPeriodicReportsTechnical' });
+                }
+                if (canDo('manageLogs')) menuItems.push({ label: 'سجل التعديلات', icon: 'fa-clipboard-list', action: 'showAdminLogs' });
+            } else if (currentUser?.role === 'parent') {
+                menuItems = [
+                    { label: 'ملف ابني', icon: 'fa-user', action: 'showParentHome' }
+                ];
+            }
+
+            sidebar.innerHTML = menuItems.map(item => `
+                <div class="menu-item" data-action="${item.action}">
+                    <i class="fas ${item.icon}"></i> <span>${item.label}</span>
+                </div>
+            `).join('');
+
+            if (currentUser?.role === 'admin') showAdminHome();
+            else if (currentUser?.role === 'coach') showCoachHome();
+            else if (currentUser?.role === 'parent') showParentHome();
+        }
+
         function showLoginScreen() {
             currentViewFunction = null;
             currentViewArgs = [];
