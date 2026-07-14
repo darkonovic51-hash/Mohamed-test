@@ -2055,35 +2055,22 @@
             return currentUser?.role === 'coach' && ['technicalDirector', 'companion', 'executiveDirector', 'technicalDirectorDTS', 'fitnessCoach', 'medicalStaff'].includes(currentUser?.data?.roleType);
         }
 
-        function isFitnessCoach() {
-            return currentUser?.role === 'coach' && currentUser.data?.roleType === 'fitnessCoach';
+        // ================================================================
+        // 5.5 دوال الصلاحيات المُحدَّثة (التعديل 18 + التعديلات 1-4)
+        // ================================================================
+        function getFreshCoachData() {
+            if (currentUser?.role !== 'coach') return null;
+            return allCoaches.find(c => c.id === currentUser.id) || currentUser.data;
         }
 
-        function requireEvaluationRole() {
-            if (currentUser?.role === 'admin') return true;
-            if (currentUser?.role === 'coach' && (currentUser.data?.roleType || 'coach') === 'coach') return true;
-            showToast('❌ هذا الحساب لا يملك صلاحية تعديل تقييمات أو إحصائيات اللاعبين', 'error');
-            return false;
-        }
-
-        // ================================================================
-        // 5.5 دوال الصلاحيات المُحدَّثة (التعديل 18)
-        // ================================================================
-        function canManageAdminDocs() {
-            return currentUser?.role === 'admin' || (currentUser?.role === 'coach' && coachHasPermission(currentUser.data, 'manageDocuments'));
-        }
-
-        function canManageMedicalRecord() {
-            return currentUser?.role === 'admin' || (currentUser?.role === 'coach' && coachHasPermission(currentUser.data, 'manageMedicalRecords'));
-        }
-
-        // ================================================================
-        // 5.6 دوال الصلاحيات الجديدة (التعديل 3 - ب)
-        // ================================================================
         function canDo(key) {
             if (currentUser?.role === 'admin') return true;
             if (currentUser?.role !== 'coach') return false;
-            return coachHasPermission(currentUser.data, key);
+            return coachHasPermission(getFreshCoachData(), key);
+        }
+
+        function isFitnessCoach() {
+            return currentUser?.role === 'coach' && (getFreshCoachData()?.roleType) === 'fitnessCoach';
         }
 
         function requirePermission(key) {
@@ -2092,16 +2079,21 @@
                 showToast('❌ ليس لديك صلاحية لهذا الإجراء', 'error');
                 return false;
             }
-            if (coachHasPermission(currentUser.data, key)) return true;
+            if (coachHasPermission(getFreshCoachData(), key)) return true;
             const permLabel = allPermissionDefinitions.find(p => p.key === key)?.label || key;
             showToast(`❌ لا تملك صلاحية "${permLabel}"`, 'error');
             window.addDebugLog('🚫 محاولة تنفيذ إجراء بدون صلاحية: ' + key, 'warning');
             return false;
         }
 
-        // ================================================================
-        // 5.7 دالة hasFullCategoryAccess (التعديل 2)
-        // ================================================================
+        function canManageAdminDocs() {
+            return currentUser?.role === 'admin' || (currentUser?.role === 'coach' && coachHasPermission(getFreshCoachData(), 'manageDocuments'));
+        }
+
+        function canManageMedicalRecord() {
+            return currentUser?.role === 'admin' || (currentUser?.role === 'coach' && coachHasPermission(getFreshCoachData(), 'manageMedicalRecords'));
+        }
+
         function hasFullCategoryAccess() {
             return currentUser?.role === 'admin' || (currentUser?.role === 'coach' && canDo('manageFullCategory'));
         }
@@ -2623,12 +2615,9 @@
         }
 
         // ================================================================
-        // 10.5 دالة renderDashboard (المضافة حديثاً)
+        // 10.5 دوال القائمة الجانبية (التعديل 5)
         // ================================================================
-        function renderDashboard() {
-            const sidebar = document.getElementById('sidebarMenu');
-            if (!sidebar) return;
-
+        function buildSidebarMenuItems() {
             let menuItems = [];
 
             if (currentUser?.role === 'admin') {
@@ -2670,12 +2659,22 @@
                 ];
             }
 
+            return menuItems;
+        }
+
+        function renderSidebarMenu() {
+            const sidebar = document.getElementById('sidebarMenu');
+            if (!sidebar) return;
+            const menuItems = buildSidebarMenuItems();
             sidebar.innerHTML = menuItems.map(item => `
                 <div class="menu-item" data-action="${item.action}">
                     <i class="fas ${item.icon}"></i> <span>${item.label}</span>
                 </div>
             `).join('');
+        }
 
+        function renderDashboard() {
+            renderSidebarMenu();
             if (currentUser?.role === 'admin') showAdminHome();
             else if (currentUser?.role === 'coach') showCoachHome();
             else if (currentUser?.role === 'parent') showParentHome();
@@ -7258,7 +7257,7 @@
         }
 
         // ================================================================
-        // 24. دوال تحديث البيانات وولي الأمر والرجوع (التعديل 12)
+        // 24. دوال تحديث البيانات وولي الأمر والرجوع (التعديل 12 + التعديل 6)
         // ================================================================
         let isRefreshingDashboard = false;
 
@@ -7270,8 +7269,9 @@
             if (btn) { btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري التحديث...'; btn.disabled = true; }
 
             loadAllData(true, true).then(() => {
+                renderSidebarMenu();
                 refreshCurrentView();
-                showToast('✅ تم تحديث البيانات والجداول فورًا', 'success');
+                showToast('✅ تم تحديث البيانات والصلاحيات فورًا', 'success');
             }).catch(err => {
                 showToast('❌ فشل التحديث: ' + err.message, 'error');
             }).finally(() => {
