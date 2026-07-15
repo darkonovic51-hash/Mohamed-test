@@ -2000,7 +2000,7 @@
         }
 
         // ================================================================
-        // 3. Firebase وبيانات النظام (تم التعديل - التعديل 1)
+        // 3. Firebase وبيانات النظام (تم التعديل - التعديل 1 + مستمع الاتصال)
         // ================================================================
         const firebaseConfig = {
             apiKey: "AIzaSyB9WyBGftkJKSdypxc0L0JRik3jTE56W20",
@@ -2021,6 +2021,18 @@
             window.isFirebaseReady = true;
             window.addDebugLog('🔥 تم الاتصال بـ Firebase', 'success');
             console.log('✅ Firebase initialized');
+
+            // ===== مستمع دائم لحالة الاتصال بـ Firebase (التعديل الجديد) =====
+            if (db) {
+                db.ref('.info/connected').on('value', (snap) => {
+                    window.isFirebaseReady = snap.val() === true;
+                    if (snap.val() === true) {
+                        window.addDebugLog('🔥 تم استعادة الاتصال بـ Firebase', 'success');
+                    } else {
+                        window.addDebugLog('⚠️ فقدان الاتصال بـ Firebase', 'warning');
+                    }
+                });
+            }
         } catch (e) {
             console.error('❌ Firebase init error:', e);
             window.addDebugLog('❌ فشل الاتصال بـ Firebase: ' + e.message, 'error');
@@ -10223,7 +10235,23 @@
                         showToast('⚠️ الرجاء ملء جميع الحقول الإجبارية', 'warning');
                         return;
                     }
-                    if (!db) { showToast('❌ لا يوجد اتصال بقاعدة البيانات', 'error'); return; }
+
+                    // ===== محاولة إعادة تهيئة Firebase في حال فقدان الاتصال (التعديل الجديد) =====
+                    if (!db) {
+                        try {
+                            if (!firebase.apps.length) {
+                                firebase.initializeApp(firebaseConfig);
+                            }
+                            db = firebase.database();
+                        } catch (e) {
+                            console.error('فشل إعادة الاتصال:', e);
+                        }
+                    }
+
+                    if (!db) {
+                        showToast('❌ لا يوجد اتصال بقاعدة البيانات، تحقق من الإنترنت وحاول مجددًا', 'error');
+                        return;
+                    }
 
                     const originalBtnHtml = submitBtn.innerHTML;
                     submitBtn.disabled = true;
