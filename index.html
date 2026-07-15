@@ -2837,6 +2837,7 @@
                     <button class="btn-sm btn-sm-secondary" data-action="applyPlayerFilters"><i class="fas fa-search"></i> بحث</button>
                     <button class="btn-sm btn-sm-warning" data-action="resetPlayerFilters"><i class="fas fa-undo"></i> إعادة تعيين</button>
                     <button class="btn-sm btn-sm-info" data-action="exportPlayersListPDF"><i class="fas fa-file-pdf"></i> تحميل PDF</button>
+                    <button class="btn-sm btn-sm-warning" data-action="generateTestPlayers"><i class="fas fa-flask"></i> توليد 300 لاعب تجريبي</button>
                 </div>
             `;
             html += `<div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px;">`;
@@ -2964,6 +2965,64 @@
                     showJoinRequests();
                 })
                 .catch(err => showToast('❌ خطأ: ' + err.message, 'error'));
+        }
+
+        // ===== دوال اختبار توليد اللاعبين =====
+        const FAKE_FIRST_NAMES = ['محمد','أحمد','يوسف','عبدالله','خالد','سفيان','إلياس','رياض','وليد','كريم','أمين','نبيل','سامي','بلال','حمزة','ياسين','عادل','مراد','فارس','آدم','معاذ','طه','زين','رفيق','هشام'];
+        const FAKE_LAST_NAMES = ['بن علي','بلحاج','مرابط','قاسمي','بوزيد','شريف','عمراني','زروقي','حمداوي','بودربالة','لعرابة','عيساوي','براهيمي','تواتي','خليفي','مزياني','دراجي','سعيدي','بلعيد','رحماني'];
+        const FAKE_GUARDIAN_PREFIX = ['السيد','والد اللاعب','ولي الأمر'];
+        const FAKE_CITIES = ['سطيف','قسنطينة','برج بوعريريج','باتنة','ميلة','جيجل','بجاية'];
+
+        function generateTestPlayers() {
+            if (!(currentUser?.role === 'admin' || requirePermission('managePlayers'))) return;
+            if (!confirm('سيتم إنشاء 300 لاعب تجريبي (وهمي) لأغراض الاختبار فقط، دون حذف أي بيانات حالية. متابعة؟')) return;
+
+            showLoading('جاري توليد 300 لاعب تجريبي...');
+            const updates = {};
+            const now = new Date();
+
+            for (let i = 1; i <= 300; i++) {
+                const cat = categories[i % categories.length];
+                const fawj = FAWJ_LIST[i % FAWJ_LIST.length];
+                const firstName = FAKE_FIRST_NAMES[Math.floor(Math.random() * FAKE_FIRST_NAMES.length)];
+                const lastName = FAKE_LAST_NAMES[Math.floor(Math.random() * FAKE_LAST_NAMES.length)];
+                const birthYear = now.getFullYear() - (7 + Math.floor(Math.random() * 7));
+                const birthDate = `${birthYear}-${String(1 + Math.floor(Math.random() * 12)).padStart(2, '0')}-${String(1 + Math.floor(Math.random() * 28)).padStart(2, '0')}`;
+                const guardianName = `${FAKE_GUARDIAN_PREFIX[Math.floor(Math.random() * FAKE_GUARDIAN_PREFIX.length)]} ${lastName}`;
+                const guardianPhone = `05${Math.floor(10000000 + Math.random() * 89999999)}`;
+                const parentCode = `${firstName} ${lastName} ${birthYear} ${cat} #${i}`;
+                const newRef = db.ref('academy/players').push();
+                const data = {
+                    firstName, lastName, categoryId: cat, fawj,
+                    birthDate, birthPlace: FAKE_CITIES[Math.floor(Math.random() * FAKE_CITIES.length)],
+                    studyLevel: 'سنة ' + (1 + (i % 5)) + ' ابتدائي',
+                    health: 'سليم', bloodType: '-',
+                    guardianName, guardianPhone, parentCode,
+                    status: 'approved', approvedAt: now.toISOString(), registrationDate: now.toISOString(),
+                    photo: '', parentalDoc: '', internalDoc: '',
+                    isTestData: true
+                };
+                updates['academy/players/' + newRef.key] = data;
+                updates['academy/playerCodeIndex/' + sanitizeCodeKey(parentCode)] = newRef.key;
+            }
+
+            return db.ref().update(updates)
+                .then(() => {
+                    addLog('توليد بيانات تجريبية', 'تم إنشاء 300 لاعب تجريبي للاختبار', currentUser?.role);
+                    window.addDebugLog('✅ تم إنشاء 300 لاعب في Firebase بنجاح', 'success');
+                    return loadAllData(true, true);
+                })
+                .then(() => {
+                    hideLoading();
+                    showToast('✅ تم إنشاء 300 لاعب تجريبي بنجاح، لكل لاعب ملفه الخاص', 'success');
+                    showAdminPlayers();
+                })
+                .catch(err => {
+                    hideLoading();
+                    console.error('generateTestPlayers failed:', err);
+                    window.addDebugLog('❌ فشل توليد اللاعبين: ' + err.message, 'error');
+                    showToast('❌ فشل التوليد: ' + err.message, 'error');
+                });
         }
 
         // ================================================================
@@ -7344,7 +7403,7 @@
         }
 
         // ================================================================
-        // 23. دوال سجل التعديلات (تم التعديل - التعديل 3 الجديد)
+        // 23. دوال سجل التعديلات
         // ================================================================
         function renderLogsList() {
             const container = document.getElementById('logsListContainer');
@@ -7379,8 +7438,7 @@
                     <h2 class="page-title">📜 سجل التعديلات</h2>
                     <div style="display:flex; gap:8px; margin-bottom:16px;">
                         <button class="btn-sm btn-sm-primary" data-action="refreshLogs"><i class="fas fa-sync"></i> تحديث</button>
-                        <button class="btn-sm btn-sm-info" data-action="archiveAndClearLogs"><i class="fas fa-file-download"></i> تنزيل أرشيف كامل ثم تفريغ السجل</button>
-                        <button class="btn-sm btn-sm-danger" data-action="clearLogs"><i class="fas fa-trash"></i> مسح السجل بدون أرشفة</button>
+                        <button class="btn-sm btn-sm-danger" data-action="clearLogs"><i class="fas fa-trash"></i> مسح السجل</button>
                     </div>
                     <div id="logsListContainer"></div>
                 `;
@@ -7390,13 +7448,11 @@
             EventManager.bindButtons(content);
         }
 
-        // ===== دالة refreshLogs المعدلة (التعديل 3 الجديد) =====
         function refreshLogs() {
-            // تحميل آخر 200 سجل فقط بدل كامل السجل التاريخي
-            db.ref('academy/logs').limitToLast(200).once('value').then(snap => {
+            db.ref('academy/logs').once('value').then(snap => {
                 allLogs = snap.val() ? Object.keys(snap.val()).map(k => ({ id: k, ...snap.val()[k] })) : [];
                 renderLogsList();
-                showToast('✅ تم تحديث السجل (آخر 200 عملية)', 'success');
+                showToast('✅ تم تحديث السجل', 'success');
             }).catch(err => showToast('❌ خطأ: ' + err.message, 'error'));
         }
 
@@ -7408,40 +7464,6 @@
                     renderLogsList();
                     showToast('✅ تم مسح السجل', 'success'); })
                 .catch(err => showToast('❌ خطأ: ' + err.message, 'error'));
-        }
-
-        // ===== دالة archiveAndClearLogs الجديدة (التعديل 3 الجديد) =====
-        function archiveAndClearLogs() {
-            if (!(currentUser?.role === 'admin' || requirePermission('manageLogs'))) return;
-            if (!confirm('سيتم تنزيل كامل السجل التاريخي كملف، ثم تفريغ السجل من قاعدة البيانات لتقليل الاستهلاك المستقبلي. متابعة؟')) return;
-
-            showLoading('جاري تجميع الأرشيف الكامل...');
-            db.ref('academy/logs').once('value').then(snap => {
-                const fullLogs = snap.val() ? Object.keys(snap.val()).map(k => ({ id: k, ...snap.val()[k] })) : [];
-                if (fullLogs.length === 0) { hideLoading(); showToast('لا يوجد سجل لأرشفته', 'info'); return; }
-
-                // بناء ملف نصي (JSON) وتنزيله مباشرة على جهاز المستخدم — بدون أي تكلفة إضافية على Firebase
-                const blob = new Blob([JSON.stringify(fullLogs, null, 2)], { type: 'application/json' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `سجل_ASSARU_${new Date().toISOString().slice(0,10)}.json`;
-                document.body.appendChild(a);
-                a.click();
-                a.remove();
-                URL.revokeObjectURL(url);
-
-                // بعد التأكد من نجاح التنزيل، تفريغ السجل من قاعدة البيانات
-                return db.ref('academy/logs').remove().then(() => {
-                    allLogs = [];
-                    renderLogsList();
-                    hideLoading();
-                    showToast('✅ تم تنزيل الأرشيف وتفريغ السجل بنجاح', 'success');
-                });
-            }).catch(err => {
-                hideLoading();
-                showToast('❌ خطأ: ' + err.message, 'error');
-            });
         }
 
         // ================================================================
@@ -9928,7 +9950,7 @@
         }
 
         // ================================================================
-        // تسجيل جميع الإجراءات (تم التعديل - التعديل 3 الجديد)
+        // تسجيل جميع الإجراءات
         // ================================================================
 
         function registerAllActions() {
@@ -9962,6 +9984,7 @@
             EventManager.register('transferPlayerFawj', function(c) { transferPlayerFawj(c); });
             EventManager.register('exportFawjPDF', function(c) { exportFawjPDF(c); });
             EventManager.register('showAdminPlayers', function() { showAdminPlayers(); });
+            EventManager.register('generateTestPlayers', function() { generateTestPlayers(); });
             EventManager.register('filterPlayers', function(c) { filterPlayers(c.dataset.cat || 'all'); });
             EventManager.register('filterPlayersBy', function(c) { filterPlayersBy(c.dataset.key || 'payment'); });
             EventManager.register('applyPlayerFilters', function() { applyPlayerFilters(); });
@@ -10033,7 +10056,6 @@
             EventManager.register('showHRSectionList', function(c) { showHRSectionList(c.dataset.section); });
             EventManager.register('showAdminLogs', function() { showAdminLogs(); });
             EventManager.register('refreshLogs', function() { refreshLogs(); });
-            EventManager.register('archiveAndClearLogs', function() { archiveAndClearLogs(); });
             EventManager.register('clearLogs', function() { clearLogs(); });
             EventManager.register('showParentHome', function() { showParentHome(); });
             EventManager.register('refreshDashboardData', function() { refreshDashboardData(); });
@@ -10141,16 +10163,16 @@
         }
 
         // ================================================================
-        // 26. تهيئة النظام (تم التعديل - التعديل 1 الجديد)
+        // 26. تهيئة النظام
         // ================================================================
         function initSystem() {
             registerAllActions();
             EventManager.enableDelegation();
             EventManager.bindButtons();
 
-            // ملاحظة: تم حذف التحميل الكامل لقاعدة البيانات هنا عمداً.
-            // الموقع العام (الرئيسية/عن الأكاديمية/المعرض/التسجيل) لا يحتاج أي بيانات من academy/*.
-            // كل صفحة داخل لوحة التحكم تُحمّل بياناتها بنفسها عبر loadSections عند فتحها فعلياً.
+            if (db) {
+                loadAllData(false, true).catch(() => {});
+            }
 
             setupUpload('regPhoto', 'photoFileName', 'uploadPhoto');
             setupUpload('regParental', 'parentalFileName', 'uploadParental');
