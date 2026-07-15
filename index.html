@@ -1879,10 +1879,36 @@
             document.querySelectorAll('.stats-card-modal').forEach(m => m.remove());
         }
 
-        function readFileAsBase64(file) {
+        // ===== دالة readFileAsBase64 مع ضغط الصور (التعديل 8) =====
+        function readFileAsBase64(file, maxDim = 1000, quality = 0.72) {
             return new Promise((resolve, reject) => {
+                // ملفات PDF لا يمكن ضغطها كصورة، تُرفع كما هي
+                if (file.type === 'application/pdf') {
+                    const reader = new FileReader();
+                    reader.onload = () => resolve(reader.result);
+                    reader.onerror = reject;
+                    reader.readAsDataURL(file);
+                    return;
+                }
                 const reader = new FileReader();
-                reader.onload = () => resolve(reader.result);
+                reader.onload = (e) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        let { width, height } = img;
+                        if (width > maxDim || height > maxDim) {
+                            if (width > height) { height = Math.round(height * (maxDim / width)); width = maxDim; }
+                            else { width = Math.round(width * (maxDim / height)); height = maxDim; }
+                        }
+                        const canvas = document.createElement('canvas');
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+                        resolve(canvas.toDataURL('image/jpeg', quality));
+                    };
+                    img.onerror = () => resolve(e.target.result); // فشل الضغط؟ استخدم الأصل كحل بديل آمن
+                    img.src = e.target.result;
+                };
                 reader.onerror = reject;
                 reader.readAsDataURL(file);
             });
@@ -1974,16 +2000,17 @@
         }
 
         // ================================================================
-        // 3. Firebase وبيانات النظام
+        // 3. Firebase وبيانات النظام (تم التعديل - التعديل 1)
         // ================================================================
         const firebaseConfig = {
-            apiKey: "AIzaSyCDrCtY7weMKAfWQq1k3Hx9hx1PPWa4XAE",
-            authDomain: "academy-al.firebaseapp.com",
-            databaseURL: "https://academy-al-default-rtdb.firebaseio.com",
-            projectId: "academy-al",
-            storageBucket: "academy-al.firebasestorage.app",
-            messagingSenderId: "205174400637",
-            appId: "1:205174400637:web:8d4312e8d70e5a194b3314"
+            apiKey: "AIzaSyB9WyBGftkJKSdypxc0L0JRik3jTE56W20",
+            authDomain: "assaru-new.firebaseapp.com",
+            databaseURL: "https://assaru-new-default-rtdb.firebaseio.com",
+            projectId: "assaru-new",
+            storageBucket: "assaru-new.firebasestorage.app",
+            messagingSenderId: "835168842536",
+            appId: "1:835168842536:web:6836e7b176ca178052d61d",
+            measurementId: "G-HGEM953PTR"
         };
         let db;
         let isFirebaseReady = false;
@@ -2026,6 +2053,44 @@
         let dataLoaded = false;
         let isLoadingData = false;
         let dataLoadPromise = null;
+
+        // ================================================================
+        // 4.5 نظام التحميل الذكي حسب الحاجة (Smart Lazy Loader) - التعديل 2
+        // ================================================================
+        const loadedSections = {}; // يتتبع أي مسار تم تحميله بالفعل في هذه الجلسة
+
+        // تحويل الكائن (snapshot.val) إلى مصفوفة بنفس الطريقة المستخدمة سابقاً
+        function toArraySafe(val) {
+            return val ? Object.keys(val).map(k => ({ id: k, ...val[k] })) : [];
+        }
+
+        /**
+         * يحمّل مسارًا واحدًا من Firebase مرة واحدة فقط لكل جلسة،
+         * ويخزنه في المتغير العام المحدد (targetArrayName) كمصفوفة،
+         * أو ككائن خام إذا كان isObjectMap=true (مثل playerDetails, officialMessages).
+         * force=true يجبر إعادة التحميل حتى لو كان محمّلاً (تُستخدم بعد تعديل يتطلب تزامنًا فعليًا نادرًا).
+         */
+        async function loadSectionOnce(sectionKey, path, targetArrayName, isObjectMap = false, force = false) {
+            if (loadedSections[sectionKey] && !force) return; // محمّل بالفعل، لا تكرر الطلب
+            const snap = await db.ref(path).once('value');
+            const val = snap.val();
+            if (isObjectMap) {
+                window[targetArrayName] = val || {};
+            } else {
+                window[targetArrayName] = toArraySafe(val);
+            }
+            loadedSections[sectionKey] = true;
+            window.addDebugLog && window.addDebugLog(`📥 تحميل مقطعي: ${sectionKey}`, 'info');
+        }
+
+        /**
+         * يحمّل عدة مسارات معًا بالتوازي (أسرع من التسلسل) فقط للمقاطع غير المحمّلة.
+         */
+        async function loadSections(list) {
+            await Promise.all(list.map(item =>
+                loadSectionOnce(item.key, item.path, item.target, item.isObjectMap || false)
+            ));
+        }
 
         // ================================================================
         // 5. دالة حماية الصلاحيات
@@ -2273,7 +2338,7 @@
         let currentCoachFileTab = 'info';
 
         // ================================================================
-        // 7. تحميل البيانات (مع دعم التحميل الصامت)
+        // 7. تحميل البيانات (مع دعم التحميل الصامت) - تم التعديل
         // ================================================================
         function loadAllData(forceReload = false, silent = false) {
             if (dataLoaded && !forceReload) return Promise.resolve();
@@ -2520,7 +2585,7 @@
         // سيتم تعريف registerAllActions لاحقاً في قسم نظام الدورات المتكامل.
 
         // ================================================================
-        // 10. دوال تسجيل الدخول
+        // 10. دوال تسجيل الدخول (تم التعديل - التعديل 2)
         // ================================================================
         async function loginAs(role) {
             const codeInput = document.getElementById('loginCode');
@@ -2582,14 +2647,29 @@
                     const errorEl = document.getElementById('loginError');
                     if (errorEl) errorEl.style.display = 'none';
 
-                    renderDashboard();
-
-                    loadAllData().then(() => {
-                        refreshCurrentView();
-                        if (currentUser?.role === 'coach') { setTimeout(() => showMemberOfficialMessagesPopup(currentUser.id), 500); }
-                        window.addDebugLog('✅ البيانات تم تحميلها في الخلفية', 'success');
+                    // تحميل خفيف فقط: الصلاحيات (صغيرة وضرورية لكل الواجهات) — وليس كل قاعدة البيانات
+                    showLoading('جاري تجهيز لوحة التحكم...');
+                    loadSections([
+                        { key: 'permissionDefinitions', path: 'academy/permissionDefinitions', target: 'allPermissionDefinitions' }
+                    ]).then(() => {
+                        if (allPermissionDefinitions.length === 0) {
+                            const seedUpdates = {};
+                            DEFAULT_PERMISSIONS.forEach(p => { seedUpdates[p.key] = { ...p, enabled: true }; });
+                            return db.ref('academy/permissionDefinitions').update(seedUpdates).then(() => {
+                                allPermissionDefinitions = Object.entries(seedUpdates).map(([k, v]) => ({ id: k, ...v }));
+                            });
+                        }
+                    }).then(() => {
+                        dataLoaded = true; // يبقى متوافقاً مع أي كود قديم يفحص هذا المتغير
+                        hideLoading();
+                        renderDashboard(); // كل دالة home ستحمّل بياناتها الخاصة لوحدها (انظر التعديلات التالية)
+                        if (currentUser?.role === 'coach') {
+                            loadSections([{ key: 'officialMessages', path: 'academy/officialMessages', target: 'allOfficialMessages', isObjectMap: true }])
+                                .then(() => setTimeout(() => showMemberOfficialMessagesPopup(currentUser.id), 500));
+                        }
                     }).catch(err => {
-                        window.addDebugLog('⚠️ فشل تحميل البيانات في الخلفية: ' + err.message, 'warning');
+                        hideLoading();
+                        window.addDebugLog('⚠️ فشل تحميل الصلاحيات: ' + err.message, 'warning');
                     });
 
                     const endTime = performance.now();
@@ -2734,11 +2814,19 @@
         }
 
         // ================================================================
-        // 11. دوال اللاعبين الأساسية
+        // 11. دوال اللاعبين الأساسية (تم التعديل - التعديل 3)
         // ================================================================
-        function showAdminPlayers() {
+        async function showAdminPlayers() {
             currentViewFunction = showAdminPlayers;
             currentViewArgs = [];
+            showLoading('جاري تحميل اللاعبين...');
+            await loadSections([
+                { key: 'players', path: 'academy/players', target: 'allPlayers' },
+                { key: 'playerDetails', path: 'academy/playerDetails', target: 'allPlayerDetails', isObjectMap: true },
+                { key: 'payments', path: 'academy/payments', target: 'allPayments' },
+                { key: 'attendances', path: 'academy/attendances', target: 'allAttendances' }
+            ]);
+            hideLoading();
             const content = document.getElementById('pageContent');
             let html = renderOfficialLetterheadHtml(false) + `<h2 class="page-title">👥 اللاعبون</h2><p class="page-sub">إدارة جميع اللاعبين حسب الفئات</p>`;
             html += `
@@ -2938,7 +3026,7 @@
         }
 
         // ================================================================
-        // دوال ملفات الفئات
+        // دوال ملفات الفئات (تم التعديل - التعديل 3)
         // ================================================================
         const FAWJ_LIST = ['A', 'B', 'C'];
 
@@ -3063,10 +3151,35 @@
             `;
         }
 
-        function showCategoryFawjFile(context) {
+        // ===== دالة showCategoryFawjFile المعدلة (التعديل 3) =====
+        async function showCategoryFawjFile(context) {
             const categoryId = typeof context === 'string' ? context : context.dataset.cat;
             currentViewFunction = showCategoryFawjFile;
             currentViewArgs = [categoryId];
+            showLoading('جاري تحميل بيانات الفئة...');
+
+            // جلب لاعبي هذه الفئة فقط من Firebase (بدل تحميل كل اللاعبين)
+            if (!loadedSections['players_cat_' + categoryId]) {
+                const snap = await db.ref('academy/players').orderByChild('categoryId').equalTo(categoryId).once('value');
+                const catPlayers = toArraySafe(snap.val());
+                // دمج النتيجة مع القائمة العامة الموجودة (بدون تكرار) للحفاظ على توافق كل الدوال الأخرى
+                catPlayers.forEach(p => {
+                    const idx = allPlayers.findIndex(x => x.id === p.id);
+                    if (idx === -1) allPlayers.push(p); else allPlayers[idx] = p;
+                });
+                loadedSections['players_cat_' + categoryId] = true;
+            }
+            if (!loadedSections['fawjAssignments']) {
+                const faSnap = await db.ref('academy/fawjAssignments/' + categoryId).once('value');
+                allFawjAssignments[categoryId] = faSnap.val() || {};
+            }
+            if (!loadedSections['coaches']) {
+                const cSnap = await db.ref('academy/coaches').once('value'); // صغيرة الحجم غالباً (عدد الموظفين محدود)
+                allCoaches = toArraySafe(cSnap.val());
+                loadedSections['coaches'] = true;
+            }
+            hideLoading();
+
             const content = document.getElementById('pageContent');
             const unassigned = allPlayers.filter(p => p.categoryId === categoryId && p.status === 'approved' && !p.fawj);
 
@@ -3460,7 +3573,7 @@
         }
 
         // ================================================================
-        // 13. دوال تفاصيل اللاعب مع بطاقات الدفع الجديدة
+        // 13. دوال تفاصيل اللاعب مع بطاقات الدفع الجديدة (تم التعديل - التعديل 4)
         // ================================================================
         function renderPlayerActiveCallupsHtml(playerId) {
             const cards = [];
@@ -3551,10 +3664,60 @@
             EventManager.bindButtons(container);
         }
 
-        function showPlayerDetailPage(playerId) {
+        // ===== دالة showPlayerDetailPage المعدلة (التعديل 4) =====
+        async function showPlayerDetailPage(playerId) {
             previousViewFunction = currentViewFunction;
             previousViewArgs = currentViewArgs;
-            const p = allPlayers.find(x => x.id === playerId);
+            showLoading('جاري تحميل ملف اللاعب...');
+
+            // تحميل بيانات هذا اللاعب فقط إن لم تكن موجودة أصلاً في الذاكرة
+            let p = allPlayers.find(x => x.id === playerId);
+            if (!p) {
+                const snap = await db.ref('academy/players/' + playerId).once('value');
+                p = snap.val() ? { id: playerId, ...snap.val() } : null;
+                if (p) allPlayers.push(p);
+            }
+            if (!p) { hideLoading(); showToast('اللاعب غير موجود', 'error'); return; }
+
+            // تفاصيل هذا اللاعب فقط (تقييمات/إحصائيات)
+            if (!allPlayerDetails[playerId]) {
+                const dSnap = await db.ref('academy/playerDetails/' + playerId).once('value');
+                allPlayerDetails[playerId] = dSnap.val() || {};
+            }
+            // دفعات هذا اللاعب فقط
+            if (!allPayments.find(pay => pay.playerId === playerId)) {
+                const paySnap = await db.ref('academy/payments').orderByChild('playerId').equalTo(playerId).once('value');
+                const arr = toArraySafe(paySnap.val());
+                arr.forEach(x => allPayments.push(x));
+            }
+            // رسائل ولي الأمر لهذا اللاعب فقط
+            if (!allPlayerMessages[playerId]) {
+                const msgSnap = await db.ref('academy/playerMessages/' + playerId).once('value');
+                allPlayerMessages[playerId] = msgSnap.val() || {};
+            }
+            // حصص فئة هذا اللاعب فقط (مطلوبة لحساب نسبة الحضور وسجل الحصص)
+            if (!loadedSections['sessions_cat_' + p.categoryId]) {
+                const sSnap = await db.ref('academy/trainingSessions').orderByChild('categoryId').equalTo(p.categoryId).once('value');
+                const arr = toArraySafe(sSnap.val());
+                arr.forEach(s => {
+                    const idx = allTrainingSessions.findIndex(x => x.id === s.id);
+                    if (idx === -1) allTrainingSessions.push(s); else allTrainingSessions[idx] = s;
+                });
+                loadedSections['sessions_cat_' + p.categoryId] = true;
+            }
+            // مباريات فئة هذا اللاعب فقط
+            if (!loadedSections['matches_cat_' + p.categoryId]) {
+                const mSnap = await db.ref('academy/matches').orderByChild('categoryId').equalTo(p.categoryId).once('value');
+                const arr = toArraySafe(mSnap.val());
+                arr.forEach(m => {
+                    const idx = allMatches.findIndex(x => x.id === m.id);
+                    if (idx === -1) allMatches.push(m); else allMatches[idx] = m;
+                });
+                loadedSections['matches_cat_' + p.categoryId] = true;
+            }
+            hideLoading();
+
+            // من هنا فصاعدًا: الكود الأصلي للدالة كما هو تمامًا بدون أي تعديل
             if (!p) { showToast('اللاعب غير موجود', 'error'); return; }
             currentViewFunction = showPlayerDetailPage;
             currentViewArgs = [playerId];
@@ -4607,11 +4770,19 @@
         }
 
         // ================================================================
-        // 19. دوال المدير للحصص والمباريات والدورات
+        // 19. دوال المدير للحصص والمباريات والدورات (تم التعديل - التعديل 3)
         // ================================================================
-        function showAdminHome() {
+        async function showAdminHome() {
             currentViewFunction = showAdminHome;
             currentViewArgs = [];
+            showLoading('جاري تحميل لوحة المدير...');
+            await loadSections([
+                { key: 'players', path: 'academy/players', target: 'allPlayers' },
+                { key: 'coaches', path: 'academy/coaches', target: 'allCoaches' },
+                { key: 'trainingSessions', path: 'academy/trainingSessions', target: 'allTrainingSessions' },
+                { key: 'matches', path: 'academy/matches', target: 'allMatches' }
+            ]);
+            hideLoading();
             const content = document.getElementById('pageContent');
             const pendingCount = allPlayers.filter(p => p.status === 'pending').length;
             const approvedCount = allPlayers.filter(p => p.status === 'approved').length;
@@ -6143,7 +6314,7 @@
                             <div class="form-group"><label>الهاتف</label><input type="text" id="newCoachPhone" /></div>
                             <div class="form-group"><label>البريد الإلكتروني</label><input type="email" id="newCoachEmail" /></div>
                             <div class="form-group"><label>الجنسية</label><input type="text" id="newCoachNationality" /></div>
-                            <div class="form-group full"><label>العنوان</label><input type="text" id="newCoachAddress" /></div>
+                            <div class="form-group"><label>العنوان</label><input type="text" id="newCoachAddress" /></div>
                             <div class="form-group" id="newCoachLicenseWrap"><label>الرخصة التدريبية</label><input type="text" id="newCoachLicenseName" placeholder="مثال: رخصة CAF C" /></div>
                             <div class="form-group">
                                 <label>الصورة الشخصية</label>
@@ -6474,11 +6645,50 @@
             exportHtmlToPDF(body, `تقرير_${c.name.replace(/\s+/g, '_')}`, { title: `تقرير نشاط — ${c.name}` });
         }
 
-        function showCoachDetailPage(coachId) {
+        // ================================================================
+        // دوال ملف المدرب (تم التعديل - التعديل 5)
+        // ================================================================
+        async function showCoachDetailPage(coachId) {
             previousViewFunction = currentViewFunction;
             previousViewArgs = currentViewArgs;
-            const c = allCoaches.find(x => x.id === coachId);
-            if (!c) { showToast('العضو غير موجود', 'error'); return; }
+            showLoading('جاري تحميل ملف العضو...');
+
+            let c = allCoaches.find(x => x.id === coachId);
+            if (!c) {
+                const snap = await db.ref('academy/coaches/' + coachId).once('value');
+                c = snap.val() ? { id: coachId, ...snap.val() } : null;
+                if (c) allCoaches.push(c);
+            }
+            if (!c) { hideLoading(); showToast('العضو غير موجود', 'error'); return; }
+
+            // مباريات وحصص هذا المدرب فقط (تُستخدم في حساب الإحصائيات وسجل النشاط)
+            if (c.categoryId && !loadedSections['matches_cat_' + c.categoryId]) {
+                const mSnap = await db.ref('academy/matches').orderByChild('categoryId').equalTo(c.categoryId).once('value');
+                toArraySafe(mSnap.val()).forEach(m => {
+                    if (!allMatches.find(x => x.id === m.id)) allMatches.push(m);
+                });
+                loadedSections['matches_cat_' + c.categoryId] = true;
+            }
+            if (c.categoryId && !loadedSections['sessions_cat_' + c.categoryId]) {
+                const sSnap = await db.ref('academy/trainingSessions').orderByChild('categoryId').equalTo(c.categoryId).once('value');
+                toArraySafe(sSnap.val()).forEach(s => {
+                    if (!allTrainingSessions.find(x => x.id === s.id)) allTrainingSessions.push(s);
+                });
+                loadedSections['sessions_cat_' + c.categoryId] = true;
+            }
+            // سجل النشاط الخاص بهذا المدرب فقط (بدل تحميل كامل allLogs)
+            if (!loadedSections['logs_coach_' + c.name]) {
+                const lSnap = await db.ref('academy/logs').orderByChild('userName').equalTo(c.name).once('value');
+                toArraySafe(lSnap.val()).forEach(l => allLogs.push(l));
+                loadedSections['logs_coach_' + c.name] = true;
+            }
+            // الرسائل الرسمية الخاصة بهذا المدرب فقط
+            if (!allOfficialMessages[coachId]) {
+                const omSnap = await db.ref('academy/officialMessages/' + coachId).once('value');
+                allOfficialMessages[coachId] = omSnap.val() || {};
+            }
+            hideLoading();
+
             currentViewFunction = showCoachDetailPage;
             currentViewArgs = [coachId];
             currentCoachFileId = coachId;
@@ -7257,10 +7467,11 @@
         }
 
         // ================================================================
-        // 24. دوال تحديث البيانات وولي الأمر والرجوع (التعديل 12 + التعديل 6)
+        // 24. دوال تحديث البيانات وولي الأمر والرجوع (التعديل 12 + التعديل 6 + التعديل 7)
         // ================================================================
         let isRefreshingDashboard = false;
 
+        // ===== دالة refreshDashboardData المعدلة (التعديل 7) =====
         function refreshDashboardData() {
             if (isRefreshingDashboard) { showToast('ℹ️ التحديث جارٍ بالفعل...', 'info'); return; }
             isRefreshingDashboard = true;
@@ -7268,7 +7479,22 @@
             const originalHtml = btn ? btn.innerHTML : null;
             if (btn) { btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري التحديث...'; btn.disabled = true; }
 
-            loadAllData(true, true).then(() => {
+            // إعادة تحميل الأقسام المحمّلة فعلياً في هذه الجلسة فقط، وليس كل قاعدة البيانات
+            const sectionsMap = {
+                players: 'academy/players', coaches: 'academy/coaches', trainingSessions: 'academy/trainingSessions',
+                tournaments: 'academy/tournaments', matches: 'academy/matches', payments: 'academy/payments',
+                permissionDefinitions: 'academy/permissionDefinitions'
+            };
+            const activeKeys = Object.keys(loadedSections).filter(k => sectionsMap[k]);
+            const refreshPromise = activeKeys.length
+                ? Promise.all(activeKeys.map(k => loadSectionOnce(k, sectionsMap[k],
+                    k === 'players' ? 'allPlayers' : k === 'coaches' ? 'allCoaches' :
+                    k === 'trainingSessions' ? 'allTrainingSessions' : k === 'tournaments' ? 'allTournaments' :
+                    k === 'matches' ? 'allMatches' : k === 'payments' ? 'allPayments' : 'allPermissionDefinitions',
+                    false, true)))
+                : Promise.resolve();
+
+            refreshPromise.then(() => {
                 renderSidebarMenu();
                 refreshCurrentView();
                 showToast('✅ تم تحديث البيانات والصلاحيات فورًا', 'success');
@@ -7693,11 +7919,44 @@
         }
 
         /* =====================================================================
-           ملف الدورة الكامل (Workspace) — لوحة تنقل بهوية الدورة
+           ملف الدورة الكامل (Workspace) — لوحة تنقل بهوية الدورة (تم التعديل - التعديل 6)
            ===================================================================== */
-        function openTournamentWorkspace(id) {
+        async function openTournamentWorkspace(id) {
             previousViewFunction = currentViewFunction;
             previousViewArgs = currentViewArgs;
+            showLoading('جاري تحميل ملف الدورة...');
+
+            let t = getTournamentById(id);
+            if (!t) {
+                const snap = await db.ref('academy/tournaments/' + id).once('value');
+                t = snap.val() ? { id, ...snap.val() } : null;
+                if (t) allTournaments.push(t);
+            }
+            if (!t) { hideLoading(); showToast('الدورة غير موجودة', 'error'); return; }
+
+            // مباريات هذه الدورة فقط (بدل تحميل كل المباريات)
+            if (!loadedSections['matches_tour_' + id]) {
+                const mSnap = await db.ref('academy/matches').orderByChild('tournamentId').equalTo(id).once('value');
+                toArraySafe(mSnap.val()).forEach(m => {
+                    if (!allMatches.find(x => x.id === m.id)) allMatches.push(m);
+                });
+                loadedSections['matches_tour_' + id] = true;
+            }
+            // لاعبو فئة الدورة فقط (لعرضهم في تبويب الاستدعاء)
+            if (!loadedSections['players_cat_' + t.categoryId]) {
+                const pSnap = await db.ref('academy/players').orderByChild('categoryId').equalTo(t.categoryId).once('value');
+                toArraySafe(pSnap.val()).forEach(p => {
+                    if (!allPlayers.find(x => x.id === p.id)) allPlayers.push(p);
+                });
+                loadedSections['players_cat_' + t.categoryId] = true;
+            }
+            if (!loadedSections['coaches']) {
+                const cSnap = await db.ref('academy/coaches').once('value');
+                allCoaches = toArraySafe(cSnap.val());
+                loadedSections['coaches'] = true;
+            }
+            hideLoading();
+
             currentViewFunction = openTournamentWorkspace;
             currentViewArgs = [id];
             currentTournamentId = id;
@@ -8085,8 +8344,7 @@
                                 </div>
                             `).join('')}
                         </div>
-                    </div>
-                `;
+                    </div>`;
         }
 
         function assignTourCoachRole(context) {
