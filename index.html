@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         /* ===== جميع الأنماط كما هي مع التعديلات السابقة ===== */
@@ -1914,6 +1915,34 @@
             });
         }
 
+        // ===== رفع ملف إلى Firebase Storage بدل تخزينه Base64 داخل RTDB (التعديل 2) =====
+        // يعيد رابط تحميل (URL) قصير بدل نص base64 ضخم، مما يوفر مساحة RTDB بشكل جذري.
+        // في حال فشل الرفع (مثلاً Storage غير مفعّل)، يعود تلقائياً لطريقة base64 القديمة كحل بديل آمن.
+        async function uploadFileGetURL(file, folder) {
+            if (!file) return '';
+            if (!storage) {
+                window.addDebugLog('⚠️ Storage غير متاح، رجوع لطريقة base64', 'warning');
+                return readFileAsBase64(file);
+            }
+            try {
+                const safeName = Date.now() + '_' + file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+                const ref = storage.ref().child('academy/' + folder + '/' + safeName);
+                let uploadFile = file;
+                // ضغط الصور قبل الرفع (نفس منطق readFileAsBase64) لتوفير مساحة إضافية في Storage
+                if (file.type.startsWith('image/')) {
+                    const compressedDataUrl = await readFileAsBase64(file, 1000, 0.72);
+                    const blob = await (await fetch(compressedDataUrl)).blob();
+                    uploadFile = blob;
+                }
+                const snapshot = await ref.put(uploadFile);
+                const url = await snapshot.ref.getDownloadURL();
+                return url;
+            } catch (err) {
+                window.addDebugLog('❌ فشل الرفع لـ Storage، رجوع لـ base64: ' + err.message, 'error');
+                return readFileAsBase64(file);
+            }
+        }
+
         function sanitizeCodeKey(code) {
             return (code || '').toString().trim().replace(/[.#$\[\]\/]/g, '_').replace(/\s+/g, '_');
         }
@@ -2000,7 +2029,7 @@
         }
 
         // ================================================================
-        // 3. Firebase وبيانات النظام (تم التعديل - التعديل 1 + مستمع الاتصال)
+        // 3. Firebase وبيانات النظام (تم التعديل - التعديل 1 + مستمع الاتصال + Storage)
         // ================================================================
         const firebaseConfig = {
             apiKey: "AIzaSyB9WyBGftkJKSdypxc0L0JRik3jTE56W20",
@@ -2013,10 +2042,12 @@
             measurementId: "G-HGEM953PTR"
         };
         let db;
+        let storage;
         let isFirebaseReady = false;
         try {
             firebase.initializeApp(firebaseConfig);
             db = firebase.database();
+            try { storage = firebase.storage(); } catch (e) { console.warn('Storage init failed', e); }
             isFirebaseReady = true;
             window.isFirebaseReady = true;
             window.addDebugLog('🔥 تم الاتصال بـ Firebase', 'success');
@@ -5495,15 +5526,15 @@
                 });
             };
 
+            // ===== التعديل 9: رفع شعار المباراة عبر Storage =====
             if (logoFile) {
-                const reader = new FileReader();
-                reader.onload = e => finish(buildData(e.target.result));
-                reader.onerror = () => {
-                    if (settled) return;
-                    showToast('⚠️ تعذّرت قراءة الشعار، سيتم إنشاء المباراة بدونه', 'warning');
-                    finish(buildData(null));
-                };
-                try { reader.readAsDataURL(logoFile); } catch (e) { if (settled) return; finish(buildData(null)); }
+                uploadFileGetURL(logoFile, 'matches/logos')
+                    .then(url => finish(buildData(url)))
+                    .catch(() => {
+                        if (settled) return;
+                        showToast('⚠️ تعذّر رفع الشعار، سيتم إنشاء المباراة بدونه', 'warning');
+                        finish(buildData(null));
+                    });
             } else finish(buildData(null));
         }
 
@@ -6403,10 +6434,11 @@
 
             showLoading('جاري حفظ بيانات العضو...');
             try {
+                // ===== التعديل 4: رفع ملفات العضو عبر Storage =====
                 const [photo, contractDoc, licenseDoc] = await Promise.all([
-                    photoFile ? readFileAsBase64(photoFile) : Promise.resolve(''),
-                    contractFile ? readFileAsBase64(contractFile) : Promise.resolve(''),
-                    licenseFile ? readFileAsBase64(licenseFile) : Promise.resolve('')
+                    photoFile ? uploadFileGetURL(photoFile, 'coaches/photos') : Promise.resolve(''),
+                    contractFile ? uploadFileGetURL(contractFile, 'coaches/contracts') : Promise.resolve(''),
+                    licenseFile ? uploadFileGetURL(licenseFile, 'coaches/licenses') : Promise.resolve('')
                 ]);
                 const data = {
                     name, categoryId, fawj, code, phone, roleType, jobTitle,
@@ -7033,7 +7065,8 @@
 
             showLoading('جاري تجديد العقد...');
             try {
-                const newDoc = newFile ? await readFileAsBase64(newFile) : c.contractDoc || '';
+                // ===== التعديل 5: رفع صورة العقد الجديدة عبر Storage =====
+                const newDoc = newFile ? await uploadFileGetURL(newFile, 'coaches/contracts') : c.contractDoc || '';
                 const newDuration = computeContractDuration(newStart, newEnd);
 
                 const archivedEntry = {
@@ -7910,10 +7943,7 @@
                 createdAt: new Date().toISOString()
             });
 
-            const readAsB64 = (file) => new Promise((res, rej) => { const r = new FileReader();
-                    r.onload = () => res(r.result);
-                    r.onerror = rej;
-                    r.readAsDataURL(file); });
+            // ===== التعديل 8: رفع شعار وغلاف الدورة عبر Storage =====
             const finish = (logo, cover) => {
                 const data = buildData(logo, cover);
                 db.ref('academy/tournaments').push(data).then(snap => {
@@ -7925,8 +7955,8 @@
                 }).catch(err => showToast('❌ خطأ: ' + err.message, 'error'));
             };
             Promise.all([
-                logoFile ? readAsB64(logoFile) : Promise.resolve(''),
-                coverFile ? readAsB64(coverFile) : Promise.resolve('')
+                logoFile ? uploadFileGetURL(logoFile, 'tournaments/logos') : Promise.resolve(''),
+                coverFile ? uploadFileGetURL(coverFile, 'tournaments/covers') : Promise.resolve('')
             ]).then(([logo, cover]) => finish(logo, cover)).catch(() => finish('', ''));
         }
 
@@ -9149,17 +9179,17 @@
                 `;
         }
 
+        // ===== التعديل 11: رفع وثائق الدورة عبر Storage =====
         function uploadTourDocuments() {
             if (!requireOpsRole() || !requirePermission('manageTournaments')) return;
             const files = document.getElementById('tourDocInput').files;
             if (!files.length) { showToast('اختر ملفات أولاً', 'warning'); return; }
             const t = getTournamentById(currentTournamentId);
-            const readers = Array.from(files).map(f => new Promise((res, rej) => { const r = new FileReader();
-                    r.onload = () => res({ name: f.name, data: r.result });
-                    r.onerror = rej;
-                    r.readAsDataURL(f); }));
             showProgress('جاري رفع الملفات...', 0);
-            Promise.all(readers).then(newDocs => {
+            const uploaders = Array.from(files).map(f =>
+                uploadFileGetURL(f, 'tournaments/documents').then(url => ({ name: f.name, data: url }))
+            );
+            Promise.all(uploaders).then(newDocs => {
                 const documents = [...(t.documents || []), ...newDocs];
                 updateTourInFirebase({ documents }, '✅ تم الرفع').then(() => { hideProgress(); renderTourCard(); });
             }).catch(() => { hideProgress(); showToast('❌ فشل الرفع', 'error'); });
@@ -9173,65 +9203,44 @@
             updateTourInFirebase({ documents }, '✅ تم الحذف').then(() => renderTourCard());
         }
 
-        /* ===== معرض الصور (مصنّف + حر) ===== */
-        function renderTourGalleryCard(t) {
-            const gallery = t.gallery || {};
-            const albumsHtml = GALLERY_CATEGORIES.map(cat => {
-                const photos = gallery[cat] || [];
-                const photosHtml = photos.map((p, i) =>
-                        `<div style="position:relative;"><img src="${p}" style="width:90px;height:90px;object-fit:cover;border-radius:10px;" /><button class="icon-close-btn" style="position:absolute;top:2px;left:2px;width:22px;height:22px;font-size:0.6rem;" data-action="removeGalleryPhoto" data-category="${cat}" data-index="${i}"><i class="fas fa-times"></i></button></div>`
-                        ).join('');
-                return `<div class="gallery-album-title">${cat}</div><div style="display:flex; gap:8px; flex-wrap:wrap;">${photosHtml || '<span class="text-muted">لا توجد صور</span>'}</div>`;
-            }).join('');
-
-            const freeGallery = t.freeGallery || [];
-            const slotsHtml = freeGallery.map((p, i) => `
-                    <div class="free-gallery-slot filled">
-                        <img src="${p}" />
-                        <button class="icon-close-btn on-dark" data-action="removeFreeGalleryPhoto" data-index="${i}"><i class="fas fa-times"></i></button>
-                    </div>`).join('');
-            const emptySlot = `
-                    <label class="free-gallery-slot empty">
-                        <i class="fas fa-plus"></i>
-                        <span>إضافة صورة</span>
-                        <input type="file" accept="image/*" multiple style="display:none;" onchange="uploadFreeGalleryPhotos(this.files)" />
-                    </label>`;
-
-            return `
-                    <div class="form-card">
-                        <h3>🖼️ معرض صور مصنّف</h3>
-                        <div class="form-grid" style="margin-bottom:14px;">
-                            <div class="form-group"><label>التصنيف</label><select id="galleryCategory">${GALLERY_CATEGORIES.map(c => `<option value="${c}">${c}</option>`).join('')}</select></div>
-                            <div class="form-group"><label>الصور</label><input type="file" id="galleryPhotosInput" accept="image/*" multiple /></div>
-                            <div class="form-group full"><button class="btn-sm btn-sm-primary" data-action="uploadGalleryPhotos"><i class="fas fa-upload"></i> رفع للألبوم</button></div>
-                        </div>
-                        ${albumsHtml}
-                    </div>
-                    <div class="form-card">
-                        <h3>📷 ألبوم حر (بدون تصنيف)</h3>
-                        <p class="text-muted" style="margin-bottom:10px;">أضف أي عدد من الصور، تبقى محفوظة داخل ملف الدورة ويمكن الرجوع إليها في أي وقت.</p>
-                        <div class="free-gallery-grid">${slotsHtml}${emptySlot}</div>
-                    </div>
-                `;
-        }
-
+        // ===== التعديل 10: معرض الصور (مصنّف + حر) مع حد أقصى =====
         function uploadGalleryPhotos() {
             if (!requireOpsRole() || !requirePermission('manageTournaments')) return;
             const cat = document.getElementById('galleryCategory').value;
             const files = document.getElementById('galleryPhotosInput').files;
             if (!files.length) { showToast('اختر صوراً أولاً', 'warning'); return; }
             const t = getTournamentById(currentTournamentId);
-            const readers = Array.from(files).map(f => new Promise((res, rej) => { const r = new FileReader();
-                    r.onload = () => res(r.result);
-                    r.onerror = rej;
-                    r.readAsDataURL(f); }));
+            const existingCount = (t.gallery?.[cat] || []).length;
+            if (existingCount + files.length > 40) {
+                showToast('⚠️ الحد الأقصى 40 صورة لكل ألبوم لتوفير المساحة، احذف صوراً قديمة أولاً', 'warning');
+                return;
+            }
             showProgress('جاري رفع الصور...', 0);
-            Promise.all(readers).then(dataUrls => {
+            const uploaders = Array.from(files).map(f => uploadFileGetURL(f, 'tournaments/gallery'));
+            Promise.all(uploaders).then(urls => {
                 const gallery = { ...(t.gallery || {}) };
-                gallery[cat] = [...(gallery[cat] || []), ...dataUrls];
+                gallery[cat] = [...(gallery[cat] || []), ...urls];
                 updateTourInFirebase({ gallery }, '✅ تم الرفع').then(() => { hideProgress(); renderTourCard(); });
             }).catch(() => { hideProgress(); showToast('❌ فشل الرفع', 'error'); });
         }
+
+        function uploadFreeGalleryPhotos(files) {
+            if (!requireOpsRole() || !requirePermission('manageTournaments')) return;
+            if (!files || !files.length) return;
+            const t = getTournamentById(currentTournamentId);
+            const existingCount = (t.freeGallery || []).length;
+            if (existingCount + files.length > 60) {
+                showToast('⚠️ الحد الأقصى 60 صورة في الألبوم الحر لتوفير المساحة', 'warning');
+                return;
+            }
+            showProgress('جاري رفع الصور...', 0);
+            const uploaders = Array.from(files).map(f => uploadFileGetURL(f, 'tournaments/free-gallery'));
+            Promise.all(uploaders).then(urls => {
+                const freeGallery = [...(t.freeGallery || []), ...urls];
+                updateTourInFirebase({ freeGallery }, '✅ تم الرفع').then(() => { hideProgress(); renderTourCard(); });
+            }).catch(() => { hideProgress(); showToast('❌ فشل الرفع', 'error'); });
+        }
+        window.uploadFreeGalleryPhotos = uploadFreeGalleryPhotos;
 
         function removeGalleryPhoto(context) {
             if (!requireOpsRole() || !requirePermission('manageTournaments')) return;
@@ -9242,22 +9251,6 @@
             gallery[cat].splice(parseInt(context.dataset.index), 1);
             updateTourInFirebase({ gallery }, '✅ تم الحذف').then(() => renderTourCard());
         }
-
-        function uploadFreeGalleryPhotos(files) {
-            if (!requireOpsRole() || !requirePermission('manageTournaments')) return;
-            if (!files || !files.length) return;
-            const t = getTournamentById(currentTournamentId);
-            const readers = Array.from(files).map(f => new Promise((res, rej) => { const r = new FileReader();
-                    r.onload = () => res(r.result);
-                    r.onerror = rej;
-                    r.readAsDataURL(f); }));
-            showProgress('جاري رفع الصور...', 0);
-            Promise.all(readers).then(dataUrls => {
-                const freeGallery = [...(t.freeGallery || []), ...dataUrls];
-                updateTourInFirebase({ freeGallery }, '✅ تم الرفع').then(() => { hideProgress(); renderTourCard(); });
-            }).catch(() => { hideProgress(); showToast('❌ فشل الرفع', 'error'); });
-        }
-        window.uploadFreeGalleryPhotos = uploadFreeGalleryPhotos;
 
         function removeFreeGalleryPhoto(context) {
             if (!requireOpsRole() || !requirePermission('manageTournaments')) return;
@@ -9532,8 +9525,9 @@
             showLoading('جاري حفظ الوثائق...');
             try {
                 const update = {};
-                if (parentalFile) update.parentalDoc = await readFileAsBase64(parentalFile);
-                if (internalFile) update.internalDoc = await readFileAsBase64(internalFile);
+                // ===== التعديل 6: رفع وثائق اللاعب عبر Storage =====
+                if (parentalFile) update.parentalDoc = await uploadFileGetURL(parentalFile, 'players/docs');
+                if (internalFile) update.internalDoc = await uploadFileGetURL(internalFile, 'players/docs');
                 await db.ref('academy/players/' + playerId).update(update);
                 const idx = allPlayers.findIndex(x => x.id === playerId);
                 if (idx !== -1) Object.assign(allPlayers[idx], update);
@@ -9668,7 +9662,8 @@
 
             showLoading('جاري حفظ السجل الطبي...');
             try {
-                const reportDoc = reportFile ? await readFileAsBase64(reportFile) : '';
+                // ===== التعديل 7: رفع التقرير الطبي عبر Storage =====
+                const reportDoc = reportFile ? await uploadFileGetURL(reportFile, 'medical') : '';
                 const record = {
                     diagnosis, note, status, expectedReturnDate, reportDoc,
                     date: new Date().toISOString(),
@@ -10182,9 +10177,9 @@
             EventManager.enableDelegation();
             EventManager.bindButtons();
 
-            if (db) {
-                loadAllData(false, true).catch(() => {});
-            }
+            // ===== التعديل 12: تم إيقاف التحميل التلقائي الكامل عمدًا لتوفير مساحة/باندويث Firebase. =====
+            // البيانات تُحمّل الآن فقط عند الحاجة عبر loadSections/loadSectionOnce بعد تسجيل الدخول.
+            // if (db) { loadAllData(false, true).catch(() => {}); } // تم حذفه
 
             setupUpload('regPhoto', 'photoFileName', 'uploadPhoto');
             setupUpload('regParental', 'parentalFileName', 'uploadParental');
@@ -10243,6 +10238,7 @@
                                 firebase.initializeApp(firebaseConfig);
                             }
                             db = firebase.database();
+                            try { storage = firebase.storage(); } catch (e) { console.warn('Storage init failed', e); }
                         } catch (e) {
                             console.error('فشل إعادة الاتصال:', e);
                         }
@@ -10258,10 +10254,11 @@
                     submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الإرسال...';
 
                     try {
+                        // ===== التعديل 3: رفع صورة اللاعب والوثائق عبر Storage =====
                         const [photoData, parentalData, internalData] = await Promise.all([
-                            readFileAsBase64(photoFile),
-                            readFileAsBase64(parentalFile),
-                            readFileAsBase64(internalFile)
+                            uploadFileGetURL(photoFile, 'players/photos'),
+                            uploadFileGetURL(parentalFile, 'players/docs'),
+                            uploadFileGetURL(internalFile, 'players/docs')
                         ]);
                         const parentCode =
                             `${firstName} ${lastName} ${new Date(birthDate).getFullYear()} ${categoryId}`;
