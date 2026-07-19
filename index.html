@@ -1244,18 +1244,14 @@
                                         <input type="text" id="regLastName" required />
                                     </div>
                                     <div class="form-group">
-                                        <label><i class="fas fa-layer-group"></i> الفئة العمرية <span class="required">*</span></label>
-                                        <select id="regCategory" required>
-                                            <option value="">اختر</option>
-                                            <option value="U07">U07</option>
-                                            <option value="U09">U09</option>
-                                            <option value="U11">U11</option>
-                                            <option value="U13">U13</option>
-                                        </select>
+                                        <label><i class="fas fa-cake-candles"></i> تاريخ الميلاد <span class="required">*</span></label>
+                                        <input type="date" id="regBirthDate" required onchange="autoSetCategoryFromBirthDate()" />
                                     </div>
                                     <div class="form-group">
-                                        <label><i class="fas fa-cake-candles"></i> تاريخ الميلاد <span class="required">*</span></label>
-                                        <input type="date" id="regBirthDate" required />
+                                        <label><i class="fas fa-layer-group"></i> الفئة العمرية (تُحدَّد تلقائياً) <span class="required">*</span></label>
+                                        <select id="regCategory" required disabled>
+                                            <option value="">أدخل تاريخ الميلاد أولاً</option>
+                                        </select>
                                     </div>
                                     <div class="form-group">
                                         <label><i class="fas fa-map-marker-alt"></i> مكان الميلاد <span class="required">*</span></label>
@@ -2199,7 +2195,24 @@
         // ================================================================
         // 6. الثوابت
         // ================================================================
-        const categories = ['U07', 'U09', 'U11', 'U13'];
+        const categories = ['U07', 'U09', 'U11', 'U13', 'U15'];
+        const CATEGORY_BIRTH_YEAR_RANGES = {
+            U07: [2020, 2021],
+            U09: [2018, 2019],
+            U11: [2016, 2017],
+            U13: [2014, 2015],
+            U15: [2012, 2013]
+        };
+
+        function getCategoryByBirthYear(birthDateStr) {
+            if (!birthDateStr) return '';
+            const year = new Date(birthDateStr).getFullYear();
+            for (const [cat, [minY, maxY]] of Object.entries(CATEGORY_BIRTH_YEAR_RANGES)) {
+                if (year >= minY && year <= maxY) return cat;
+            }
+            return '';
+        }
+
         const MONTHS_AR = ['جانفي', 'فيفري', 'مارس', 'أفريل', 'ماي', 'جوان', 'جويلية', 'أوت', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
         const TRAINING_TYPES = ['بدني', 'تقني', 'تكتيكي', 'تدريب حراس', 'مباراة تطبيقية', 'استشفاء', 'تدريب خاص'];
         const SESSION_STATUS = ['مجدولة', 'مكتملة', 'مؤجلة', 'ملغاة'];
@@ -2670,29 +2683,20 @@
                     const errorEl = document.getElementById('loginError');
                     if (errorEl) errorEl.style.display = 'none';
 
-                    // تحميل خفيف فقط: الصلاحيات (صغيرة وضرورية لكل الواجهات) — وليس كل قاعدة البيانات
-                    showLoading('جاري تجهيز لوحة التحكم...');
-                    loadSections([
-                        { key: 'permissionDefinitions', path: 'academy/permissionDefinitions', target: 'allPermissionDefinitions' }
-                    ]).then(() => {
-                        if (allPermissionDefinitions.length === 0) {
-                            const seedUpdates = {};
-                            DEFAULT_PERMISSIONS.forEach(p => { seedUpdates[p.key] = { ...p, enabled: true }; });
-                            return db.ref('academy/permissionDefinitions').update(seedUpdates).then(() => {
-                                allPermissionDefinitions = Object.entries(seedUpdates).map(([k, v]) => ({ id: k, ...v }));
-                            });
-                        }
-                    }).then(() => {
-                        dataLoaded = true; // يبقى متوافقاً مع أي كود قديم يفحص هذا المتغير
+                    // تحميل كامل لكل بيانات هذه الصفة دفعة واحدة، بحيث لا يحتاج التنقل داخل اللوحة لأي تحميل لاحق
+                    showLoading('جاري تحميل بيانات حسابك...');
+                    preloadDashboardData(user).then(() => {
+                        dataLoaded = true;
                         hideLoading();
-                        renderDashboard(); // كل دالة home ستحمّل بياناتها الخاصة لوحدها (انظر التعديلات التالية)
+                        renderDashboard();
                         if (currentUser?.role === 'coach') {
-                            loadSections([{ key: 'officialMessages', path: 'academy/officialMessages', target: 'allOfficialMessages', isObjectMap: true }])
-                                .then(() => setTimeout(() => showMemberOfficialMessagesPopup(currentUser.id), 500));
+                            setTimeout(() => showMemberOfficialMessagesPopup(currentUser.id), 400);
                         }
                     }).catch(err => {
                         hideLoading();
-                        window.addDebugLog('⚠️ فشل تحميل الصلاحيات: ' + err.message, 'warning');
+                        window.addDebugLog('⚠️ فشل تحميل بيانات لوحة التحكم: ' + err.message, 'warning');
+                        showToast('⚠️ حدث خطأ أثناء تحميل البيانات، جرّب زر "تحديث البيانات"', 'warning');
+                        renderDashboard();
                     });
 
                     const endTime = performance.now();
@@ -2715,6 +2719,104 @@
                 window.addDebugLog(`❌ خطأ في تسجيل الدخول: ${e.message}`, 'error');
                 showToast('❌ خطأ في الاتصال بقاعدة البيانات', 'error');
             }
+        }
+
+        // ================================================================
+        // دالة التحميل الشامل لبيانات الصفة عند تسجيل الدخول مباشرة
+        // ================================================================
+        function preloadDashboardData(user) {
+            const role = user.role;
+            const toArray = (val) => val ? Object.keys(val).map(k => ({ id: k, ...val[k] })) : [];
+
+            if (role === 'admin' || role === 'coach') {
+                const paths = {
+                    players: 'academy/players', coaches: 'academy/coaches',
+                    trainingSessions: 'academy/trainingSessions', tournaments: 'academy/tournaments',
+                    matches: 'academy/matches', attendances: 'academy/attendances', payments: 'academy/payments',
+                    playerDetails: 'academy/playerDetails', attendanceArchive: 'academy/attendanceArchive',
+                    matchReports: 'academy/matchReports', paymentArchive: 'academy/paymentArchive',
+                    logs: 'academy/logs', playerMessages: 'academy/playerMessages',
+                    permissionDefinitions: 'academy/permissionDefinitions', officialMessages: 'academy/officialMessages',
+                    fawjAssignments: 'academy/fawjAssignments'
+                };
+                const results = {};
+                return Promise.all(Object.entries(paths).map(([key, path]) =>
+                    db.ref(path).once('value').then(snap => { results[key] = snap.val(); })
+                )).then(() => {
+                    allPlayers = toArray(results.players);
+                    allCoaches = toArray(results.coaches);
+                    allTrainingSessions = toArray(results.trainingSessions);
+                    allTournaments = toArray(results.tournaments);
+                    allMatches = toArray(results.matches);
+                    allAttendances = toArray(results.attendances);
+                    allPayments = toArray(results.payments);
+                    allPlayerDetails = results.playerDetails || {};
+                    allAttendanceArchive = toArray(results.attendanceArchive);
+                    allMatchReports = toArray(results.matchReports);
+                    allPaymentArchive = toArray(results.paymentArchive);
+                    allLogs = toArray(results.logs);
+                    allPlayerMessages = results.playerMessages || {};
+                    allPermissionDefinitions = toArray(results.permissionDefinitions);
+                    allOfficialMessages = results.officialMessages || {};
+                    allFawjAssignments = results.fawjAssignments || {};
+
+                    let seedPromise = Promise.resolve();
+                    if (allPermissionDefinitions.length === 0) {
+                        const seedUpdates = {};
+                        DEFAULT_PERMISSIONS.forEach(p => { seedUpdates[p.key] = { ...p, enabled: true }; });
+                        seedPromise = db.ref('academy/permissionDefinitions').update(seedUpdates).then(() => {
+                            allPermissionDefinitions = Object.entries(seedUpdates).map(([k, v]) => ({ id: k, ...v }));
+                        });
+                    }
+                    return seedPromise.then(() => {
+                        loadedSections['players'] = true;
+                        loadedSections['coaches'] = true;
+                        loadedSections['fawjAssignments'] = true;
+                        loadedSections['permissionDefinitions'] = true;
+                        loadedSections['officialMessages'] = true;
+                        categories.forEach(cat => {
+                            loadedSections['players_cat_' + cat] = true;
+                            loadedSections['sessions_cat_' + cat] = true;
+                            loadedSections['matches_cat_' + cat] = true;
+                        });
+                        allTournaments.forEach(t => { loadedSections['matches_tour_' + t.id] = true; });
+                        allCoaches.forEach(c => { loadedSections['logs_coach_' + c.name] = true; });
+                    });
+                });
+            }
+
+            if (role === 'parent') {
+                const playerId = user.id;
+                return Promise.all([
+                    db.ref('academy/playerDetails/' + playerId).once('value'),
+                    db.ref('academy/payments').orderByChild('playerId').equalTo(playerId).once('value'),
+                    db.ref('academy/playerMessages/' + playerId).once('value'),
+                    db.ref('academy/attendances').orderByChild('playerId').equalTo(playerId).once('value'),
+                    db.ref('academy/tournaments').once('value')
+                ]).then(([detailsSnap, paymentsSnap, msgsSnap, attSnap, tourSnap]) => {
+                    allPlayerDetails[playerId] = detailsSnap.val() || {};
+                    toArray(paymentsSnap.val()).forEach(p => allPayments.push(p));
+                    allPlayerMessages[playerId] = msgsSnap.val() || {};
+                    toArray(attSnap.val()).forEach(a => allAttendances.push(a));
+                    allTournaments = toArray(tourSnap.val());
+                    allTournaments.forEach(t => { loadedSections['matches_tour_' + t.id] = true; });
+
+                    const p = user.data;
+                    if (p && p.categoryId) {
+                        return Promise.all([
+                            db.ref('academy/trainingSessions').orderByChild('categoryId').equalTo(p.categoryId).once('value'),
+                            db.ref('academy/matches').orderByChild('categoryId').equalTo(p.categoryId).once('value')
+                        ]).then(([sSnap, mSnap]) => {
+                            allTrainingSessions = toArray(sSnap.val());
+                            allMatches = toArray(mSnap.val());
+                            loadedSections['sessions_cat_' + p.categoryId] = true;
+                            loadedSections['matches_cat_' + p.categoryId] = true;
+                        });
+                    }
+                });
+            }
+
+            return Promise.resolve();
         }
 
         // ================================================================
