@@ -10299,7 +10299,13 @@
                             `;
                         document.getElementById('confirmPopup').classList.add('active');
                     } catch (err) {
-                        showToast('❌ خطأ أثناء الإرسال: ' + err.message, 'error');
+                        console.error('🔴 خطأ تفصيلي عند إرسال الاستمارة:', err);
+                        const detail = (err && err.message) ? err.message
+                            : (err && err.code) ? err.code
+                            : (typeof err === 'string') ? err
+                            : JSON.stringify(err) || 'خطأ غير معروف';
+                        showToast('❌ خطأ أثناء الإرسال: ' + detail, 'error');
+                        window.addDebugLog && window.addDebugLog('🔴 تفاصيل خطأ الاستمارة: ' + detail, 'error');
                     } finally {
                         submitBtn.disabled = false;
                         submitBtn.innerHTML = originalBtnHtml;
