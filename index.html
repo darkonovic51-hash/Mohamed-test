@@ -1879,14 +1879,21 @@
             document.querySelectorAll('.stats-card-modal').forEach(m => m.remove());
         }
 
-        // ===== دالة readFileAsBase64 مع ضغط الصور (التعديل 8) =====
+        // ===== دالة readFileAsBase64 مع ضغط الصور (التعديل 8 + التعديلات الجديدة) =====
         function readFileAsBase64(file, maxDim = 1000, quality = 0.72) {
             return new Promise((resolve, reject) => {
+                // حد أقصى لحجم الملف قبل المحاولة (15 ميجا) لتفادي تعليق المتصفح أو فشل القراءة
+                const MAX_FILE_SIZE = 15 * 1024 * 1024;
+                if (file.size > MAX_FILE_SIZE) {
+                    reject(new Error(`الملف "${file.name}" كبير جداً (${(file.size / 1024 / 1024).toFixed(1)}MB). الرجاء اختيار ملف أصغر من 15MB`));
+                    return;
+                }
+
                 // ملفات PDF لا يمكن ضغطها كصورة، تُرفع كما هي
                 if (file.type === 'application/pdf') {
                     const reader = new FileReader();
                     reader.onload = () => resolve(reader.result);
-                    reader.onerror = reject;
+                    reader.onerror = () => reject(new Error(`تعذّرت قراءة الملف "${file.name}" (PDF تالف أو غير مدعوم)`));
                     reader.readAsDataURL(file);
                     return;
                 }
@@ -1899,17 +1906,21 @@
                             if (width > height) { height = Math.round(height * (maxDim / width)); width = maxDim; }
                             else { width = Math.round(width * (maxDim / height)); height = maxDim; }
                         }
-                        const canvas = document.createElement('canvas');
-                        canvas.width = width;
-                        canvas.height = height;
-                        const ctx = canvas.getContext('2d');
-                        ctx.drawImage(img, 0, 0, width, height);
-                        resolve(canvas.toDataURL('image/jpeg', quality));
+                        try {
+                            const canvas = document.createElement('canvas');
+                            canvas.width = width;
+                            canvas.height = height;
+                            const ctx = canvas.getContext('2d');
+                            ctx.drawImage(img, 0, 0, width, height);
+                            resolve(canvas.toDataURL('image/jpeg', quality));
+                        } catch (canvasErr) {
+                            resolve(e.target.result); // فشل الضغط؟ استخدم الأصل كحل بديل آمن
+                        }
                     };
-                    img.onerror = () => resolve(e.target.result); // فشل الضغط؟ استخدم الأصل كحل بديل آمن
+                    img.onerror = () => resolve(e.target.result); // فشل تحميل الصورة كصورة؟ استخدم الملف الأصلي
                     img.src = e.target.result;
                 };
-                reader.onerror = reject;
+                reader.onerror = () => reject(new Error(`تعذّرت قراءة الملف "${file.name}" (الملف تالف أو غير مدعوم)`));
                 reader.readAsDataURL(file);
             });
         }
@@ -10258,11 +10269,23 @@
                     submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الإرسال...';
 
                     try {
-                        const [photoData, parentalData, internalData] = await Promise.all([
-                            readFileAsBase64(photoFile),
-                            readFileAsBase64(parentalFile),
-                            readFileAsBase64(internalFile)
-                        ]);
+                        let photoData, parentalData, internalData;
+                        try {
+                            photoData = await readFileAsBase64(photoFile);
+                        } catch (e) {
+                            throw new Error('فشل رفع الصورة الشخصية: ' + (e.message || 'خطأ غير معروف'));
+                        }
+                        try {
+                            parentalData = await readFileAsBase64(parentalFile);
+                        } catch (e) {
+                            throw new Error('فشل رفع الترخيص الأبوي: ' + (e.message || 'خطأ غير معروف'));
+                        }
+                        try {
+                            internalData = await readFileAsBase64(internalFile);
+                        } catch (e) {
+                            throw new Error('فشل رفع القانون الداخلي: ' + (e.message || 'خطأ غير معروف'));
+                        }
+
                         const parentCode =
                             `${firstName} ${lastName} ${new Date(birthDate).getFullYear()} ${categoryId}`;
                         const newPlayer = {
