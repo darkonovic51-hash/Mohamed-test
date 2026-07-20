@@ -2774,36 +2774,21 @@
             const toArray = (val) => val ? Object.keys(val).map(k => ({ id: k, ...val[k] })) : [];
 
             if (role === 'admin' || role === 'coach') {
-                const paths = {
-                    players: 'academy/players', coaches: 'academy/coaches',
-                    trainingSessions: 'academy/trainingSessions', tournaments: 'academy/tournaments',
-                    matches: 'academy/matches', attendances: 'academy/attendances', payments: 'academy/payments',
-                    playerDetails: 'academy/playerDetails', attendanceArchive: 'academy/attendanceArchive',
-                    matchReports: 'academy/matchReports', paymentArchive: 'academy/paymentArchive',
-                    logs: 'academy/logs', playerMessages: 'academy/playerMessages',
-                    permissionDefinitions: 'academy/permissionDefinitions', officialMessages: 'academy/officialMessages',
+                // ===== المرحلة 1: بيانات أساسية فقط، تُحمَّل قبل عرض اللوحة (سريعة) =====
+                const criticalPaths = {
+                    players: 'academy/players',
+                    coaches: 'academy/coaches',
+                    permissionDefinitions: 'academy/permissionDefinitions',
                     fawjAssignments: 'academy/fawjAssignments'
                 };
-                const results = {};
-                return Promise.all(Object.entries(paths).map(([key, path]) =>
-                    db.ref(path).once('value').then(snap => { results[key] = snap.val(); })
+                const criticalResults = {};
+                return Promise.all(Object.entries(criticalPaths).map(([key, path]) =>
+                    db.ref(path).once('value').then(snap => { criticalResults[key] = snap.val(); })
                 )).then(() => {
-                    allPlayers = toArray(results.players);
-                    allCoaches = stripOtherCoachCodes(toArray(results.coaches), role, user.id);
-                    allTrainingSessions = toArray(results.trainingSessions);
-                    allTournaments = toArray(results.tournaments);
-                    allMatches = toArray(results.matches);
-                    allAttendances = toArray(results.attendances);
-                    allPayments = toArray(results.payments);
-                    allPlayerDetails = results.playerDetails || {};
-                    allAttendanceArchive = toArray(results.attendanceArchive);
-                    allMatchReports = toArray(results.matchReports);
-                    allPaymentArchive = toArray(results.paymentArchive);
-                    allLogs = toArray(results.logs);
-                    allPlayerMessages = results.playerMessages || {};
-                    allPermissionDefinitions = toArray(results.permissionDefinitions);
-                    allOfficialMessages = results.officialMessages || {};
-                    allFawjAssignments = results.fawjAssignments || {};
+                    allPlayers = toArray(criticalResults.players);
+                    allCoaches = stripOtherCoachCodes(toArray(criticalResults.coaches), role, user.id);
+                    allPermissionDefinitions = toArray(criticalResults.permissionDefinitions);
+                    allFawjAssignments = criticalResults.fawjAssignments || {};
 
                     let seedPromise = Promise.resolve();
                     if (allPermissionDefinitions.length === 0) {
@@ -2813,19 +2798,58 @@
                             allPermissionDefinitions = Object.entries(seedUpdates).map(([k, v]) => ({ id: k, ...v }));
                         });
                     }
+
                     return seedPromise.then(() => {
                         loadedSections['players'] = true;
                         loadedSections['coaches'] = true;
                         loadedSections['fawjAssignments'] = true;
                         loadedSections['permissionDefinitions'] = true;
-                        loadedSections['officialMessages'] = true;
-                        categories.forEach(cat => {
-                            loadedSections['players_cat_' + cat] = true;
-                            loadedSections['sessions_cat_' + cat] = true;
-                            loadedSections['matches_cat_' + cat] = true;
+
+                        // ===== المرحلة 2: تحميل باقي البيانات في الخلفية بصمت، دون حجب اللوحة أو إظهار أي مؤشر =====
+                        const backgroundPaths = {
+                            trainingSessions: 'academy/trainingSessions', tournaments: 'academy/tournaments',
+                            matches: 'academy/matches', attendances: 'academy/attendances', payments: 'academy/payments',
+                            playerDetails: 'academy/playerDetails', attendanceArchive: 'academy/attendanceArchive',
+                            matchReports: 'academy/matchReports', paymentArchive: 'academy/paymentArchive',
+                            logs: 'academy/logs', playerMessages: 'academy/playerMessages',
+                            officialMessages: 'academy/officialMessages'
+                        };
+                        const bgResults = {};
+                        Promise.all(Object.entries(backgroundPaths).map(([key, path]) =>
+                            db.ref(path).once('value').then(snap => { bgResults[key] = snap.val(); })
+                        )).then(() => {
+                            allTrainingSessions = toArray(bgResults.trainingSessions);
+                            allTournaments = toArray(bgResults.tournaments);
+                            allMatches = toArray(bgResults.matches);
+                            allAttendances = toArray(bgResults.attendances);
+                            allPayments = toArray(bgResults.payments);
+                            allPlayerDetails = bgResults.playerDetails || {};
+                            allAttendanceArchive = toArray(bgResults.attendanceArchive);
+                            allMatchReports = toArray(bgResults.matchReports);
+                            allPaymentArchive = toArray(bgResults.paymentArchive);
+                            allLogs = toArray(bgResults.logs);
+                            allPlayerMessages = bgResults.playerMessages || {};
+                            allOfficialMessages = bgResults.officialMessages || {};
+
+                            categories.forEach(cat => {
+                                loadedSections['players_cat_' + cat] = true;
+                                loadedSections['sessions_cat_' + cat] = true;
+                                loadedSections['matches_cat_' + cat] = true;
+                            });
+                            allTournaments.forEach(t => { loadedSections['matches_tour_' + t.id] = true; });
+                            allCoaches.forEach(c => { loadedSections['logs_coach_' + c.name] = true; });
+                            loadedSections['trainingSessions'] = true;
+                            loadedSections['tournaments'] = true;
+                            loadedSections['matches'] = true;
+                            loadedSections['payments'] = true;
+                            loadedSections['officialMessages'] = true;
+
+                            window.addDebugLog && window.addDebugLog('📥 اكتمل تحميل بيانات الخلفية بصمت', 'success');
+                            // تحديث هادئ للصفحة الحالية إن كانت تنتظر بيانات اكتملت للتو، دون أي مؤشر تحميل
+                            if (currentViewFunction) refreshCurrentView();
+                        }).catch(err => {
+                            window.addDebugLog && window.addDebugLog('⚠️ فشل التحميل الخلفي: ' + err.message, 'warning');
                         });
-                        allTournaments.forEach(t => { loadedSections['matches_tour_' + t.id] = true; });
-                        allCoaches.forEach(c => { loadedSections['logs_coach_' + c.name] = true; });
                     });
                 });
             }
@@ -4943,17 +4967,9 @@
         // ================================================================
         // 19. دوال المدير للحصص والمباريات والدورات (تم التعديل - التعديل 3)
         // ================================================================
-        async function showAdminHome() {
+        function showAdminHome() {
             currentViewFunction = showAdminHome;
             currentViewArgs = [];
-            showLoading('جاري تحميل لوحة المدير...');
-            await loadSections([
-                { key: 'players', path: 'academy/players', target: 'allPlayers' },
-                { key: 'coaches', path: 'academy/coaches', target: 'allCoaches' },
-                { key: 'trainingSessions', path: 'academy/trainingSessions', target: 'allTrainingSessions' },
-                { key: 'matches', path: 'academy/matches', target: 'allMatches' }
-            ]);
-            hideLoading();
             const content = document.getElementById('pageContent');
             const pendingCount = allPlayers.filter(p => p.status === 'pending').length;
             const approvedCount = allPlayers.filter(p => p.status === 'approved').length;
@@ -10341,9 +10357,7 @@
             EventManager.enableDelegation();
             EventManager.bindButtons();
 
-            if (db) {
-                loadAllData(false, true).catch(() => {});
-            }
+            // تم حذف استدعاء loadAllData هنا حسب التعديل 11
 
             setupUpload('regPhoto', 'photoFileName', 'uploadPhoto');
             setupUpload('regParental', 'parentalFileName', 'uploadParental');
