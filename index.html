@@ -1248,9 +1248,14 @@
                                         <input type="date" id="regBirthDate" required onchange="autoSetCategoryFromBirthDate()" />
                                     </div>
                                     <div class="form-group">
-                                        <label><i class="fas fa-layer-group"></i> الفئة العمرية (تُحدَّد تلقائياً) <span class="required">*</span></label>
-                                        <select id="regCategory" required disabled>
-                                            <option value="">أدخل تاريخ الميلاد أولاً</option>
+                                        <label><i class="fas fa-layer-group"></i> الفئة العمرية <span class="required">*</span> <span style="font-size:0.7rem; color:#888; font-weight:500;">(تُقترح تلقائياً، ويمكنك تعديلها)</span></label>
+                                        <select id="regCategory" required>
+                                            <option value="">اختر الفئة</option>
+                                            <option value="U07">U07</option>
+                                            <option value="U09">U09</option>
+                                            <option value="U11">U11</option>
+                                            <option value="U13">U13</option>
+                                            <option value="U15">U15</option>
                                         </select>
                                     </div>
                                     <div class="form-group">
@@ -1764,9 +1769,7 @@
             debouncedSaveMap[key] = setTimeout(() => { db.ref(refPath).update(patch); }, 300);
         }
 
-        // ================================================================
-        // نظام حماية من الضغط المتتالي غير المقصود (استدعاء/استبعاد/حضور/غياب)
-        // ================================================================
+        // ===== نظام حماية من الضغط المتتالي غير المقصود (استدعاء/استبعاد/حضور/غياب) =====
         const _guardedActionsInFlight = new Set();
 
         function guardedAction(actionKey, executeFn, cooldownMs = 1200) {
@@ -1923,6 +1926,16 @@
 
         function sanitizeCodeKey(code) {
             return (code || '').toString().trim().replace(/[.#$\[\]\/]/g, '_').replace(/\s+/g, '_');
+        }
+
+        // يمنع تسريب أكواد الدخول الخاصة بالمدربين الآخرين لأي جلسة غير جلسة المدير
+        function stripOtherCoachCodes(coachesArray, viewerRole, viewerId) {
+            if (viewerRole === 'admin') return coachesArray;
+            return coachesArray.map(c => {
+                if (c.id === viewerId) return c;
+                const { code, ...rest } = c;
+                return rest;
+            });
         }
 
         function computeContractDuration(startDate, endDate) {
@@ -2096,7 +2109,9 @@
             if (isObjectMap) {
                 window[targetArrayName] = val || {};
             } else {
-                window[targetArrayName] = toArraySafe(val);
+                let arr = toArraySafe(val);
+                if (sectionKey === 'coaches') arr = stripOtherCoachCodes(arr, currentUser?.role, currentUser?.id);
+                window[targetArrayName] = arr;
             }
             loadedSections[sectionKey] = true;
             window.addDebugLog && window.addDebugLog(`📥 تحميل مقطعي: ${sectionKey}`, 'info');
@@ -2192,6 +2207,13 @@
             return MEDICAL_STATUS_LIST.find(m => m.key === key) || MEDICAL_STATUS_LIST[0];
         }
 
+        const HEALTH_STATUS_LIST = [
+            { key: 'ready', label: '🟢 جاهز' },
+            { key: 'notready', label: '🟡 غير جاهز' },
+            { key: 'injured', label: '🔴 مصاب' },
+            { key: 'suspended', label: '⚫ موقوف' }
+        ];
+
         // ================================================================
         // 6. الثوابت
         // ================================================================
@@ -2211,6 +2233,18 @@
                 if (year >= minY && year <= maxY) return cat;
             }
             return '';
+        }
+
+        // اقتراح الفئة تلقائياً من تاريخ الميلاد مع إبقاء الحقل قابلاً للتعديل اليدوي
+        function autoSetCategoryFromBirthDate() {
+            const birthDateInput = document.getElementById('regBirthDate');
+            const categorySelect = document.getElementById('regCategory');
+            if (!birthDateInput || !categorySelect) return;
+            const suggested = getCategoryByBirthYear(birthDateInput.value);
+            if (suggested) {
+                categorySelect.value = suggested;
+                showToast('ℹ️ تم اقتراح الفئة ' + suggested + ' تلقائياً، عدّلها إن أردت', 'info');
+            }
         }
 
         const MONTHS_AR = ['جانفي', 'فيفري', 'مارس', 'أفريل', 'ماي', 'جوان', 'جويلية', 'أوت', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
@@ -2416,8 +2450,7 @@
                     db.ref(item.path).once('value').then(snap => { results[item.key] = snap.val(); })
                 )).then(() => {
                     allPlayers = toArray(results.players);
-                    allCoaches = toArray(results.coaches);
-                    allTrainings = toArray(results.trainings);
+                    allCoaches = stripOtherCoachCodes(toArray(results.coaches), currentUser?.role, currentUser?.id);
                     allTrainingSessions = toArray(results.trainingSessions);
                     allTournaments = toArray(results.tournaments);
                     allMatches = toArray(results.matches);
@@ -2560,8 +2593,7 @@
                         <span>من: ${m.from || ''}</span>
                         ${canManage ? `<button class="btn-sm btn-sm-danger" data-action="deletePlayerMessage" data-player-id="${playerId}" data-msg-id="${m.id}"><i class="fas fa-trash"></i></button>` : ''}
                     </div>
-                </div>
-            `).join('');
+                </div>`).join('');
         }
 
         function markAllMessagesRead(playerId) {
@@ -2597,14 +2629,12 @@
                                 </div>
                                 <div class="parent-msg-text">${m.text}</div>
                                 <div class="parent-msg-footer"><span>من: ${m.from || ''}</span></div>
-                            </div>
-                        `).join('')}
+                            </div>`).join('')}
                     </div>
                     <div style="margin-top:16px; text-align:center;">
                         <button class="btn-sm btn-sm-primary" data-action="closeParentMessagesModal" data-id="${playerId}"><i class="fas fa-check"></i> تم الاطلاع</button>
                     </div>
-                </div>
-            `;
+                </div>`;
             document.body.appendChild(container);
             EventManager.bindButtons(container);
         }
@@ -2623,7 +2653,15 @@
         // ================================================================
         // 10. دوال تسجيل الدخول (تم التعديل - التعديل 2)
         // ================================================================
+        let loginFailCount = 0;
+        let loginLockUntil = 0;
+
         async function loginAs(role) {
+            if (Date.now() < loginLockUntil) {
+                const remainingSec = Math.ceil((loginLockUntil - Date.now()) / 1000);
+                showToast(`⛔ تم إيقاف محاولات الدخول مؤقتاً، حاول بعد ${remainingSec} ثانية`, 'error');
+                return;
+            }
             const codeInput = document.getElementById('loginCode');
             if (!codeInput) { showToast('حدث خطأ في تحميل الصفحة', 'error');
                 window.addDebugLog('❌ خطأ: مدخل الكود غير موجود', 'error'); return; }
@@ -2679,6 +2717,7 @@
                 }
 
                 if (user) {
+                    loginFailCount = 0;
                     currentUser = user;
                     const errorEl = document.getElementById('loginError');
                     if (errorEl) errorEl.style.display = 'none';
@@ -2710,6 +2749,12 @@
                     const errorEl = document.getElementById('loginError');
                     if (errorEl) errorEl.style.display = 'block';
                     hideLoading();
+                    loginFailCount++;
+                    if (loginFailCount >= 5) {
+                        loginLockUntil = Date.now() + 60000;
+                        loginFailCount = 0;
+                        showToast('⛔ تم رصد محاولات دخول متكررة فاشلة، تم الإيقاف لمدة دقيقة', 'error');
+                    }
                     window.addDebugLog(`❌ فشل تسجيل الدخول كـ ${role}: كود غير صحيح`, 'error');
                     showToast('❌ كود غير صحيح', 'error');
                 }
@@ -2744,7 +2789,7 @@
                     db.ref(path).once('value').then(snap => { results[key] = snap.val(); })
                 )).then(() => {
                     allPlayers = toArray(results.players);
-                    allCoaches = toArray(results.coaches);
+                    allCoaches = stripOtherCoachCodes(toArray(results.coaches), role, user.id);
                     allTrainingSessions = toArray(results.trainingSessions);
                     allTournaments = toArray(results.tournaments);
                     allMatches = toArray(results.matches);
@@ -3186,7 +3231,8 @@
         }
 
         function renderCoachOptionsHtml(selectedId) {
-            return `<option value="">-- غير معيّن --</option>` + allCoaches.map(c =>
+            const coaches = allCoaches;  // تم تطبيق stripOtherCoachCodes مسبقاً
+            return `<option value="">-- غير معيّن --</option>` + coaches.map(c =>
                 `<option value="${c.id}" ${c.id === selectedId ? 'selected' : ''}>${c.name}${c.categoryId ? ' (' + c.categoryId + ')' : ''}</option>`
             ).join('');
         }
@@ -3300,7 +3346,7 @@
             }
             if (!loadedSections['coaches']) {
                 const cSnap = await db.ref('academy/coaches').once('value'); // صغيرة الحجم غالباً (عدد الموظفين محدود)
-                allCoaches = toArraySafe(cSnap.val());
+                allCoaches = stripOtherCoachCodes(toArraySafe(cSnap.val()), currentUser?.role, currentUser?.id);
                 loadedSections['coaches'] = true;
             }
             hideLoading();
@@ -8077,7 +8123,7 @@
             }
             if (!loadedSections['coaches']) {
                 const cSnap = await db.ref('academy/coaches').once('value');
-                allCoaches = toArraySafe(cSnap.val());
+                allCoaches = stripOtherCoachCodes(toArraySafe(cSnap.val()), currentUser?.role, currentUser?.id);
                 loadedSections['coaches'] = true;
             }
             hideLoading();
