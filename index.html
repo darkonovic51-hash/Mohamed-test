@@ -3034,6 +3034,7 @@
                     <button class="btn-sm btn-sm-warning" data-action="resetPlayerFilters"><i class="fas fa-undo"></i> إعادة تعيين</button>
                     <button class="btn-sm btn-sm-info" data-action="exportPlayersListPDF"><i class="fas fa-file-pdf"></i> تحميل PDF</button>
                     <button class="btn-sm btn-sm-warning" data-action="generateTestPlayers"><i class="fas fa-flask"></i> توليد 300 لاعب تجريبي</button>
+                    ${currentUser?.role === 'admin' ? `<button class="btn-sm btn-sm-danger" data-action="removeAllPlayers"><i class="fas fa-user-slash"></i> إزالة كل اللاعبين</button>` : ''}
                 </div>
             `;
             html += `<div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px;">`;
@@ -3219,6 +3220,34 @@
                     window.addDebugLog('❌ فشل توليد اللاعبين: ' + err.message, 'error');
                     showToast('❌ فشل التوليد: ' + err.message, 'error');
                 });
+        }
+
+        // ===== دالة إزالة جميع اللاعبين =====
+        function removeAllPlayers() {
+            if (currentUser?.role !== 'admin') { showToast('❌ هذا الإجراء متاح للمدير فقط', 'error'); return; }
+            if (allPlayers.length === 0) { showToast('لا يوجد لاعبون لإزالتهم', 'info'); return; }
+            if (!confirm(`⚠️ سيتم حذف جميع اللاعبين (${allPlayers.length} لاعب) نهائياً من قاعدة البيانات، ولا يمكن التراجع عن هذا الإجراء. هل أنت متأكد؟`)) return;
+            if (!confirm('تأكيد أخير: هذا سيمسح كل بيانات اللاعبين وملفاتهم وتفاصيلهم ودفعاتهم نهائياً. متابعة؟')) return;
+
+            showLoading('جاري إزالة جميع اللاعبين...');
+            Promise.all([
+                db.ref('academy/players').remove(),
+                db.ref('academy/playerDetails').remove(),
+                db.ref('academy/playerCodeIndex').remove(),
+                db.ref('academy/playerMessages').remove()
+            ]).then(() => {
+                const count = allPlayers.length;
+                allPlayers = [];
+                allPlayerDetails = {};
+                allPlayerMessages = {};
+                addLog('إزالة جماعية', `تم حذف جميع اللاعبين (${count} لاعب) نهائياً من قاعدة البيانات`, currentUser?.role);
+                hideLoading();
+                showToast('✅ تم حذف جميع اللاعبين', 'success');
+                showAdminPlayers();
+            }).catch(err => {
+                hideLoading();
+                showToast('❌ خطأ: ' + err.message, 'error');
+            });
         }
 
         // ================================================================
@@ -3914,7 +3943,7 @@
             }
             hideLoading();
 
-            // من هنا فصاعدًا: الكود الأصلي للدالة كما هو تمامًا بدون أي تعديل
+            // من هنا فصاعدًا: الكود الأصلي للدالة مع زر تغيير الصورة
             if (!p) { showToast('اللاعب غير موجود', 'error'); return; }
             currentViewFunction = showPlayerDetailPage;
             currentViewArgs = [playerId];
@@ -4061,7 +4090,10 @@
                     </div>
                     <div class="player-detail-page">
                         <div class="player-header">
-                            <div class="avatar" data-action="showFullImage" data-src="${imgSrc}"><img src="${imgSrc}" alt="صورة اللاعب" /></div>
+                            <div>
+                                <div class="avatar" data-action="showFullImage" data-src="${imgSrc}"><img src="${imgSrc}" alt="صورة اللاعب" /></div>
+                                ${canEdit ? `<button class="btn-sm btn-sm-primary" data-action="showChangePhotoModal" data-type="player" data-id="${playerId}" style="margin-top:8px; width:100%; justify-content:center;"><i class="fas fa-camera"></i> تغيير الصورة</button>` : ''}
+                            </div>
                             <div class="info">
                                 <h2>${p.firstName} ${p.lastName}</h2>
                                 <div class="sub-info">
@@ -4308,6 +4340,78 @@
             const cb = editModalOnSaveCallback;
             closeEditModal();
             cb(values);
+        }
+
+        // ================================================================
+        // تغيير صورة أي لاعب أو أي عضو من أعضاء الموارد البشرية
+        // ================================================================
+        function showChangePhotoModal(entityType, id) {
+            const isPlayer = entityType === 'player';
+            if (isPlayer) {
+                if (!(currentUser?.role === 'admin' || requirePermission('managePlayers'))) return;
+            } else {
+                if (!(currentUser?.role === 'admin' || requirePermission('manageHR'))) return;
+            }
+            const source = isPlayer ? allPlayers : allCoaches;
+            const entity = source.find(x => x.id === id);
+            if (!entity) return;
+            const name = isPlayer ? `${entity.firstName} ${entity.lastName}` : entity.name;
+            const container = document.createElement('div');
+            container.className = 'edit-modal-overlay';
+            container.id = 'changePhotoModal';
+            container.innerHTML = `
+                    <div class="edit-modal-box">
+                        <div class="edit-modal-header">
+                            <div class="edit-modal-icon"><i class="fas fa-camera"></i></div>
+                            <div class="edit-modal-title-wrap"><h3>تغيير صورة ${name}</h3><span>أكاديمية ASSARU</span></div>
+                            <button class="icon-close-btn on-dark" onclick="document.getElementById('changePhotoModal').remove()" title="إغلاق"><i class="fas fa-times"></i></button>
+                        </div>
+                        <div class="edit-modal-body">
+                            <div class="edit-modal-group">
+                                <label>الصورة الجديدة</label>
+                                <div class="upload-area" id="changePhotoUpload"><div class="icon"><i class="fas fa-camera"></i></div><div class="text">انقر لاختيار صورة</div><div class="file-name" id="changePhotoName"></div><input type="file" id="changePhotoFile" accept="image/*" /></div>
+                            </div>
+                        </div>
+                        <div class="edit-modal-footer">
+                            <button class="btn-sm btn-sm-secondary" onclick="document.getElementById('changePhotoModal').remove()">إلغاء</button>
+                            <button class="btn-submit" data-action="saveChangedPhoto" data-type="${entityType}" data-id="${id}"><i class="fas fa-check"></i> حفظ الصورة</button>
+                        </div>
+                    </div>
+                `;
+            document.body.appendChild(container);
+            container.addEventListener('click', e => { if (e.target === container) container.remove(); });
+            setupUpload('changePhotoFile', 'changePhotoName', 'changePhotoUpload');
+        }
+
+        async function saveChangedPhoto(context) {
+            const entityType = context.dataset.type;
+            const id = context.dataset.id;
+            const isPlayer = entityType === 'player';
+            const file = document.getElementById('changePhotoFile').files[0];
+            if (!file) { showToast('اختر صورة أولاً', 'warning'); return; }
+            showLoading('جاري رفع الصورة...');
+            try {
+                const photoData = await readFileAsBase64(file);
+                const path = isPlayer ? 'academy/players/' + id : 'academy/coaches/' + id;
+                await db.ref(path).update({ photo: photoData });
+                const arr = isPlayer ? allPlayers : allCoaches;
+                const entity = arr.find(x => x.id === id);
+                if (entity) entity.photo = photoData;
+                addLog('تغيير صورة', `تم تغيير صورة ${isPlayer ? (entity?.firstName || '') + ' ' + (entity?.lastName || '') : (entity?.name || '')}`, currentUser?.role);
+                hideLoading();
+                document.getElementById('changePhotoModal')?.remove();
+                showToast('✅ تم تحديث الصورة بنجاح', 'success');
+                if (isPlayer) {
+                    showPlayerDetailPage(id);
+                } else if (currentCoachFileId === id) {
+                    renderCoachFileShell();
+                } else {
+                    renderCoachesTable();
+                }
+            } catch (err) {
+                hideLoading();
+                showToast('❌ خطأ: ' + err.message, 'error');
+            }
         }
 
         // ================================================================
@@ -6904,8 +7008,11 @@
             content.innerHTML = `
                     <button class="btn-sm btn-sm-secondary" data-action="goBackToPrevious" style="margin-bottom:16px;"><i class="fas fa-arrow-right"></i> رجوع</button>
                     <div class="coach-file-header">
-                        <div class="coach-file-avatar" style="${imgSrc ? 'padding:0; overflow:hidden;' : ''}">
-                            ${imgSrc ? `<img src="${imgSrc}" style="width:100%;height:100%;object-fit:cover;border-radius:20px;" />` : `<i class="fas ${isCoachRole ? 'fa-chalkboard-teacher' : 'fa-user-tie'}"></i>`}
+                        <div>
+                            <div class="coach-file-avatar" style="${imgSrc ? 'padding:0; overflow:hidden;' : ''}">
+                                ${imgSrc ? `<img src="${imgSrc}" style="width:100%;height:100%;object-fit:cover;border-radius:20px;" />` : `<i class="fas ${isCoachRole ? 'fa-chalkboard-teacher' : 'fa-user-tie'}"></i>`}
+                            </div>
+                            ${currentUser?.role === 'admin' || requirePermission('manageHR') ? `<button class="btn-sm btn-sm-primary" data-action="showChangePhotoModal" data-type="coach" data-id="${c.id}" style="margin-top:6px; width:100%; justify-content:center; font-size:0.7rem;"><i class="fas fa-camera"></i> تغيير الصورة</button>` : ''}
                         </div>
                         <div class="coach-file-info">
                             <h2>${c.name}</h2>
@@ -7032,46 +7139,101 @@
             const isAdmin = currentUser?.role === 'admin';
             const statusInfo = getContractStatusInfo(c);
             const history = c.contractHistory || [];
+            const statusColor = statusInfo.key === 'expired' ? '#dc3545' : statusInfo.key === 'expiringSoon' ? '#ffc107' : '#28a745';
+            const imgSrc = c.photo && c.photo.startsWith('data:image') ? c.photo : '';
 
-            const historyHtml = [...history].reverse().map(h => `
-                    <div class="log-entry-item" style="border-right-color:var(--gold);">
-                        <div>
-                            <div class="log-action">📄 عقد رقم ${h.contractNumber || '-'} (${h.startDate || '-'} → ${h.endDate || '-'})</div>
-                            <div class="log-details">المدة: ${h.duration || '-'}</div>
-                            ${h.report ? `<div class="log-details">📝 تقرير التجديد: ${h.report}</div>` : ''}
-                        </div>
-                        <div style="text-align:left;">
-                            <div class="log-user">${h.renewedBy || ''}</div>
-                            <div class="log-time">${h.renewedAt ? new Date(h.renewedAt).toLocaleString('ar-EG') : ''}</div>
-                        </div>
-                    </div>`).join('') || '<p class="text-muted text-center" style="padding:14px;">لا يوجد عقود سابقة بعد</p>';
+            const historyRows = [...history].reverse().map((h, i) => `
+                    <tr>
+                        <td>${history.length - i}</td>
+                        <td style="font-weight:700;">${h.contractNumber || '-'}</td>
+                        <td>${h.startDate || '-'}</td>
+                        <td>${h.endDate || '-'}</td>
+                        <td>${h.duration || '-'}</td>
+                        <td>${h.renewedBy || '-'}</td>
+                        <td>${h.renewedAt ? new Date(h.renewedAt).toLocaleDateString('ar-EG') : '-'}</td>
+                    </tr>`).join('') || `<tr><td colspan="7" class="text-muted" style="padding:16px;">لا يوجد عقود سابقة بعد</td></tr>`;
 
             return `
-                <div class="form-card" style="border:2px solid ${statusInfo.key === 'expired' ? '#dc3545' : statusInfo.key === 'expiringSoon' ? '#ffc107' : '#28a745'};">
-                    <h3><i class="fas fa-file-signature"></i> بيانات العقد الحالي</h3>
+                <div class="official-letterhead" id="contractPrintArea">
+                    <div class="ol-left">
+                        <img src="https://raw.githubusercontent.com/darkonovic51-hash/Mohamed-test/4a065c0a8a951b1d39707aa5eb90a5ce7512bec4/1000015625-removebg-preview.png" class="ol-logo" alt="شعار الأكاديمية" />
+                        <img src="${ACADEMY_LETTERHEAD.flagUrl}" class="ol-flag" alt="علم الجزائر" />
+                    </div>
+                    <div class="ol-titles">
+                        <div class="ol-line1">${ACADEMY_LETTERHEAD.republicText}</div>
+                        <div class="ol-line2">${ACADEMY_LETTERHEAD.federationText}</div>
+                        <div class="ol-line3">${ACADEMY_LETTERHEAD.academyName}</div>
+                    </div>
+                    <div class="ol-right">
+                        <div><strong>رقم الاعتماد:</strong> ${ACADEMY_LETTERHEAD.accreditationNumber}</div>
+                        <div><strong>هاتف المدير:</strong> ${ACADEMY_LETTERHEAD.directorPhone}</div>
+                    </div>
+                </div>
+
+                <div class="trn-banner" style="background:linear-gradient(135deg, var(--dark-navy), var(--navy-blue) 60%, #0a1f42);">
+                    <div class="trn-banner-content">
+                        <div class="trn-banner-main">
+                            ${imgSrc ? `<img src="${imgSrc}" class="trn-banner-logo" style="object-fit:cover;" />` : `<div class="trn-banner-logo" style="display:flex;align-items:center;justify-content:center;"><i class="fas fa-file-signature" style="color:#fff; font-size:1.5rem;"></i></div>`}
+                            <div>
+                                <h2>عقد عمل — ${c.name}</h2>
+                                <div class="trn-sub">${getHrRoleLabel(c.roleType || 'coach')} ${c.jobTitle ? '— ' + c.jobTitle : ''}</div>
+                            </div>
+                        </div>
+                        <span class="badge-status" style="background:${statusColor}33; color:${statusColor}; border:2px solid ${statusColor}; font-size:0.85rem; padding:6px 20px;">${statusInfo.label}</span>
+                    </div>
+                </div>
+
+                <div class="form-card" style="border-top:5px solid var(--gold);">
+                    <h3><i class="fas fa-file-contract" style="color:var(--gold);"></i> بنود العقد الأساسية</h3>
                     <div class="info-grid-detail">
-                        <div class="item"><div class="label">رقم العقد</div><div class="value" style="font-weight:900; color:var(--gold);">${c.contractNumber || '-'}</div></div>
-                        <div class="item"><div class="label">تاريخ البداية</div><div class="value">${c.startDate || '-'}</div></div>
-                        <div class="item"><div class="label">تاريخ النهاية</div><div class="value">${c.contractEndDate || '-'}</div></div>
-                        <div class="item"><div class="label">مدة العقد</div><div class="value">${c.contractDuration || '-'}</div></div>
+                        <div class="item" style="border:2px solid var(--gold);"><div class="label">رقم العقد</div><div class="value" style="font-weight:900; color:var(--gold); font-size:1.1rem;">${c.contractNumber || '-'}</div></div>
                         <div class="item"><div class="label">نوع العقد</div><div class="value">${c.contractType || '-'}</div></div>
-                        <div class="item"><div class="label">حالة العقد</div><div class="value"><span class="badge-status ${statusInfo.cls}">${statusInfo.label}</span></div></div>
-                    </div>
-                    <div style="margin-top:16px; text-align:center; background:var(--light-bg); border-radius:16px; padding:16px;">
-                        <div style="font-size:0.8rem; color:#888; margin-bottom:6px;">⏳ الوقت المتبقي لانتهاء العقد</div>
-                        <div id="contractCountdownDisplay" style="font-size:1.3rem; font-weight:900; color:var(--dark-navy);">جاري الحساب...</div>
-                    </div>
-                    <div style="display:flex; gap:10px; flex-wrap:wrap; justify-content:center; margin-top:16px;">
-                        ${c.contractDoc ? `<button class="btn-sm btn-sm-info" onclick="window.viewDocument('${c.contractDoc}')"><i class="fas fa-file-contract"></i> عرض صورة العقد</button>` : '<span class="text-muted">لا توجد صورة عقد مرفقة</span>'}
-                        ${isAdmin ? `<button class="btn-sm btn-sm-primary" data-action="openRenewContractModal" data-id="${c.id}"><i class="fas fa-rotate"></i> تجديد العقد</button>` : ''}
+                        <div class="item"><div class="label">تاريخ بداية العقد</div><div class="value">${c.startDate || '-'}</div></div>
+                        <div class="item"><div class="label">تاريخ نهاية العقد</div><div class="value">${c.contractEndDate || '-'}</div></div>
+                        <div class="item"><div class="label">مدة العقد</div><div class="value">${c.contractDuration || '-'}</div></div>
+                        <div class="item"><div class="label">تاريخ التعيين</div><div class="value">${c.appointmentDate || '-'}</div></div>
+                        <div class="item"><div class="label">رقم الاعتماد المهني</div><div class="value">${c.accreditationNumber || '-'}</div></div>
+                        <div class="item"><div class="label">سنوات الخبرة</div><div class="value">${(c.experienceYears || 0)} سنة</div></div>
                     </div>
                 </div>
+
+                <div class="form-card" style="text-align:center; background:linear-gradient(180deg,#fff,#fbfcfe);">
+                    <div style="font-size:0.85rem; color:#888; margin-bottom:8px;"><i class="fas fa-hourglass-half"></i> الوقت المتبقي لانتهاء العقد الحالي</div>
+                    <div id="contractCountdownDisplay" style="font-size:1.6rem; font-weight:900; color:${statusColor};">جاري الحساب...</div>
+                </div>
+
                 <div class="form-card">
-                    <h3>🗂️ سجل العقود السابقة والتجديدات</h3>
-                    ${historyHtml}
+                    <h3><i class="fas fa-signature"></i> صورة الوثيقة الرسمية للعقد</h3>
+                    <div style="text-align:center;">
+                        ${c.contractDoc ? `<button class="btn-sm btn-sm-info" onclick="window.viewDocument('${c.contractDoc}')" style="padding:12px 30px; font-size:0.9rem;"><i class="fas fa-file-contract"></i> عرض صورة العقد الموقّع</button>` : `<p class="text-muted">لا توجد صورة عقد مرفقة حالياً</p>`}
+                    </div>
                 </div>
-                ${!isAdmin ? `<p class="text-muted text-center" style="padding:8px;">🔒 تجديد العقد والتقارير الخاصة به متاحة للمدير فقط</p>` : ''}
+
+                <div class="form-card">
+                    <h3><i class="fas fa-history"></i> سجل العقود والتجديدات السابقة</h3>
+                    <div class="table-wrap"><table>
+                        <thead><tr><th>#</th><th>رقم العقد</th><th>البداية</th><th>النهاية</th><th>المدة</th><th>جدّده</th><th>تاريخ التجديد</th></tr></thead>
+                        <tbody>${historyRows}</tbody>
+                    </table></div>
+                    ${history.length > 0 ? `
+                    <div class="section-title-sm">📝 آخر تقرير تجديد</div>
+                    <div class="match-info-notes"><i class="fas fa-sticky-note"></i> ${history[history.length - 1].report || 'لا يوجد تقرير مرفق'}</div>` : ''}
+                </div>
+
+                <div style="display:flex; gap:10px; flex-wrap:wrap; justify-content:center; margin-bottom:20px;">
+                    <button class="btn-sm btn-sm-info" data-action="exportContractPDF" data-id="${c.id}" style="padding:12px 28px; font-size:0.9rem;"><i class="fas fa-file-pdf"></i> تحميل صفحة العقد كاملة PDF</button>
+                    ${isAdmin ? `<button class="btn-sm btn-sm-primary" data-action="openRenewContractModal" data-id="${c.id}" style="padding:12px 28px; font-size:0.9rem;"><i class="fas fa-rotate"></i> تجديد العقد</button>` : ''}
+                </div>
+                ${!isAdmin ? `<p class="text-muted text-center" style="padding:8px;">🔒 تجديد العقد متاح للمدير فقط</p>` : ''}
             `;
+        }
+
+        function exportContractPDF(context) {
+            if (!requirePermission('exportPDF')) return;
+            const c = allCoaches.find(x => x.id === context.dataset.id);
+            const body = document.getElementById('coachFileCardBody');
+            if (!c || !body) return;
+            exportHtmlToPDF(body, `عقد_${c.name.replace(/\s+/g, '_')}`, { title: `عقد عمل — ${c.name}` });
         }
 
         function renderCoachPermissionsTab(c) {
@@ -10174,6 +10336,7 @@
             EventManager.register('exportFawjPDF', function(c) { exportFawjPDF(c); });
             EventManager.register('showAdminPlayers', function() { showAdminPlayers(); });
             EventManager.register('generateTestPlayers', function() { generateTestPlayers(); });
+            EventManager.register('removeAllPlayers', function() { removeAllPlayers(); });
             EventManager.register('filterPlayers', function(c) { filterPlayers(c.dataset.cat || 'all'); });
             EventManager.register('filterPlayersBy', function(c) { filterPlayersBy(c.dataset.key || 'payment'); });
             EventManager.register('applyPlayerFilters', function() { applyPlayerFilters(); });
@@ -10261,6 +10424,9 @@
             EventManager.register('closeParentMessagesModal', function(c) { closeParentMessagesModal(c); });
             EventManager.register('showManageDocumentsModal', function(c) { showManageDocumentsModal(c.dataset.id); });
             EventManager.register('saveManagedDocuments', function(c) { saveManagedDocuments(c); });
+            EventManager.register('showChangePhotoModal', function(c) { showChangePhotoModal(c.dataset.type, c.dataset.id); });
+            EventManager.register('saveChangedPhoto', function(c) { saveChangedPhoto(c); });
+            EventManager.register('loadMorePlayers', function() { loadMorePlayers(); });
             EventManager.register('goBackToPrevious', function() { goBackToPrevious(); });
             EventManager.register('closeModal', function(c) { closeModal(c.dataset.id); });
             EventManager.register('closeEditModal', function() { closeEditModal(); });
@@ -10344,6 +10510,7 @@
             EventManager.register('showSendOfficialMessageModal', function(c) { showSendOfficialMessageModal(c.dataset.id); });
             EventManager.register('closeOfficialMessagesPopup', function(c) { closeOfficialMessagesPopup(c); });
             EventManager.register('exportCoachReportPDF', function(c) { exportCoachReportPDF(c); });
+            EventManager.register('exportContractPDF', function(c) { exportContractPDF(c); });
             EventManager.register('switchCoachFileTab', function(c) { switchCoachFileTab(c); });
             EventManager.register('openRenewContractModal', function(c) { openRenewContractModal(c); });
             EventManager.register('saveContractRenewal', function(c) { saveContractRenewal(c); });
