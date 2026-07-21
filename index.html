@@ -2722,7 +2722,12 @@
                     const errorEl = document.getElementById('loginError');
                     if (errorEl) errorEl.style.display = 'none';
 
-                    // تحميل كامل لكل بيانات هذه الصفة دفعة واحدة، بحيث لا يحتاج التنقل داخل اللوحة لأي تحميل لاحق
+                    const endTime = performance.now();
+                    const duration = Math.round(endTime - startTime);
+                    window.addDebugLog(`✅ تسجيل دخول ناجح كـ ${role} (${duration}ms)`, 'success');
+                    showToast(`✅ مرحباً ${user.data.name || user.data.firstName || ''}`, 'success');
+                    addLog('تسجيل دخول', `دخل ${user.data.name || user.data.firstName || 'مستخدم'} كـ ${role}`, role);
+
                     showLoading('جاري تحميل بيانات حسابك...');
                     preloadDashboardData(user).then(() => {
                         dataLoaded = true;
@@ -2737,13 +2742,6 @@
                         showToast('⚠️ حدث خطأ أثناء تحميل البيانات، جرّب زر "تحديث البيانات"', 'warning');
                         renderDashboard();
                     });
-
-                    const endTime = performance.now();
-                    const duration = Math.round(endTime - startTime);
-                    hideLoading();
-                    window.addDebugLog(`✅ تسجيل دخول ناجح كـ ${role} (${duration}ms)`, 'success');
-                    showToast(`✅ مرحباً ${user.data.name || user.data.firstName || ''}`, 'success');
-                    addLog('تسجيل دخول', `دخل ${user.data.name || user.data.firstName || 'مستخدم'} كـ ${role}`, role);
 
                 } else {
                     const errorEl = document.getElementById('loginError');
@@ -2843,6 +2841,8 @@
                             loadedSections['matches'] = true;
                             loadedSections['payments'] = true;
                             loadedSections['officialMessages'] = true;
+                            loadedSections['playerDetails'] = true;
+                            loadedSections['attendances'] = true;
 
                             window.addDebugLog && window.addDebugLog('📥 اكتمل تحميل بيانات الخلفية بصمت', 'success');
                             // تحديث هادئ للصفحة الحالية إن كانت تنتظر بيانات اكتملت للتو، دون أي مؤشر تحميل
@@ -3013,14 +3013,16 @@
         async function showAdminPlayers() {
             currentViewFunction = showAdminPlayers;
             currentViewArgs = [];
-            showLoading('جاري تحميل اللاعبين...');
-            await loadSections([
+            const neededSections = [
                 { key: 'players', path: 'academy/players', target: 'allPlayers' },
                 { key: 'playerDetails', path: 'academy/playerDetails', target: 'allPlayerDetails', isObjectMap: true },
                 { key: 'payments', path: 'academy/payments', target: 'allPayments' },
                 { key: 'attendances', path: 'academy/attendances', target: 'allAttendances' }
-            ]);
-            hideLoading();
+            ];
+            const needsFetch = neededSections.some(s => !loadedSections[s.key]);
+            if (needsFetch) showLoading('جاري تحميل اللاعبين...');
+            await loadSections(neededSections);
+            if (needsFetch) hideLoading();
             const content = document.getElementById('pageContent');
             let html = renderOfficialLetterheadHtml(false) + `<h2 class="page-title">👥 اللاعبون</h2><p class="page-sub">إدارة جميع اللاعبين حسب الفئات</p>`;
             html += `
